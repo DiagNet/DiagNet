@@ -1,0 +1,12 @@
+### Nix ###
+.devenv*
+devenv.local.nix
+.direnv
+.pre-commit-config.yaml
+
+### Jetbrains IDEs ###
+.idea/
+
+### Python ###
+__pycache__/
+*.py[cod]
