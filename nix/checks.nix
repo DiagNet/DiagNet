@@ -20,6 +20,11 @@
           no-inline-html = false;
         };
       };
+
+      # python
+      check-python.enable = true;
+      ruff.enable = true;
+      ruff-format.enable = true;
     };
   };
 }
