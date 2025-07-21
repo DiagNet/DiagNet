@@ -12,6 +12,63 @@ __version__ = "1.0.0"
 from typing import List, Dict
 
 
+# Decorators
+def repeat(times, delay=0):
+    """
+    Decorator to repeat a test method multiple times with optional delay.
+
+    Args:
+        times (int): Number of times to repeat the test.
+        delay (float, optional): Delay in seconds between repetitions. Defaults to 0.
+    """
+
+    def decorator(func):
+        func._repeat = times
+        func._repeat_delay = delay
+        return func
+
+    return decorator
+
+
+def skip(reason=None):
+    """
+    Decorator to mark a test method to be skipped.
+
+    Args:
+        reason (str, optional): Explanation why the test is skipped. Defaults to None.
+    """
+
+    def decorator(func):
+        func._skip = True
+        func._skip_reason = reason
+        return func
+
+    return decorator
+
+
+def depends_on(dependency_name):
+    """
+    Decorator to declare that a test method depends on another test method.
+
+    Args:
+        dependency_name (str): Name of the test method this test depends on.
+    """
+
+    def decorator(func):
+        func._depends_on = dependency_name
+        return func
+
+    return decorator
+
+
+def expected_failure(func):
+    """
+    Decorator to mark a test method as an expected failure.
+    """
+    func._expected_failure = True
+    return func
+
+
 class Test:
     """
     Base class for defining and running test cases.
@@ -54,4 +111,3 @@ class Test:
             Dict: {result: PASS/FAIL, tests: {test_a: {"status": "PASS", "message": "", "time": 0.05}, test_b: {"status": "FAIL", "message": "SetupException: ...", "time": 0.01}}, summary: (total_tests, passed, failed, skipped)}
         """
         pass
-
