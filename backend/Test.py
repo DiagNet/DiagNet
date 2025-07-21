@@ -14,8 +14,6 @@ from collections import defaultdict, deque
 from ParameterMissingException import ParameterMissingException
 from UnknownParameterException import UnknownParameterException
 from DependencyException import DependencyException
-from SetupException import SetupException
-from TearDownException import TearDownException
 
 
 # Decorators
@@ -218,4 +216,52 @@ class Test:
         except DependencyException as e:
             raise e
 
-        pass
+        #  --- 4. run tests in order ---
+
+        # run setup
+        try:
+            self._setup()
+        except Exception as e:
+            # Setup failed, all non-skipped tests fail now
+            for name, method in test_methods:
+                if name not in results:
+                    results[name] = {
+                        "status": "FAIL",
+                        "message": f"SetupException: {e}",
+                        "time": 0
+                    }
+            return {
+                "result": "FAIL",
+                "tests": results,
+                "summary": (len(results), 0, len(results), 0)
+            }
+
+        # run tests
+
+        # run teardown
+        try:
+            self._teardown()
+        except Exception as e:
+            # Teardown error, consider as FAIL for whole run
+            results["teardown"] = {
+                "status": "FAIL",
+                "message": f"TearDownException: {e}",
+                "time": 0
+            }
+            return {
+                "result": "FAIL",
+                "tests": results,
+                "summary": (len(results), 0, len(results), 0)
+            }
+
+        # summarize
+        total = len(results)
+        passed = sum(1 for r in results.values() if r["status"] == "PASS")
+        failed = sum(1 for r in results.values() if r["status"] == "FAIL")
+        skipped = sum(1 for r in results.values() if r["status"].startswith("SKIPPED"))
+
+        return {
+            "result": ("PASS" if failed == 0 else "FAIL"),
+            "tests": results,
+            "summary": (total, passed, failed, skipped)
+        }
