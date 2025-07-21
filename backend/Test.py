@@ -12,6 +12,10 @@ __version__ = "1.0.0"
 from typing import List, Dict
 from ParameterMissingException import ParameterMissingException
 from UnknownParameterException import UnknownParameterException
+from DependencyException import DependencyNotFound
+from SetupException import SetupException
+from TearDownException import TearDownException
+from backend.DependencyException import DependencyException
 
 
 # Decorators
@@ -71,6 +75,46 @@ def expected_failure(func):
     return func
 
 
+# Topological sort for dependencies https://en.wikipedia.org/wiki/Topological_sorting
+def sort_by_dependencies(test_methods: dict):
+    """
+    test_methods: dict of {name: function} where functions may have _depends_on attribute
+    Returns a list of method names in dependency-respecting order.
+    """
+    from collections import defaultdict, deque
+
+    # Build graph
+    graph = defaultdict(list)
+    in_degree = defaultdict(int)
+    all_methods = set(test_methods.keys())
+
+    for name, func in test_methods.items():
+        dep = getattr(func, "_depends_on", None)
+        if dep:
+            if dep not in test_methods:
+                raise DependencyException(f"{dep} not found for {name}")
+            graph[dep].append(name)
+            in_degree[name] += 1
+        else:
+            in_degree.setdefault(name, 0)
+
+    # Kahn's algorithm
+    queue = deque([n for n in all_methods if in_degree[n] == 0])
+    result = []
+
+    while queue:
+        node = queue.popleft()
+        result.append(node)
+        for neighbor in graph[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+
+    if len(result) != len(all_methods):
+        raise DependencyException("Cycle detected in test dependencies")
+
+    return result
+
 class Test:
     """
     Base class for defining and running test cases.
@@ -102,7 +146,7 @@ class Test:
         """
         pass
 
-    def __run(self, verbose=False, **kwargs) -> Dict:
+    def __run(self, test_method_prefix="test_", verbose=False, **kwargs) -> Dict:
         """
         Runs the test and returns the output.
 
@@ -123,6 +167,9 @@ class Test:
             "summary": (total, passed, failed, skipped)
             }
         """
+        # output data structures
+        results = {}
+        status_map = {}
 
         # 1 - validate parameters
 
@@ -140,4 +187,27 @@ class Test:
         for name, value in kwargs.items():
             setattr(self, name, value)
 
+        # 2 - find test methods starting with the test_method_prefix
+        test_methods = []
+        for attr in dir(self):
+            if attr.startswith(test_method_prefix):
+                method = getattr(self, attr)
+                if callable(method): # Only accept methods not other attributes
+                    test_methods.append((attr, method))
+
+        # mark skipped tests immediately
+        for name, method in test_methods:
+            if getattr(method, "_skip", False):
+                results[name] = {
+                    "status": "SKIPPED",
+                    "message": getattr(method, "_skip_reason", ""),
+                    "time": 0
+                }
+                status_map[name] = "SKIPPED"
+
+        # 3. Order tests by dependency
+
+
+
         pass
+
