@@ -10,6 +10,8 @@ __author__ = "Luka Pacar"
 __version__ = "1.0.0"
 
 from typing import List, Dict
+from ParameterMissingException import ParameterMissingException
+from UnknownParameterException import UnknownParameterException
 
 
 # Decorators
@@ -100,7 +102,7 @@ class Test:
         """
         pass
 
-    def __run(self, verbose=False) -> Dict:
+    def __run(self, verbose=False, **kwargs) -> Dict:
         """
         Runs the test and returns the output.
 
@@ -108,6 +110,34 @@ class Test:
             verbose (bool): verbose output
 
         Returns:
-            Dict: {result: PASS/FAIL, tests: {test_a: {"status": "PASS", "message": "", "time": 0.05}, test_b: {"status": "FAIL", "message": "SetupException: ...", "time": 0.01}}, summary: (total_tests, passed, failed, skipped)}
+            dict: {
+            "result": "PASS"|"FAIL",
+            "tests": {
+                test_method_name: {
+                    "status": "PASS"|"FAIL"|"SKIPPED"|"SKIPPED_DUE_TO_DEPENDENCY_FAIL",
+                    "message": "",
+                    "time": float (seconds)
+                },
+                test_method_name2: {}
+            },
+            "summary": (total, passed, failed, skipped)
+            }
         """
+
+        # 1 - validate parameters
+
+        # missing parameters
+        missing = [p for p in self._required_params if p not in kwargs]
+        if missing:
+            raise ParameterMissingException(f"Missing required parameters: {missing}")
+
+        # unknown parameters
+        unknown = [k for k in kwargs if k not in self._required_params]
+        if unknown:
+            raise UnknownParameterException(f"Unknown parameters passed: {unknown}")
+
+        # set parameters as attributes
+        for name, value in kwargs.items():
+            setattr(self, name, value)
+
         pass
