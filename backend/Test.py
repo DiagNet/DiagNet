@@ -51,7 +51,7 @@ class Test:
             verbose (bool): verbose output
 
         Returns:
-            Dict: {result: PASS/FAIL/SKIPPED, tests: {test_a: {"status": "PASS", "message": "", "time": 0.05}, test_b: {"status": "FAIL", "message": "SetupException: ...", "time": 0.01}}, summary: (total_tests, passed, failed, skipped)}
+            Dict: {result: PASS/FAIL, tests: {test_a: {"status": "PASS", "message": "", "time": 0.05}, test_b: {"status": "FAIL", "message": "SetupException: ...", "time": 0.01}}, summary: (total_tests, passed, failed, skipped)}
         """
         pass
 
