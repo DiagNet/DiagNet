@@ -14,6 +14,7 @@ from collections import defaultdict, deque
 from ParameterMissingException import ParameterMissingException
 from UnknownParameterException import UnknownParameterException
 from DependencyException import DependencyException
+import time
 
 
 # Decorators
@@ -237,6 +238,90 @@ class Test:
             }
 
         # run tests
+        for test_name in ordered:
+            # if dependency failed or skipped, skip this test
+            method = getattr(self, test_name)
+            dep = getattr(method, "_depends_on", None)
+            if dep and status_map.get(dep) in ("FAIL", "SKIPPED", "SKIPPED_DUE_TO_DEPENDENCY_FAIL"):
+                results[test_name] = {
+                    "status": "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
+                    "message": f"Skipped due to failed dependency: {dep}",
+                    "time": 0
+                }
+                status_map[test_name] = "SKIPPED_DUE_TO_DEPENDENCY_FAIL"
+                continue
+
+            amount_of_repeat = getattr(method, "_repeat", 1)
+            delay = getattr(method, "_repeat_delay", 0)
+            test_expected_failure = getattr(method, "_expected_failure", False)
+            total_duration = 0
+
+            success_count = 0
+            total_runs = amount_of_repeat
+            fail_message = None
+
+            for i in range(amount_of_repeat):
+                if i > 0 and delay > 0:  # sleep when there is a delay and it is minimum the second cycle
+                    time.sleep(delay)
+                start = time.time()
+                try:
+                    result = method()
+                    # treat None as implicit True
+                    if result is None:
+                        result = True
+
+                    duration = time.time() - start
+                    if not isinstance(result, bool):
+                        raise ValueError(f"Test method {test_name} must return a boolean")
+                    if result:
+                        success = True
+                    else:
+                        success = False
+                        fail_message = f"Test {test_name} returned False"
+                except Exception as e:
+                    duration = time.time() - start
+                    success = False
+                    fail_message = f"Exception: {e}"
+
+                total_duration += duration
+
+                if success:
+                    success_count += 1
+                    if verbose:
+                        print(f"{test_name} run {i + 1}/{amount_of_repeat} PASS in {duration:.3f}s")
+                else:
+                    if verbose:
+                        print(f"{test_name} run {i + 1}/{amount_of_repeat} FAIL in {duration:.3f}s")
+                    break
+
+            # determine final test status
+            if success_count == total_runs:
+                passed = True
+            else:
+                passed = False
+
+            if test_expected_failure:  # invert result
+                passed = not passed
+
+            if passed:
+                status = "PASS"
+                msg = ""
+            else:
+                if amount_of_repeat > 1 and success_count > 0:
+                    # Partial success on repeats -> REPETITION_FAIL
+                    status = "FAIL"
+                    msg = (f"Repetition Fail: {success_count}/{total_runs} successful runs. "
+                           f"Last error: {fail_message}")
+                else:
+                    status = "FAIL"
+                    msg = fail_message or ""
+
+            results[test_name] = {
+                "status": status,
+                "message": msg,
+                "time": total_duration
+            }
+            status_map[test_name] = status
 
         # run teardown
         try:
@@ -258,7 +343,8 @@ class Test:
         total = len(results)
         passed = sum(1 for r in results.values() if r["status"] == "PASS")
         failed = sum(1 for r in results.values() if r["status"] == "FAIL")
-        skipped = sum(1 for r in results.values() if r["status"].startswith("SKIPPED"))
+        skipped = sum(1 for r in results.values() if
+                      r["status"].startswith("SKIPPED") or r["status"].startswith("SKIPPED_DUE_TO_DEPENDENCY_FAIL"))
 
         return {
             "result": ("PASS" if failed == 0 else "FAIL"),
