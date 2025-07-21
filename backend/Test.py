@@ -11,11 +11,20 @@ __version__ = "1.0.0"
 
 from typing import List, Dict
 from collections import defaultdict, deque
-from ParameterMissingException import ParameterMissingException
-from UnknownParameterException import UnknownParameterException
-from DependencyException import DependencyException
 import time
 
+# Exceptions
+class DependencyException(Exception):
+    """Exception raised when a declared dependency test method is not found."""
+    pass
+
+class ParameterMissingException(Exception):
+    """Exception raised when required parameters are missing."""
+    pass
+
+class UnknownParameterException(Exception):
+    """Exception raised when an unexpected Parameter is parsed."""
+    pass
 
 # Decorators
 def repeat(times, delay=0):
@@ -114,6 +123,37 @@ def sort_by_dependencies(test_methods: dict):
     return result
 
 
+def filter_out_skipped(test_methods, skipped, results, status_map):
+    amount_skipped = 0
+    # mark skipped tests immediately
+    for name, method in test_methods:
+        if getattr(method, "_skip", False):
+            amount_skipped += 1
+            skipped.add(name)
+            results[name] = {
+                "status": "SKIPPED",
+                "message": getattr(method, "_skip_reason", ""),
+                "time": 0
+            }
+            status_map[name] = "SKIPPED"
+            test_methods.remove((name, method))
+        elif getattr(method, "_depends_on", None) in skipped:
+            amount_skipped += 1
+            skipped.add(name)
+            results[name] = {
+                "status": "SKIPPED_DUE_TO_DEPENDENCY_SKIP",
+                "message": getattr(method, "_skip_reason", ""),
+                "time": 0
+            }
+            status_map[name] = "SKIPPED_DUE_TO_DEPENDENCY_SKIP"
+            test_methods.remove((name, method))
+
+    if amount_skipped != 0:
+        return filter_out_skipped(test_methods, skipped, results, status_map)  # Remove depends_on chains
+
+    return results, status_map
+
+
 class Test:
     """
     Base class for defining and running test cases.
@@ -145,19 +185,20 @@ class Test:
         """
         pass
 
-    def __run(self, test_method_prefix="test_", verbose=False, **kwargs) -> Dict:
+    def run(self, test_method_prefix="test_", verbose=False, **kwargs) -> Dict:
         """
         Runs the test and returns the output.
 
         Args:
             verbose (bool): verbose output
+            test_method_prefix (str): defines the prefix of the test methods
 
         Returns:
             dict: {
             "result": "PASS"|"FAIL",
             "tests": {
                 test_method_name: {
-                    "status": "PASS"|"FAIL"|"SKIPPED"|"SKIPPED_DUE_TO_DEPENDENCY_FAIL",
+                    "status": "PASS"|"FAIL"|"SKIPPED"|"SKIPPED_DUE_TO_DEPENDENCY_FAIL"|"SKIPPED_DUE_TO_DEPENDENCY_SKIP",
                     "message": "",
                     "time": float (seconds)
                 },
@@ -195,14 +236,7 @@ class Test:
                     test_methods.append((attr, method))
 
         # mark skipped tests immediately
-        for name, method in test_methods:
-            if getattr(method, "_skip", False):
-                results[name] = {
-                    "status": "SKIPPED",
-                    "message": getattr(method, "_skip_reason", ""),
-                    "time": 0
-                }
-                status_map[name] = "SKIPPED"
+        results, status_map = filter_out_skipped(test_methods[:], set(), results, status_map)
 
         # --- 3. order tests by dependency ---
 
@@ -228,7 +262,7 @@ class Test:
                 if name not in results:
                     results[name] = {
                         "status": "FAIL",
-                        "message": f"SetupException: {e}",
+                        "message": f"{e}",
                         "time": 0
                     }
             return {
@@ -242,7 +276,7 @@ class Test:
             # if dependency failed or skipped, skip this test
             method = getattr(self, test_name)
             dep = getattr(method, "_depends_on", None)
-            if dep and status_map.get(dep) in ("FAIL", "SKIPPED", "SKIPPED_DUE_TO_DEPENDENCY_FAIL"):
+            if dep and status_map.get(dep) in ("FAIL", "SKIPPED_DUE_TO_DEPENDENCY_FAIL"):
                 results[test_name] = {
                     "status": "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
                     "message": f"Skipped due to failed dependency: {dep}",
@@ -282,7 +316,7 @@ class Test:
                 except Exception as e:
                     duration = time.time() - start
                     success = False
-                    fail_message = f"Exception: {e}"
+                    fail_message = f"{e}"
 
                 total_duration += duration
 
@@ -329,7 +363,8 @@ class Test:
         passed = sum(1 for r in results.values() if r["status"] == "PASS")
         failed = sum(1 for r in results.values() if r["status"] == "FAIL")
         skipped = sum(1 for r in results.values() if
-                      r["status"].startswith("SKIPPED") or r["status"].startswith("SKIPPED_DUE_TO_DEPENDENCY_FAIL"))
+                      r["status"].startswith("SKIPPED") or r["status"].startswith("SKIPPED_DUE_TO_DEPENDENCY_FAIL") or
+                      r["status"].startswith("SKIPPED_DUE_TO_DEPENDENCY_SKIP"))
 
         # run teardown
         try:
@@ -338,7 +373,7 @@ class Test:
             # Teardown error, consider as FAIL for whole run
             results["teardown"] = {
                 "status": "FAIL",
-                "message": f"TearDownException: {e}",
+                "message": f"{e}",
                 "time": 0
             }
             return {
