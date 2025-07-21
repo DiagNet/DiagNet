@@ -266,7 +266,8 @@ class Test:
                 start = time.time()
                 try:
                     result = method()
-                    # treat None as implicit True
+
+                    # treat None as implicit True (void methods count as a PASS)
                     if result is None:
                         result = True
 
@@ -323,6 +324,13 @@ class Test:
             }
             status_map[test_name] = status
 
+        # summarize
+        total = len(results)
+        passed = sum(1 for r in results.values() if r["status"] == "PASS")
+        failed = sum(1 for r in results.values() if r["status"] == "FAIL")
+        skipped = sum(1 for r in results.values() if
+                      r["status"].startswith("SKIPPED") or r["status"].startswith("SKIPPED_DUE_TO_DEPENDENCY_FAIL"))
+
         # run teardown
         try:
             self._teardown()
@@ -336,15 +344,8 @@ class Test:
             return {
                 "result": "FAIL",
                 "tests": results,
-                "summary": (len(results), 0, len(results), 0)
+                "summary": (total, passed, failed, skipped)
             }
-
-        # summarize
-        total = len(results)
-        passed = sum(1 for r in results.values() if r["status"] == "PASS")
-        failed = sum(1 for r in results.values() if r["status"] == "FAIL")
-        skipped = sum(1 for r in results.values() if
-                      r["status"].startswith("SKIPPED") or r["status"].startswith("SKIPPED_DUE_TO_DEPENDENCY_FAIL"))
 
         return {
             "result": ("PASS" if failed == 0 else "FAIL"),
