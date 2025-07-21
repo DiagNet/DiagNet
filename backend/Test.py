@@ -10,12 +10,12 @@ __author__ = "Luka Pacar"
 __version__ = "1.0.0"
 
 from typing import List, Dict
+from collections import defaultdict, deque
 from ParameterMissingException import ParameterMissingException
 from UnknownParameterException import UnknownParameterException
-from DependencyException import DependencyNotFound
+from DependencyException import DependencyException
 from SetupException import SetupException
 from TearDownException import TearDownException
-from backend.DependencyException import DependencyException
 
 
 # Decorators
@@ -81,7 +81,6 @@ def sort_by_dependencies(test_methods: dict):
     test_methods: dict of {name: function} where functions may have _depends_on attribute
     Returns a list of method names in dependency-respecting order.
     """
-    from collections import defaultdict, deque
 
     # Build graph
     graph = defaultdict(list)
@@ -114,6 +113,7 @@ def sort_by_dependencies(test_methods: dict):
         raise DependencyException("Cycle detected in test dependencies")
 
     return result
+
 
 class Test:
     """
@@ -171,7 +171,7 @@ class Test:
         results = {}
         status_map = {}
 
-        # 1 - validate parameters
+        #  --- 1. validate parameters ---
 
         # missing parameters
         missing = [p for p in self._required_params if p not in kwargs]
@@ -187,12 +187,12 @@ class Test:
         for name, value in kwargs.items():
             setattr(self, name, value)
 
-        # 2 - find test methods starting with the test_method_prefix
+        #  --- 2. find test methods starting with the test_method_prefix ---
         test_methods = []
         for attr in dir(self):
             if attr.startswith(test_method_prefix):
                 method = getattr(self, attr)
-                if callable(method): # Only accept methods not other attributes
+                if callable(method):  # only accept methods not other attributes
                     test_methods.append((attr, method))
 
         # mark skipped tests immediately
@@ -205,9 +205,17 @@ class Test:
                 }
                 status_map[name] = "SKIPPED"
 
-        # 3. Order tests by dependency
+        # --- 3. order tests by dependency ---
 
+        # filter out skipped tests
+        active_methods = {
+            name: method for name, method in test_methods if name not in status_map
+        }
 
+        # sort dependencies using topological sort
+        try:
+            ordered = sort_by_dependencies(active_methods)
+        except DependencyException as e:
+            raise e
 
         pass
-
