@@ -43,18 +43,23 @@ def repeat(times, delay=0):
 
     return decorator
 
-
-def skip(reason=None):
+def skip(arg=None):
     """
     Decorator to mark a test method to be skipped.
 
     Args:
         reason (str, optional): Explanation why the test is skipped. Defaults to None.
     """
+    if callable(arg):
+        # Used as @skip
+        func = arg
+        func._skip = True
+        func._skip_reason = None
+        return func
 
     def decorator(func):
         func._skip = True
-        func._skip_reason = reason
+        func._skip_reason = arg
         return func
 
     return decorator
