@@ -307,7 +307,7 @@ class Test:
 
                     duration = time.time() - start
                     if not isinstance(result, bool):
-                        raise ValueError(f"Test method {test_name} must return a boolean")
+                        raise ValueError(f"Test method {test_name} must return a boolean or return None")
                     if result:
                         success = True
                     else:
