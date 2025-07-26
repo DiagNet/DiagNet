@@ -3,17 +3,17 @@
   lib,
   pkgs,
   python,
-}: {
+}:
+{
   default = pkgs.mkShell {
     packages =
       builtins.attrValues {
-        inherit
-          (pkgs)
+        inherit (pkgs)
           just
           uv
           ;
       }
-      ++ [python];
+      ++ [ python ];
 
     env =
       {
