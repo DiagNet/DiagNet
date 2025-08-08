@@ -25,7 +25,10 @@
       # python
       check-python.enable = true;
       ruff.enable = true;
-      ruff-format.enable = true;
+      ruff-format = {
+        enable = true;
+        excludes = [ ".*/migrations/.*.py" ];
+      };
     };
   };
 }
