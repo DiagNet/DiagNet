@@ -17,9 +17,12 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from devices import views as device_views
 from dashboard import views as dashboard_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", dashboard_views.index, name="dashboard"),
+    path("devices/", device_views.device_list, name="device_list"),
+    path("devices/add/", device_views.device_add, name="device_add"),
 ]
