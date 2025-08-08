@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Devices - DiagNet{% endblock %}
+
+{% block content %}
+<h1>Devices</h1>
+<a class="btn btn-primary mb-3" href="{% url 'device_add' %}">Add Device</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>IP Address</th>
+            <th>Type</th>
+            <th>Username</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for device in devices %}
+        <tr>
+            <td>{{ device.name }}</td>
+            <td>{{ device.ip_address }}</td>
+            <td>{{ device.device_type }}</td>
+            <td>{{ device.username }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4">No devices yet.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
