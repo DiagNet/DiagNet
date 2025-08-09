@@ -1,0 +1,8 @@
+* @diagnet-devs
+# nix stuff
+/nix @MrSom3body
+flake.nix @MrSom3body
+flake.lock @MrSom3body
+
+# CI/CD
+/.github @MrSom3body
