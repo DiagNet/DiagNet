@@ -1,6 +1,4 @@
 ### Nix ###
-.devenv*
-devenv.local.nix
 .direnv
 .pre-commit-config.yaml
 
@@ -10,3 +8,10 @@ devenv.local.nix
 ### Python ###
 __pycache__/
 *.py[cod]
+
+# Django
+db.sqlite3
+
+# Virtual environments
+venv/
+.venv/
