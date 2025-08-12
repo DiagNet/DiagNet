@@ -5,7 +5,7 @@ from genie.testbed import load
 class UserExists(Test):
     _required_params = ["device", "username"]
 
-    def test_reachability(self) -> bool:
+    def test_user_exists(self) -> bool:
         response: str = self.device.execute(f"show run | inc username {self.username} ")
 
         return response.startswith(f"username {self.username}")
