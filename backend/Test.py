@@ -6,6 +6,7 @@ Author: Luka Pacar
 Date: 2025-07-21
 Description: Parent-Class for defining Tests.
 """
+
 __author__ = "Luka Pacar"
 __version__ = "1.0.0"
 
@@ -13,18 +14,25 @@ from typing import List, Dict
 from collections import defaultdict, deque
 import time
 
+
 # Exceptions
 class DependencyException(Exception):
     """Exception raised when a declared dependency test method is not found."""
+
     pass
+
 
 class ParameterMissingException(Exception):
     """Exception raised when required parameters are missing."""
+
     pass
+
 
 class UnknownParameterException(Exception):
     """Exception raised when an unexpected Parameter is parsed."""
+
     pass
+
 
 # Decorators
 def repeat(times, delay=0):
@@ -42,6 +50,7 @@ def repeat(times, delay=0):
         return func
 
     return decorator
+
 
 def skip(arg=None):
     """
@@ -138,7 +147,7 @@ def filter_out_skipped(test_methods, skipped, results, status_map):
             results[name] = {
                 "status": "SKIPPED",
                 "message": getattr(method, "_skip_reason", ""),
-                "time": 0
+                "time": 0,
             }
             status_map[name] = "SKIPPED"
             test_methods.remove((name, method))
@@ -148,13 +157,15 @@ def filter_out_skipped(test_methods, skipped, results, status_map):
             results[name] = {
                 "status": "SKIPPED_DUE_TO_DEPENDENCY_SKIP",
                 "message": getattr(method, "_skip_reason", ""),
-                "time": 0
+                "time": 0,
             }
             status_map[name] = "SKIPPED_DUE_TO_DEPENDENCY_SKIP"
             test_methods.remove((name, method))
 
     if amount_skipped != 0:
-        return filter_out_skipped(test_methods, skipped, results, status_map)  # Remove depends_on chains
+        return filter_out_skipped(
+            test_methods, skipped, results, status_map
+        )  # Remove depends_on chains
 
     return results, status_map
 
@@ -241,7 +252,9 @@ class Test:
                     test_methods.append((attr, method))
 
         # mark skipped tests immediately
-        results, status_map = filter_out_skipped(test_methods[:], set(), results, status_map)
+        results, status_map = filter_out_skipped(
+            test_methods[:], set(), results, status_map
+        )
 
         # --- 3. order tests by dependency ---
 
@@ -265,15 +278,11 @@ class Test:
             # Setup failed, all non-skipped tests fail now
             for name, method in test_methods:
                 if name not in results:
-                    results[name] = {
-                        "status": "FAIL",
-                        "message": f"{e}",
-                        "time": 0
-                    }
+                    results[name] = {"status": "FAIL", "message": f"{e}", "time": 0}
             return {
                 "result": "FAIL",
                 "tests": results,
-                "summary": (len(results), 0, len(results), 0)
+                "summary": (len(results), 0, len(results), 0),
             }
 
         # run tests
@@ -281,11 +290,14 @@ class Test:
             # if dependency failed or skipped, skip this test
             method = getattr(self, test_name)
             dep = getattr(method, "_depends_on", None)
-            if dep and status_map.get(dep) in ("FAIL", "SKIPPED_DUE_TO_DEPENDENCY_FAIL"):
+            if dep and status_map.get(dep) in (
+                "FAIL",
+                "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
+            ):
                 results[test_name] = {
                     "status": "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
                     "message": f"Skipped due to failed dependency: {dep}",
-                    "time": 0
+                    "time": 0,
                 }
                 status_map[test_name] = "SKIPPED_DUE_TO_DEPENDENCY_FAIL"
                 continue
@@ -300,7 +312,9 @@ class Test:
             fail_message = None
 
             for i in range(amount_of_repeat):
-                if i > 0 and delay > 0:  # sleep when there is a delay and it is minimum the second cycle
+                if (
+                    i > 0 and delay > 0
+                ):  # sleep when there is a delay and it is minimum the second cycle
                     time.sleep(delay)
                 start = time.time()
                 try:
@@ -312,7 +326,9 @@ class Test:
 
                     duration = time.time() - start
                     if not isinstance(result, bool):
-                        raise ValueError(f"Test method {test_name} must return a boolean or return None")
+                        raise ValueError(
+                            f"Test method {test_name} must return a boolean or return None"
+                        )
                     if result:
                         success = True
                     else:
@@ -328,10 +344,14 @@ class Test:
                 if success:
                     success_count += 1
                     if verbose:
-                        print(f"{test_name} run {i + 1}/{amount_of_repeat} PASS in {duration:.3f}s")
+                        print(
+                            f"{test_name} run {i + 1}/{amount_of_repeat} PASS in {duration:.3f}s"
+                        )
                 else:
                     if verbose:
-                        print(f"{test_name} run {i + 1}/{amount_of_repeat} FAIL in {duration:.3f}s")
+                        print(
+                            f"{test_name} run {i + 1}/{amount_of_repeat} FAIL in {duration:.3f}s"
+                        )
                     break
 
             # determine final test status
@@ -350,8 +370,10 @@ class Test:
                 if amount_of_repeat > 1 and success_count > 0:
                     # Partial success on repeats -> REPETITION_FAIL
                     status = "FAIL"
-                    msg = (f"Repetition Fail: {success_count}/{total_runs} successful runs. "
-                           f"Last error: {fail_message}")
+                    msg = (
+                        f"Repetition Fail: {success_count}/{total_runs} successful runs. "
+                        f"Last error: {fail_message}"
+                    )
                 else:
                     status = "FAIL"
                     msg = fail_message or ""
@@ -359,7 +381,7 @@ class Test:
             results[test_name] = {
                 "status": status,
                 "message": msg,
-                "time": total_duration
+                "time": total_duration,
             }
             status_map[test_name] = status
 
@@ -367,28 +389,28 @@ class Test:
         total = len(results)
         passed = sum(1 for r in results.values() if r["status"] == "PASS")
         failed = sum(1 for r in results.values() if r["status"] == "FAIL")
-        skipped = sum(1 for r in results.values() if
-                      r["status"].startswith("SKIPPED") or r["status"].startswith("SKIPPED_DUE_TO_DEPENDENCY_FAIL") or
-                      r["status"].startswith("SKIPPED_DUE_TO_DEPENDENCY_SKIP"))
+        skipped = sum(
+            1
+            for r in results.values()
+            if r["status"].startswith("SKIPPED")
+            or r["status"].startswith("SKIPPED_DUE_TO_DEPENDENCY_FAIL")
+            or r["status"].startswith("SKIPPED_DUE_TO_DEPENDENCY_SKIP")
+        )
 
         # run teardown
         try:
             self._teardown()
         except Exception as e:
             # Teardown error, consider as FAIL for whole run
-            results["teardown"] = {
-                "status": "FAIL",
-                "message": f"{e}",
-                "time": 0
-            }
+            results["teardown"] = {"status": "FAIL", "message": f"{e}", "time": 0}
             return {
                 "result": "FAIL",
                 "tests": results,
-                "summary": (total, passed, failed, skipped)
+                "summary": (total, passed, failed, skipped),
             }
 
         return {
             "result": ("PASS" if failed == 0 else "FAIL"),
             "tests": results,
-            "summary": (total, passed, failed, skipped)
+            "summary": (total, passed, failed, skipped),
         }
