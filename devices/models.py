@@ -25,3 +25,15 @@ class Device(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.ip_address})"
+
+    def get_genie_device_object(self):
+        return {
+            self.name: {
+                "ip": self.ip_address,
+                "port": self.port,
+                "protocol": "ssh",
+                "username": self.username,
+                "password": self.password,
+                "os": self.device_type.split("_")[1],
+            }
+        }
