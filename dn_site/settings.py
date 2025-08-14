@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     # our apps
     "dashboard",
     "devices",
+    "networktests",
 ]
 
 MIDDLEWARE = [

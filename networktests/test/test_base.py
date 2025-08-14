@@ -4,15 +4,15 @@
 """
 Author: Luka Pacar
 Date: 2025-07-23
-Description: unittests for Test.py
+Description: unittests for base.py
 """
 
 __author__ = "Luka Pacar"
 __version__ = "1.0.0"
 
 import unittest
-from backend.Test import (
-    Test,
+from networktests.testcases.base import (
+    DiagNetTest,
     repeat,
     skip,
     depends_on,
@@ -23,7 +23,7 @@ from backend.Test import (
 )
 
 
-class PingTest(Test):
+class PingTest(DiagNetTest):
     _required_params = ["host"]
 
     hosts = ["google.com", "8.8.8.8", "127.0.0.1"]
@@ -89,7 +89,7 @@ class TestTest(unittest.TestCase):
             )  # "source" is not a valid parameter
 
     def test_repetition_fail(self):
-        class TestClass(Test):
+        class TestClass(DiagNetTest):
             def _setup(self) -> None:
                 self.counter = 0
 
@@ -106,7 +106,7 @@ class TestTest(unittest.TestCase):
         ].startswith("Repetition Fail")
 
     def test_self_dependency(self):
-        class TestClass(Test):
+        class TestClass(DiagNetTest):
             def _setup(self) -> None:
                 self.counter = 0
 
@@ -119,7 +119,7 @@ class TestTest(unittest.TestCase):
             _ = test_class.run()
 
     def test_dependency_loop(self):
-        class TestClass(Test):
+        class TestClass(DiagNetTest):
             def _setup(self) -> None:
                 self.counter = 0
 
@@ -136,7 +136,7 @@ class TestTest(unittest.TestCase):
             _ = test_class.run()
 
     def test_dependencies(self):
-        class TestClass(Test):
+        class TestClass(DiagNetTest):
             def _setup(self) -> None:
                 self.counter = 0
 
