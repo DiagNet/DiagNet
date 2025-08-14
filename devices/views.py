@@ -13,6 +13,10 @@ def device_add(request):
         form = DeviceForm(request.POST)
         if form.is_valid():
             form.save()
+
+            device = Device.objects.get(name=form.data.get("name"))
+            device.can_connect()
+
             return redirect("device_list")
     else:
         form = DeviceForm()

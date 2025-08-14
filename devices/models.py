@@ -1,6 +1,7 @@
 from typing import Any
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from genie.testbed import load
 
 
 class Device(models.Model):
@@ -38,3 +39,17 @@ class Device(models.Model):
                 "os": self.device_type.split("_")[1],
             }
         }
+
+    def can_connect(self) -> bool:
+        conn_info = self.get_genie_device_dict()
+
+        __import__("pprint").pprint({"devices": conn_info})
+        testbed = load({"devices": conn_info})
+
+        device = testbed.devices[list(conn_info)[0]]
+        try:
+            device.connect()
+            device.disconnect()
+            return True
+        except Exception:
+            return False
