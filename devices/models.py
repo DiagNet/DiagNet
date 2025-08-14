@@ -1,3 +1,4 @@
+from typing import Any
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -23,10 +24,10 @@ class Device(models.Model):
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name} ({self.ip_address})"
 
-    def get_genie_device_object(self):
+    def get_genie_device_dict(self) -> dict[str, dict[str, Any]]:
         return {
             self.name: {
                 "ip": self.ip_address,
