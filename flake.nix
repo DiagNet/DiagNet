@@ -34,11 +34,7 @@
   };
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      ...
-    }@inputs:
+    { nixpkgs, ... }@inputs:
     let
       inherit (nixpkgs) lib;
 
@@ -51,64 +47,162 @@
         }
       );
 
+      wsgiApp = "diagnet.wsgi:application";
+      settingsModules = {
+        prod = "diagnet.settings";
+      };
+
       workspace = inputs.uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
 
       overlay = workspace.mkPyprojectOverlay {
         sourcePreference = "wheel";
       };
 
-      # Extend generated overlay with build fixups
-      #
-      # Uv2nix can only work with what it has, and uv.lock is missing essential metadata to perform some builds.
-      # This is an additional overlay implementing build fixups.
-      # See:
-      # - https://pyproject-nix.github.io/uv2nix/FAQ.html
-      pyprojectOverrides = _final: _prev: {
-        # Implement build fixups here.
-        # Note that uv2nix is _not_ using Nixpkgs buildPythonPackage.
-        # It's using https://pyproject-nix.github.io/pyproject.nix/build.html
+      editableOverlay = workspace.mkEditablePyprojectOverlay {
+        root = "$REPO_ROOT";
       };
 
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      pythonSets = forEachSystem (
+        pkgs:
+        let
+          python = pkgs.python313;
 
-      python = pkgs.python313;
+          # Base Python package set from pyproject.nix
+          baseSet = pkgs.callPackage inputs.pyproject-nix.build.packages {
+            inherit python;
+          };
 
-      pythonSet =
-        (pkgs.callPackage inputs.pyproject-nix.build.packages {
-          inherit python;
-        }).overrideScope
-          (
-            lib.composeManyExtensions [
-              inputs.pyproject-build-systems.overlays.default
-              overlay
-              pyprojectOverrides
-            ]
-          );
+          # An overlay of build fixups & test additions
+          pyprojectOverrides = _final: prev: {
+
+            # diagnet is the name of our example package
+            diagnet = prev.diagnet.overrideAttrs (old: {
+
+              # Add tests to passthru.tests
+              #
+              # These attribute are used in Flake checks.
+              inherit (old) passthru;
+            });
+
+          };
+        in
+        baseSet.overrideScope (
+          lib.composeManyExtensions [
+            inputs.pyproject-build-systems.overlays.default
+            overlay
+            pyprojectOverrides
+          ]
+        )
+      );
+
+      # Django static roots grouped per system
+      staticRoots = forEachSystem (
+        pkgs:
+        let
+          inherit (pkgs) stdenv;
+
+          pythonSet = pythonSets.${pkgs.system};
+
+          venv = pythonSet.mkVirtualEnv "diagnet-env" workspace.deps.default;
+        in
+        stdenv.mkDerivation {
+          name = "diagnet-static";
+          inherit (pythonSet.diagnet) src;
+
+          dontConfigure = true;
+          dontBuild = true;
+
+          nativeBuildInputs = [
+            venv
+          ];
+
+          installPhase = ''
+            env DJANGO_STATIC_ROOT="$out" python manage.py collectstatic
+          '';
+        }
+      );
     in
     {
       formatter = forEachSystem (pkgs: pkgs.nixfmt-tree);
 
-      packages = forEachSystem (_pkgs: {
-        default = pythonSet.mkVirtualEnv "python-env" workspace.deps.default;
-      });
-
-      devShells = forEachSystem (
+      packages = forEachSystem (
         pkgs:
-        import ./nix/shell.nix {
-          inherit
-            self
-            lib
-            pkgs
-            python
-            ;
+        let
+          pythonSet = pythonSets.${pkgs.system};
+        in
+        lib.optionalAttrs pkgs.stdenv.isLinux {
+          # Expose Docker container in packages
+          docker =
+            let
+              venv = pythonSet.mkVirtualEnv "diagnet-env" workspace.deps.default;
+            in
+            pkgs.dockerTools.buildLayeredImage {
+              name = "diagnet";
+              contents = [ pkgs.cacert ];
+              config = {
+                Cmd = [
+                  "${venv}/bin/gunicorn"
+                  wsgiApp
+                ];
+                Env = [
+                  "DJANGO_SETTINGS_MODULE=${settingsModules.prod}"
+                  "DJANGO_STATIC_ROOT=${staticRoots.${pkgs.system}}"
+                ];
+              };
+            };
         }
       );
 
-      checks = forEachSystem (
+      # Use an editable Python set for development.
+      devShells = forEachSystem (
         pkgs:
-        import ./nix/checks.nix {
-          inherit inputs;
-          inherit pkgs;
+        let
+          python = pkgs.python313;
+
+          editablePythonSet = pythonSets.${pkgs.system}.overrideScope (
+            lib.composeManyExtensions [
+              editableOverlay
+
+              (final: prev: {
+                diagnet = prev.diagnet.overrideAttrs (old: {
+                  src = lib.fileset.toSource {
+                    root = old.src;
+                    fileset = lib.fileset.unions [
+                      (old.src + "/pyproject.toml")
+                      (old.src + "/README.md")
+                      (old.src + "/diagnet/__init__.py")
+                    ];
+                  };
+                  nativeBuildInputs =
+                    old.nativeBuildInputs
+                    ++ final.resolveBuildSystem {
+                      editables = [ ];
+                    };
+                });
+              })
+            ]
+          );
+
+          venv = editablePythonSet.mkVirtualEnv "diagnet-dev-env" {
+            diagnet = [ "dev" ];
+          };
+        in
+        {
+          default = pkgs.mkShell {
+            packages = [
+              venv
+              pkgs.uv
+            ];
+            env = {
+              UV_NO_SYNC = "1";
+              UV_PYTHON = python.interpreter;
+              UV_PYTHON_DOWNLOADS = "never";
+            };
+            shellHook = ''
+              unset PYTHONPATH
+              export REPO_ROOT=$(git rev-parse --show-toplevel)
+            '';
+          };
         }
       );
     };
