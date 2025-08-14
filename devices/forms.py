@@ -7,4 +7,11 @@ class DeviceForm(forms.ModelForm):
 
     class Meta:
         model = Device
-        fields = ["name", "ip_address", "device_type", "username", "password"]
+        fields = [
+            "name",
+            "ip_address",
+            "port",
+            "device_type",
+            "username",
+            "password",
+        ]
