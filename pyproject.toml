@@ -10,5 +10,24 @@ dependencies = [
     "gunicorn>=23.0.0",
 ]
 
+[dependency-groups]
+dev = [
+  {include-group = "test"},
+  {include-group = "typing"},
+  {include-group = "lint"},
+]
+typing = [
+  "django-stubs[compatible-mypy]>=5.2.1",
+  "basedpyright>=1.31.1",
+]
+test = [
+  "pytest-cov>=6.0.0",
+  "pytest-django>=4.9.0",
+  "pytest>=8.3.3",
+]
+lint = [
+  "ruff>=0.7.2",
+]
+
 [tool.basedpyright]
 typeCheckingMode = "standard"
