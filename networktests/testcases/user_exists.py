@@ -1,8 +1,8 @@
-from Test import Test
+from .base import DiagNetTest
 from genie.testbed import load
 
 
-class UserExists(Test):
+class UserExists(DiagNetTest):
     _required_params = ["device", "username"]
 
     def test_user_exists(self) -> bool:

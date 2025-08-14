@@ -170,7 +170,7 @@ def filter_out_skipped(test_methods, skipped, results, status_map):
     return results, status_map
 
 
-class Test:
+class DiagNetTest:
     """
     Base class for defining and running test cases.
 
@@ -278,7 +278,11 @@ class Test:
             # Setup failed, all non-skipped tests fail now
             for name, method in test_methods:
                 if name not in results:
-                    results[name] = {"status": "FAIL", "message": f"{e}", "time": 0}
+                    results[name] = {
+                        "status": "FAIL",
+                        "message": f"{e}",
+                        "time": 0,
+                    }
             return {
                 "result": "FAIL",
                 "tests": results,
@@ -402,7 +406,11 @@ class Test:
             self._teardown()
         except Exception as e:
             # Teardown error, consider as FAIL for whole run
-            results["teardown"] = {"status": "FAIL", "message": f"{e}", "time": 0}
+            results["teardown"] = {
+                "status": "FAIL",
+                "message": f"{e}",
+                "time": 0,
+            }
             return {
                 "result": "FAIL",
                 "tests": results,
