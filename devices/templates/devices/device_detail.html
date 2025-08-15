@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Devices - DiagNet{% endblock %}
+{% block title %}Device: {{ device.name }} - DiagNet{% endblock %}
 
 {% block content %}
-<h1>Devices</h1>
-<a class="btn btn-primary mb-3" href="{% url 'device_add' %}">Add Device</a>
+<h1>Device: {{ device.name }}</h1>
 <table class="table table-striped">
     <thead>
         <tr>
@@ -16,18 +15,21 @@
         </tr>
     </thead>
     <tbody>
-    {% for device in devices %}
+        {% if device_list %}
+        {% for device in device_list %}
         <tr>
-            <td>{{ device.name }}</td>
+            <td><a href="{{ device.get_absolute_url }}">{{ device.name }}</a></td>
             <td>{{ device.ip_address }}</td>
             <td>{{ device.port }}</td>
             <td>{{ device.device_type }}</td>
             <td>{{ device.username }}</td>
         </tr>
-    {% empty %}
-        <tr><td colspan="4">No devices yet.</td></tr>
-    {% endfor %}
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="100%">No devices yet.</td>
+        </tr>
+        {% endif %}
     </tbody>
 </table>
 {% endblock %}
-
