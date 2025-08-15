@@ -4,6 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse  # To generate URLS by reversing URL patterns
 from genie.testbed import load
+from django.db.models.functions import Lower
 
 
 class Device(models.Model):
@@ -33,6 +34,15 @@ class Device(models.Model):
     )
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                Lower("name"),
+                name="name_case_insensitive_unique",
+                violation_error_message="Hostname already exists (case insensitive match)",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"{self.name} ({self.ip_address})"
