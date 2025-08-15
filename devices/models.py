@@ -76,3 +76,14 @@ class Device(models.Model):
             return True
         except Exception:
             return False
+
+    def get_genie_device_object(self):
+        conn_info = self.get_genie_device_dict()
+        testbed = load({"devices": conn_info})
+        device = testbed.devices[list(conn_info)[0]]
+
+        try:
+            device.connect()
+            return device
+        except Exception:
+            return None
