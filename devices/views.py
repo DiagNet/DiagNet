@@ -1,23 +1,39 @@
-from django.shortcuts import render, redirect
+from django.http import HttpResponseRedirect
+from django.urls import reverse, reverse_lazy
+from django.views import generic
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+
+from devices.forms import DeviceForm
+
 from .models import Device
-from .forms import DeviceForm
 
 
-def device_list(request):
+class DeviceListView(generic.ListView):
+    """Generic class-based view for a list of devices."""
+
     devices = Device.objects.all()
-    return render(request, "devices/list.html", {"devices": devices})
+    model = Device
 
 
-def device_add(request):
-    if request.method == "POST":
-        form = DeviceForm(request.POST)
-        if form.is_valid():
-            form.save()
+class DeviceCreate(CreateView):
+    model = Device
+    form_class = DeviceForm
 
-            device = Device.objects.get(name=form.data.get("name"))
-            device.can_connect()
 
-            return redirect("device_list")
-    else:
-        form = DeviceForm()
-    return render(request, "devices/form.html", {"form": form})
+class DeviceUpdate(UpdateView):
+    model = Device
+    form_class = DeviceForm
+
+
+class DeviceDelete(DeleteView):
+    model = Device
+    success_url = reverse_lazy("device-list")
+
+    def form_valid(self, form):
+        try:
+            self.object.delete()
+            return HttpResponseRedirect(self.success_url)
+        except Exception:
+            return HttpResponseRedirect(
+                reverse("device-delete", kwargs={"pk": self.object.pk})
+            )

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Device - DiagNet{% endblock %}
+
+{% block content %}
+<h1>Delete Device</h1>
+<p>Are you sure you want to delete the device "<strong>{{ device.name }}</strong>"?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, delete</button>
+    <a href="{% url 'device-list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

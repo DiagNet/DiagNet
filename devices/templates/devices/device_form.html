@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Add Device - DiagNet{% endblock %}
+{% block content %}
+<a href="{% url 'device-list' %}" class="btn btn-secondary" style="margin-bottom: 10px">← Back to Devices</a>
+<h1>Add/Edit Device</h1>
+<form method="post">
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <button class="btn btn-success" type="submit">Save</button>
+    {% if device.name %}
+    <a href="{% url 'device-delete' device.name %}" class="btn btn-danger" style="margin-left: 10px">
+        Delete
+    </a>
+    {% endif %}
+</form>
+{% endblock %}
