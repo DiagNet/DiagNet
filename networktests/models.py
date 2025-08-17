@@ -18,3 +18,20 @@ class TestParameter(models.Model):
 
     def __str__(self):
         return f"{self.name}: {self.value}"
+
+class TestResult(models.Model):
+    attempt_id = models.IntegerField()
+    # All Parameters accessible using test_case.results.all()
+    # When the parent TestCase is deleted the Parameter is deleted as well.
+    test_case = models.ForeignKey(TestCase, related_name='results', on_delete=models.CASCADE)
+    started_at = models.DateTimeField()
+    finished_at = models.DateTimeField(blank=True, null=True)
+    result = models.BooleanField()
+    log = models.TextField(blank=True, null=True)
+
+    # Guarantees that there are not multiple results for the same attempt
+    class Meta:
+        unique_together = ('attempt_id', 'test_case')
+
+    def __str__(self):
+        return f"Attempt {self.attempt_id} for {self.test_case}"
