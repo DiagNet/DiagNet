@@ -1,3 +1,4 @@
+from ast import Try
 from typing import Any
 
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -5,6 +6,7 @@ from django.db import models
 from django.urls import reverse  # To generate URLS by reversing URL patterns
 from genie.testbed import load
 from django.db.models.functions import Lower
+import netmiko
 
 
 class Device(models.Model):
@@ -64,15 +66,17 @@ class Device(models.Model):
         }
 
     def can_connect(self) -> bool:
-        conn_info = self.get_genie_device_dict()
-
-        __import__("pprint").pprint({"devices": conn_info})
-        testbed = load({"devices": conn_info})
-
-        device = testbed.devices[list(conn_info)[0]]
+        device = {
+            "device_type": "cisco_ios_telnet",
+            "host": self.ip_address,
+            "username": self.username,
+            "password": self.password,
+            # "secret": "enablepass",
+            "port": self.port,
+        }
         try:
-            device.connect()
-            device.disconnect()
+            connection = netmiko.ConnectHandler(**device)
+            connection.enable()
             return True
         except Exception:
             return False
