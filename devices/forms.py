@@ -9,6 +9,7 @@ class DeviceForm(forms.ModelForm):
         model = Device
         fields = [
             "name",
+            "protocol",
             "ip_address",
             "port",
             "device_type",

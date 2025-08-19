@@ -18,11 +18,21 @@ class Device(models.Model):
         ("switch_iosxr", "Switch (IOSXR)"),
     ]
 
+    PROTOCOLS = [
+        ("ssh", "SSH"),
+        ("telnet", "Telnet"),
+    ]
+
     name = models.CharField(
         "Hostname",
         primary_key=True,
         max_length=100,
         unique=True,
+    )
+    protocol = models.CharField(
+        "Protocol",
+        choices=PROTOCOLS,
+        default="ssh",
     )
     ip_address = models.GenericIPAddressField("IP Address")
     port = models.IntegerField(
@@ -57,7 +67,7 @@ class Device(models.Model):
             self.name: {
                 "ip": self.ip_address,
                 "port": self.port,
-                "protocol": "ssh",
+                "protocol": self.protocol,
                 "username": self.username,
                 "password": self.password,
                 "os": self.device_type.split("_")[1],
