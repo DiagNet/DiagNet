@@ -36,7 +36,7 @@
                 <td>
                     <button title="Check status" hx-get="{% url 'device-check' device.name %}"
                         hx-target="#device-{{ device.name }} .connection-status" hx-swap="innerHTML"
-                        hx-indicator="#{{ device.name }}-spinner" class="btn btn-sm btn-info">
+                        hx-indicator="#{{ device.name }}-spinner" class="btn btn-sm btn-info device-check">
                         <i class="bi bi-cloud-check"></i> </button>
                     <a href="{% url 'device-delete' device.name %}" class="btn btn-sm btn-danger" title="Delete">
                         <i class="bi bi-trash"></i>
@@ -52,4 +52,9 @@
         </tbody>
     </table>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{% load static %}
+<script src="{% static 'devices/device_status.js' %}"></script>
 {% endblock %}
