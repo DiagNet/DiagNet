@@ -11,7 +11,7 @@
             <tr>
                 <th>Name</th>
                 <th>IP Address</th>
-                <th>Port</th>
+                <th>Protocol</th>
                 <th>Type</th>
                 <th>Username</th>
                 <th>Status</th>
@@ -23,8 +23,8 @@
             {% for device in device_list %}
             <tr id="device-{{ device.name }}">
                 <td><a href="{{ device.get_absolute_url }}">{{ device.name }}</a></td>
-                <td>{{ device.ip_address }}</td>
-                <td>{{ device.port }}</td>
+                <td>{{ device.ip_address }}:{{ device.port }}</td>
+                <td>{{ device.protocol }}</td>
                 <td>{{ device.device_type }}</td>
                 <td>{{ device.username }}</td>
                 <td class="status">
