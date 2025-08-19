@@ -1,4 +1,5 @@
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
@@ -37,3 +38,9 @@ class DeviceDelete(DeleteView):
             return HttpResponseRedirect(
                 reverse("device-delete", kwargs={"pk": self.object.pk})
             )
+
+
+def device_check(request, pk):
+    device = get_object_or_404(Device, pk=pk)
+    ok = device.can_connect()
+    return render(request, "devices/partials/device_status_cell.html", {"ok": ok})
