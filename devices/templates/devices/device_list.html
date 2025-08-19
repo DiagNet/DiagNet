@@ -14,19 +14,30 @@
                 <th>Port</th>
                 <th>Type</th>
                 <th>Username</th>
+                <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% if device_list %}
             {% for device in device_list %}
-            <tr>
+            <tr id="device-{{ device.name }}">
                 <td><a href="{{ device.get_absolute_url }}">{{ device.name }}</a></td>
                 <td>{{ device.ip_address }}</td>
                 <td>{{ device.port }}</td>
                 <td>{{ device.device_type }}</td>
                 <td>{{ device.username }}</td>
+                <td class="status">
+                    <span class="connection-status">❓</span>
+                    <span id="{{ device.name }}-spinner" class="htmx-indicator">
+                        <span class="spinner-grow spinner-grow-sm" role="status"></span>
+                    </span>
+                </td>
                 <td>
+                    <button title="Check status" hx-get="{% url 'device-check' device.name %}"
+                        hx-target="#device-{{ device.name }} .connection-status" hx-swap="innerHTML"
+                        hx-indicator="#{{ device.name }}-spinner" class="btn btn-sm btn-info">
+                        <i class="bi bi-cloud-check"></i> </button>
                     <a href="{% url 'device-delete' device.name %}" class="btn btn-sm btn-danger" title="Delete">
                         <i class="bi bi-trash"></i>
                     </a>
