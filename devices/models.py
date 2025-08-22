@@ -76,7 +76,7 @@ class Device(models.Model):
 
     def can_connect(self) -> bool:
         device = {
-            "device_type": "cisco_ios_telnet",
+            "device_type": f"cisco_ios_{self.protocol}",
             "host": self.ip_address,
             "username": self.username,
             "password": self.password,
