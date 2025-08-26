@@ -5,6 +5,7 @@ from django.db import models
 from django.urls import reverse  # To generate URLS by reversing URL patterns
 from genie.testbed import load
 from django.db.models.functions import Lower
+from django.db.models import Q
 import netmiko
 
 
@@ -52,6 +53,11 @@ class Device(models.Model):
                 Lower("name"),
                 name="name_case_insensitive_unique",
                 violation_error_message="Hostname already exists (case insensitive match)",
+            ),
+            models.CheckConstraint(
+                check=~(Q(protocol="telnet") & Q(device_type__endswith="iosxe")),
+                name="no_telnet_on_iosxe",
+                violation_error_message="Telnet is not allowed for IOSXE devices.",
             ),
         ]
 
