@@ -74,9 +74,25 @@ class Device(models.Model):
             }
         }
 
+    def get_netmiko_type(self) -> str:
+        type_map = {
+            "ios": "cisco_ios",
+            "iosxe": "cisco_xe",
+            "iosxr": "cisco_xr",
+        }
+
+        try:
+            device_type = self.device_type.split("_")[1]
+            ios_type = type_map[device_type]
+        except (IndexError, KeyError):
+            raise ValueError(f"Unsupported device type: {self.device_type}")
+
+        connection_type = "" if self.protocol == "ssh" else "_telnet"
+        return f"{ios_type}{connection_type}"
+
     def can_connect(self) -> bool:
         device = {
-            "device_type": f"cisco_ios_{self.protocol}",
+            "device_type": self.get_netmiko_type(),
             "host": self.ip_address,
             "username": self.username,
             "password": self.password,
