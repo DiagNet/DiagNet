@@ -4,7 +4,9 @@
 
 {% block content %}
 <h1>Devices</h1>
-<a class="btn btn-primary mb-3" href="{% url 'device-create' %}">Add Device</a>
+<a class="btn btn-primary mb-3" href="{% url 'device-create' %}">
+    <i class="bi bi-database-add"></i> Add Device
+</a>
 <a class="btn btn-success mb-3" id="check-all-devices">
     <i class="bi bi-check2-all"></i> Check All Devices
 </a>
@@ -40,7 +42,8 @@
                     <button title="Check status" hx-get="{% url 'device-check' device.name %}"
                         hx-target="#device-{{ device.name }} .connection-status" hx-swap="innerHTML"
                         hx-indicator="#{{ device.name }}-spinner" class="btn btn-sm btn-info device-check">
-                        <i class="bi bi-cloud-check"></i> </button>
+                        <i class="bi bi-check2"></i>
+                    </button>
                     <a href="{% url 'device-delete' device.name %}" class="btn btn-sm btn-danger" title="Delete">
                         <i class="bi bi-trash"></i>
                     </a>
