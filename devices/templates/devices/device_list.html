@@ -5,6 +5,9 @@
 {% block content %}
 <h1>Devices</h1>
 <a class="btn btn-primary mb-3" href="{% url 'device-create' %}">Add Device</a>
+<a class="btn btn-success mb-3" id="check-all-devices">
+    <i class="bi bi-check2-all"></i> Check All Devices
+</a>
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
