@@ -1,0 +1,6 @@
+[language-server.djlsp]
+command = "uv"
+args = ["run", "djlsp"]
+
+[language-server.djlsp.config]
+django_settings_modules="diagnet.settings"
