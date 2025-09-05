@@ -29,8 +29,8 @@
             <tr id="device-{{ device.name }}">
                 <td><a href="{{ device.get_absolute_url }}">{{ device.name }}</a></td>
                 <td>{{ device.ip_address }}:{{ device.port }}</td>
-                <td>{{ device.protocol }}</td>
-                <td>{{ device.device_type }}</td>
+                <td>{{ device.get_protocol_display }}</td>
+                <td>{{ device.get_device_type_display }}</td>
                 <td>{{ device.username }}</td>
                 <td class="status">
                     <span class="connection-status">{{ device.get_status_display }}</span>
