@@ -20,10 +20,16 @@ class DeviceCreate(CreateView):
     model = Device
     form_class = DeviceForm
 
+    def get_success_url(self):
+        return reverse_lazy("device-list")
+
 
 class DeviceUpdate(UpdateView):
     model = Device
     form_class = DeviceForm
+
+    def get_success_url(self):
+        return reverse_lazy("device-list")
 
 
 class DeviceDelete(DeleteView):
