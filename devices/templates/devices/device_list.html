@@ -33,7 +33,7 @@
                 <td>{{ device.device_type }}</td>
                 <td>{{ device.username }}</td>
                 <td class="status">
-                    <span class="connection-status">❓</span>
+                    <span class="connection-status">{{ device.get_status_display }}</span>
                     <span id="{{ device.name }}-spinner" class="htmx-indicator">
                         <span class="spinner-grow spinner-grow-sm" role="status"></span>
                     </span>
