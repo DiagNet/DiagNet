@@ -1,8 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Add Device - DiagNet{% endblock %}
+{% block title %}
+{% if device.name %}
+Edit Device - DiagNet
+{% else %}
+Add Device - DiagNet
+{% endif %}
+{% endblock %}
 {% block content %}
 <a href="{% url 'device-list' %}" class="btn btn-secondary" style="margin-bottom: 10px">← Back to Devices</a>
-<h1>Add/Edit Device</h1>
+<h1>
+    {% if device.name %}
+    Edit Device: {{ device.name }}
+    {% else %}
+    Add Device: {{ device.name }}
+    {% endif %}
+</h1>
 <form method="post">
     {% csrf_token %}
     <table>
