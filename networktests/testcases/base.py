@@ -8,9 +8,9 @@ Description: Parent-Class for defining Tests.
 """
 
 __author__ = "Luka Pacar"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from collections import defaultdict, deque
 import time
 
@@ -30,6 +30,17 @@ class ParameterMissingException(Exception):
 
 class UnknownParameterException(Exception):
     """Exception raised when an unexpected Parameter is parsed."""
+
+    pass
+
+
+class IllegalGroupFormingException(Exception):
+    """Exception raised when required and optional parameters are mixed in a mutually exclusive group."""
+
+    pass
+
+class MutuallyExclusiveGroupException(Exception):
+    """Exception raised when more than 1 element is parsed in a mutually exclusive group relation."""
 
     pass
 
@@ -185,7 +196,13 @@ class DiagNetTest:
     """
 
     _required_params: List[str] = []
-    """´Saves the required parameters needed for this Test """
+    """ Saves the required parameters needed for this Test """
+
+    _optional_params: List[str] = []
+    """ Saves the optional parameters needed for this Test """
+
+    _mutually_exclusive_parameters: List[Tuple[str, ...]] = []
+    """ Saves which pairs of parameters are mutually exclusive. """
 
     def _setup(self) -> None:
         """
@@ -229,13 +246,50 @@ class DiagNetTest:
 
         #  --- 1. validate parameters ---
 
+        parsed_arguments: List[...] = list(kwargs.keys())
+        # check mutually exclusive parameters
+        for mutually_exclusive_pairs in self._mutually_exclusive_parameters:
+
+            if len(mutually_exclusive_pairs) < 2:
+                raise IllegalGroupFormingException("Mutually Exclusive Group has to contain at least 2 elements.")
+
+            # elements of the mutually exclusive pair have to exist as actual parameters.
+            for e in mutually_exclusive_pairs:
+                if e not in self._required_params and e not in self._optional_params:
+                    raise ParameterMissingException(
+                        f"Element \"{e}\" in mutually exclusive group \"{mutually_exclusive_pairs}\" is not a defined parameter.")
+
+            # members of a mutually exclusive group have to all be in either "required" or "optional". (mixing them would not make sense)
+            required_count = sum(1 for e in mutually_exclusive_pairs if e in self._required_params)
+            if required_count is not 0 and required_count is not len(mutually_exclusive_pairs):
+                raise IllegalGroupFormingException(
+                    f"Unable to mix required and optional parameters in the mutually exclusive group: {mutually_exclusive_pairs}")
+
+            # Count number of parsed elements.
+            parsed_elements = sum(1 for e in mutually_exclusive_pairs if e in parsed_arguments)
+
+            if required_count == 0: # Optional parameter.
+                if parsed_elements > 1:
+                    raise MutuallyExclusiveGroupException(f"Unable to process 2 or more parsed parameters of the same mutually exclusive group: {mutually_exclusive_pairs}")
+                # having 1 optional element or none is legal.
+            else:
+                if parsed_elements == 0:
+                    raise MutuallyExclusiveGroupException(f"At least 1 element of the required mutually exclusive group has to be parsed: {mutually_exclusive_pairs}")
+                if parsed_elements > 1:
+                    raise MutuallyExclusiveGroupException(f"Unable to process 2 or more parsed parameters of the same mutually exclusive group: {mutually_exclusive_pairs}")
+                # having 1 required element is legal.
+
+            # Remove processed mutually exclusive groups for further checks.
+            for e in mutually_exclusive_pairs:
+                parsed_arguments.remove(e)
+
         # missing parameters
-        missing = [p for p in self._required_params if p not in kwargs]
+        missing = [p for p in self._required_params if p not in parsed_arguments]
         if missing:
             raise ParameterMissingException(f"Missing required parameters: {missing}")
 
         # unknown parameters
-        unknown = [k for k in kwargs if k not in self._required_params]
+        unknown = [k for k in parsed_arguments if k not in self._required_params and k not in self._optional_params]
         if unknown:
             raise UnknownParameterException(f"Unknown parameters passed: {unknown}")
 
@@ -295,8 +349,8 @@ class DiagNetTest:
             method = getattr(self, test_name)
             dep = getattr(method, "_depends_on", None)
             if dep and status_map.get(dep) in (
-                "FAIL",
-                "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
+                    "FAIL",
+                    "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
             ):
                 results[test_name] = {
                     "status": "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
@@ -317,14 +371,14 @@ class DiagNetTest:
 
             for i in range(amount_of_repeat):
                 if (
-                    i > 0 and delay > 0
+                        i > 0 and delay > 0
                 ):  # sleep when there is a delay and it is minimum the second cycle
                     time.sleep(delay)
                 start = time.time()
                 try:
                     result = method()
 
-                    # treat None as implicit True (void methods count as a PASS)
+                    # treat None as True (void methods count as a PASS)
                     if result is None:
                         result = True
 
