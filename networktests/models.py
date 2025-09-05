@@ -1,12 +1,33 @@
+from django.core.validators import RegexValidator
 from django.db import models
 from devices.models import Device
+import importlib
 
 
 class TestCase(models.Model):
-    test_module = models.TextField()
+    test_module = models.TextField(
+        validators=[
+            RegexValidator(
+                regex=r'^[A-Z][A-Za-z0-9_]*$',
+                message='Module name must follow Python class naming convention (PascalCase).'
+            )
+        ]
+    )
     expected_result = models.BooleanField()
     label = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def run(self):
+        module = importlib.import_module(f"networktests.testcases.{self.test_module}")
+        cls = getattr(module, self.test_module)
+
+        params = {p.name: p.value for p in self.parameters.all()}
+        params = params | {p.name: p.device for p in self.devices.all()}
+
+        result = cls().run(**params)
+
+        return result[0]
+
 
     def __str__(self):
         return f"{self.label}"
@@ -32,7 +53,7 @@ class TestDevice(models.Model):
     test_case = models.ForeignKey(
         TestCase, related_name="devices", on_delete=models.CASCADE
     )
-    device = models.ForeignKey(to=Device, on_delete=models.CASCADE)
+    device = models.ForeignKey(to=Device, related_name="device", on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.name}: {self.device}"
