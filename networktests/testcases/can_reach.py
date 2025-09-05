@@ -2,7 +2,7 @@ from .base import DiagNetTest
 from genie.testbed import load
 
 
-class CanReach(DiagNetTest):
+class can_reach(DiagNetTest):
     _required_params = ["device", "ping_host"]
 
     def test_reachability(self) -> bool:
@@ -17,5 +17,5 @@ if __name__ == "__main__":
     device = inventory.devices["R1"]
     device.connect(log_stdout=False)
 
-    canreach = CanReach()
+    canreach = can_reach()
     print(canreach.run(device=device, ping_host="10.0.0.2"))
