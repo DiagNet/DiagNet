@@ -26,4 +26,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", dashboard_views.index, name="dashboard"),
     path("devices/", include("devices.urls")),
+    path("networktests/", include("networktests.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

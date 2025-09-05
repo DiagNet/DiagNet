@@ -3,7 +3,7 @@ from genie.testbed import load
 
 
 class can_reach(DiagNetTest):
-    _required_params = ["device", "ping_host"]
+    _required_params = ["device", "to"]
 
     def test_reachability(self) -> bool:
         response: dict = self.device.parse(f"ping {self.ping_host}")
