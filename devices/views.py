@@ -42,5 +42,15 @@ class DeviceDelete(DeleteView):
 
 def device_check(request, pk):
     device = get_object_or_404(Device, pk=pk)
-    ok = device.can_connect()
-    return render(request, "devices/partials/device_status_cell.html", {"ok": ok})
+    status = device.can_connect()
+    if status:
+        device.status = "reachable"
+    else:
+        device.status = "unreachable"
+
+    device.save()
+    return render(
+        request,
+        "devices/partials/device_status_cell.html",
+        {"status": device.get_status_display()},
+    )

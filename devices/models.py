@@ -24,6 +24,12 @@ class Device(models.Model):
         ("telnet", "Telnet"),
     ]
 
+    STATES = [
+        ("unknown", "❓"),
+        ("reachable", "✅"),
+        ("unreachable", "❌"),
+    ]
+
     name = models.CharField(
         "Hostname",
         primary_key=True,
@@ -46,6 +52,11 @@ class Device(models.Model):
     )
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
+    status = models.CharField(
+        "Status",
+        choices=STATES,
+        default="unknown",
+    )
 
     class Meta:
         constraints = [
