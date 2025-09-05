@@ -108,6 +108,8 @@ class Device(models.Model):
         try:
             connection = netmiko.ConnectHandler(**device)
             connection.enable()
+            connection.cleanup()
+            connection.disconnect()
             return True
         except Exception:
             return False
