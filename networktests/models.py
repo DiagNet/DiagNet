@@ -8,8 +8,8 @@ class TestCase(models.Model):
     test_module = models.TextField(
         validators=[
             RegexValidator(
-                regex=r'^[A-Z][A-Za-z0-9_]*$',
-                message='Module name must follow Python class naming convention (PascalCase).'
+                regex=r"^[A-Z][A-Za-z0-9_]*$",
+                message="Module name must follow Python class naming convention (PascalCase).",
             )
         ]
     )
@@ -27,7 +27,6 @@ class TestCase(models.Model):
         result = cls().run(**params)
 
         return result[0]
-
 
     def __str__(self):
         return f"{self.label}"
@@ -53,7 +52,9 @@ class TestDevice(models.Model):
     test_case = models.ForeignKey(
         TestCase, related_name="devices", on_delete=models.CASCADE
     )
-    device = models.ForeignKey(to=Device, related_name="device", on_delete=models.CASCADE)
+    device = models.ForeignKey(
+        to=Device, related_name="device", on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return f"{self.name}: {self.device}"
