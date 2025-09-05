@@ -1,4 +1,5 @@
 from django.db import models
+from devices.models import Device
 
 
 class TestCase(models.Model):
@@ -22,6 +23,19 @@ class TestParameter(models.Model):
 
     def __str__(self):
         return f"{self.name}: {self.value}"
+
+
+class TestDevice(models.Model):
+    name = models.TextField()
+    # All Parameters accessible using test_case.parameters.all()
+    # When the parent TestCase is deleted the Parameter is deleted as well.
+    test_case = models.ForeignKey(
+        TestCase, related_name="devices", on_delete=models.CASCADE
+    )
+    device = models.ForeignKey(to=Device, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.name}: {self.device}"
 
 
 class TestResult(models.Model):
