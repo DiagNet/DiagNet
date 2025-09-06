@@ -19,7 +19,9 @@ from networktests.testcases.base import (
     expected_failure,
     ParameterMissingException,
     UnknownParameterException,
-    DependencyException, IllegalGroupFormingException, MutuallyExclusiveGroupException,
+    DependencyException,
+    IllegalGroupFormingException,
+    MutuallyExclusiveGroupException,
 )
 
 
@@ -68,11 +70,12 @@ class PingTest(DiagNetTest):
 
 
 class TestTest(unittest.TestCase):
-
     def test_optional(self):
         test_class = PingTest()
-        assert test_class.run(host="127.0.0.1", label="hi")["result"] == "PASS" # with optional
-        assert test_class.run(host="127.0.0.1")["result"] == "PASS" # without optional
+        assert (
+            test_class.run(host="127.0.0.1", label="hi")["result"] == "PASS"
+        )  # with optional
+        assert test_class.run(host="127.0.0.1")["result"] == "PASS"  # without optional
 
     def test_get_params(self):
         test_class = PingTest()
@@ -82,7 +85,6 @@ class TestTest(unittest.TestCase):
         assert optional == {"label": ["str"]}
 
     def test_mutually_exclusive(self):
-
         class MutuallyExclusiveTest(DiagNetTest):
             _required_params = ["host"]
             _mutually_exclusive_parameters = [("host", "ip")]
@@ -139,9 +141,6 @@ class TestTest(unittest.TestCase):
         test_class = MutuallyExclusiveTest5()
         with self.assertRaises(MutuallyExclusiveGroupException):
             _ = test_class.run(host="127.0.0.1", ip="192.168.0.1")["result"]
-
-
-
 
     def test_run(self):
         test_class = PingTest()
