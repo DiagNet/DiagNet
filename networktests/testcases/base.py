@@ -230,7 +230,13 @@ class DiagNetTest:
         for param in self._required_params:
             if ":" in param:
                 name, type_ = param.split(":", 1)
-                params[name.strip()] = type_.strip()
+                type_ = type_.strip()
+                if "|" in type_:
+                    type_ = type_.split("|")
+                else:
+                    type_ = [type_]
+
+                params[name.strip()] = type_
             else:
                 params[param.strip()] = "str"
 
@@ -247,12 +253,17 @@ class DiagNetTest:
         for param in self._optional_params:
             if ":" in param:
                 name, type_ = param.split(":", 1)
-                params[name.strip()] = type_.strip()
+                type_ = type_.strip()
+                if "|" in type_:
+                    type_ = type_.split("|")
+                else:
+                    type_ = [type_]
+
+                params[name.strip()] = type_
             else:
                 params[param.strip()] = "str"
 
         return params
-
 
     def run(self, test_method_prefix="test_", verbose=False, **kwargs) -> Dict:
         """
