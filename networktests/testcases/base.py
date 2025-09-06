@@ -248,6 +248,7 @@ class DiagNetTest:
         #  --- 1. validate parameters ---
 
         parsed_arguments: List[...] = list(kwargs.keys())
+        mutually_ignored_arguments: List[...] = []
         # check mutually exclusive parameters
         for mutually_exclusive_pairs in self._mutually_exclusive_parameters:
             if len(mutually_exclusive_pairs) < 2:
@@ -297,10 +298,11 @@ class DiagNetTest:
 
             # Remove processed mutually exclusive groups for further checks.
             for e in mutually_exclusive_pairs:
-                parsed_arguments.remove(e)
+                if e not in parsed_arguments:
+                    mutually_ignored_arguments.append(e)
 
         # missing parameters
-        missing = [p for p in self._required_params if p not in parsed_arguments]
+        missing = [p for p in self._required_params if p not in parsed_arguments and p not in mutually_ignored_arguments]
         if missing:
             raise ParameterMissingException(f"Missing required parameters: {missing}")
 
