@@ -81,7 +81,7 @@ class TestTest(unittest.TestCase):
         test_class = PingTest()
         required = test_class.get_required_params()
         optional = test_class.get_optional_params()
-        assert required == {"host": ["str","IP"]}
+        assert required == {"host": ["str", "IP"]}
         assert optional == {"label": ["str"]}
 
     def test_mutually_exclusive(self):
