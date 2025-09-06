@@ -19,12 +19,13 @@ from networktests.testcases.base import (
     expected_failure,
     ParameterMissingException,
     UnknownParameterException,
-    DependencyException,
+    DependencyException, IllegalGroupFormingException, MutuallyExclusiveGroupException,
 )
 
 
 class PingTest(DiagNetTest):
     _required_params = ["host"]
+    _optional_params = ["label"]
 
     hosts = ["google.com", "8.8.8.8", "127.0.0.1"]
 
@@ -67,6 +68,74 @@ class PingTest(DiagNetTest):
 
 
 class TestTest(unittest.TestCase):
+
+    def test_optional(self):
+        test_class = PingTest()
+        assert test_class.run(host="127.0.0.1", label="hi")["result"] == "PASS" # with optional
+        assert test_class.run(host="127.0.0.1")["result"] == "PASS" # without optional
+
+    def test_mutually_exclusive(self):
+
+        class MutuallyExclusiveTest(DiagNetTest):
+            _required_params = ["host"]
+            _mutually_exclusive_parameters = [("host", "ip")]
+
+            def test_ping(self):
+                return True
+
+        test_class = MutuallyExclusiveTest()
+        with self.assertRaises(ParameterMissingException):
+            _ = test_class.run(host="127.0.0.1")["result"]
+
+        class MutuallyExclusiveTest2(DiagNetTest):
+            _required_params = ["host", "ip", "label"]
+            _mutually_exclusive_parameters = [("host", "ip", "label")]
+
+            def test_ping(self):
+                return True
+
+        test_class = MutuallyExclusiveTest2()
+        assert test_class.run(host="127.0.0.1")["result"] == "PASS"
+
+        class MutuallyExclusiveTest3(DiagNetTest):
+            _required_params = ["host", "ip"]
+            _optional_params = ["label"]
+            _mutually_exclusive_parameters = [("host", "ip", "label")]
+
+            def test_ping(self):
+                return True
+
+        test_class = MutuallyExclusiveTest3()
+        with self.assertRaises(IllegalGroupFormingException):
+            _ = test_class.run(host="127.0.0.1")["result"]
+
+        class MutuallyExclusiveTest4(DiagNetTest):
+            _required_params = ["host", "ip"]
+            _optional_params = ["label"]
+            _mutually_exclusive_parameters = [("host", "label")]
+
+            def test_ping(self):
+                return True
+
+        test_class = MutuallyExclusiveTest4()
+        with self.assertRaises(IllegalGroupFormingException):
+            _ = test_class.run(host="127.0.0.1")["result"]
+
+        class MutuallyExclusiveTest5(DiagNetTest):
+            _required_params = ["host", "ip"]
+            _optional_params = ["label"]
+            _mutually_exclusive_parameters = [("host", "ip")]
+
+            def test_ping(self):
+                return True
+
+        test_class = MutuallyExclusiveTest5()
+        with self.assertRaises(MutuallyExclusiveGroupException):
+            _ = test_class.run(host="127.0.0.1", ip="192.168.0.1")["result"]
+
+
+
+
     def test_run(self):
         test_class = PingTest()
         assert test_class.run(host="127.0.0.1")["result"] == "PASS"
