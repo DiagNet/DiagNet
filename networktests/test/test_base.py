@@ -24,8 +24,8 @@ from networktests.testcases.base import (
 
 
 class PingTest(DiagNetTest):
-    _required_params = ["host"]
-    _optional_params = ["label"]
+    _required_params = ["host:str"]
+    _optional_params = ["label:str"]
 
     hosts = ["google.com", "8.8.8.8", "127.0.0.1"]
 
@@ -88,7 +88,7 @@ class TestTest(unittest.TestCase):
             _ = test_class.run(host="127.0.0.1")["result"]
 
         class MutuallyExclusiveTest2(DiagNetTest):
-            _required_params = ["host", "ip", "label"]
+            _required_params = ["host:str", "ip:int", "label:IPAddressCustomClass"]
             _mutually_exclusive_parameters = [("host", "ip", "label")]
 
             def test_ping(self):
