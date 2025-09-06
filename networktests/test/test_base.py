@@ -24,7 +24,7 @@ from networktests.testcases.base import (
 
 
 class PingTest(DiagNetTest):
-    _required_params = ["host:str"]
+    _required_params = ["host:str|IP"]
     _optional_params = ["label:str"]
 
     hosts = ["google.com", "8.8.8.8", "127.0.0.1"]
@@ -73,6 +73,13 @@ class TestTest(unittest.TestCase):
         test_class = PingTest()
         assert test_class.run(host="127.0.0.1", label="hi")["result"] == "PASS" # with optional
         assert test_class.run(host="127.0.0.1")["result"] == "PASS" # without optional
+
+    def test_get_params(self):
+        test_class = PingTest()
+        required = test_class.get_required_params()
+        optional = test_class.get_optional_params()
+        assert required == {"host": ["str","IP"]}
+        assert optional == {"label": ["str"]}
 
     def test_mutually_exclusive(self):
 
