@@ -3,7 +3,7 @@ import importlib.resources
 
 
 def get_all_testcases(request):
-    files = []
+    testcases = {}
     package = "networktests.testcases"
     for resource in importlib.resources.files(package).iterdir():
         if (
@@ -11,5 +11,12 @@ def get_all_testcases(request):
             and resource.is_file()
             and resource.name not in ["__init__.py", "base.py"]
         ):
-            files.append(resource.name.replace(".py", ""))
-    return JsonResponse({"testcases": files})
+            module_name = f"{package}.{resource.stem}"
+            module = importlib.import_module(module_name)
+
+            cls = getattr(module, resource.stem)
+            print(cls._required_params)
+
+            testcases[resource.stem] = cls._required_params
+
+    return JsonResponse({"testcases": testcases})
