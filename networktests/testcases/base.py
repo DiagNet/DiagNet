@@ -219,6 +219,41 @@ class DiagNetTest:
         """
         pass
 
+    def get_required_params(self) -> Dict[str, str]:
+        """
+        Returns a dictionary of required parameters with their types.
+
+        Returns:
+            dict: A dictionary where keys are parameter names and values are their datatypes as strings.
+        """
+        params = {}
+        for param in self._required_params:
+            if ":" in param:
+                name, type_ = param.split(":", 1)
+                params[name.strip()] = type_.strip()
+            else:
+                params[param.strip()] = "str"
+
+        return params
+
+    def get_optional_params(self) -> Dict[str, str]:
+        """
+        Returns a dictionary of optional parameters with their types.
+
+        Returns:
+            dict: A dictionary where keys are parameter names and values are their datatypes as strings.
+        """
+        params = {}
+        for param in self._optional_params:
+            if ":" in param:
+                name, type_ = param.split(":", 1)
+                params[name.strip()] = type_.strip()
+            else:
+                params[param.strip()] = "str"
+
+        return params
+
+
     def run(self, test_method_prefix="test_", verbose=False, **kwargs) -> Dict:
         """
         Runs the test and returns the output.
