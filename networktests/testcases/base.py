@@ -8,7 +8,7 @@ Description: Parent-Class for defining Tests.
 """
 
 __author__ = "Luka Pacar"
-__version__ = "1.2.2"
+__version__ = "1.2.3"
 
 from typing import List, Dict, Tuple
 from collections import defaultdict, deque
@@ -47,7 +47,7 @@ class MutuallyExclusiveGroupException(Exception):
 
 
 # Decorators
-def repeat(times, delay=0):
+def repeat(times: int, delay: int = 0):
     """
     Decorator to repeat a test method multiple times with optional delay.
 
@@ -64,7 +64,7 @@ def repeat(times, delay=0):
     return decorator
 
 
-def skip(arg=None):
+def skip(arg: str = None):
     """
     Decorator to mark a test method to be skipped.
 
@@ -86,7 +86,7 @@ def skip(arg=None):
     return decorator
 
 
-def depends_on(dependency_name):
+def depends_on(dependency_name: str):
     """
     Decorator to declare that a test method depends on another test method.
 
@@ -150,7 +150,17 @@ def sort_by_dependencies(test_methods: dict):
 
 
 def filter_out_skipped(test_methods, skipped, results, status_map):
-    amount_skipped = 0
+    """
+    filters out "skipped" tests.
+
+    :param test_methods: methods to be examined
+    :param skipped: collection to store skipped methods
+    :param results: stores test_results and therefore also skipped method results.
+    :param status_map: saves what method has what result. (simplified compared to results)
+
+    :returns: The skipped methods added in [0] -> results and [1] -> status_map
+    """
+    amount_skipped: int = 0
     # mark skipped tests immediately
     for name, method in test_methods:
         if getattr(method, "_skip", False):
@@ -244,7 +254,7 @@ class DiagNetTest:
 
     def get_optional_params(self) -> Dict[str, str]:
         """
-        Returns a dictionary of optional parameters with their types.
+        Returns a dictionary of optional parameter that are not necessary to be parsed when running this test.
 
         Returns:
             dict: A dictionary where keys are parameter names and values are their datatypes as strings.
@@ -329,8 +339,8 @@ class DiagNetTest:
             # elements of the mutually exclusive pair have to exist as actual parameters.
             for e in mutually_exclusive_pairs:
                 if (
-                    e not in defined_required_arguments
-                    and e not in defined_optional_arguments
+                        e not in defined_required_arguments
+                        and e not in defined_optional_arguments
                 ):
                     raise ParameterMissingException(
                         f'Element "{e}" in mutually exclusive group "{mutually_exclusive_pairs}" is not a defined parameter.'
@@ -341,7 +351,7 @@ class DiagNetTest:
                 1 for e in mutually_exclusive_pairs if e in self._required_params
             )
             if required_count != 0 and required_count is not len(
-                mutually_exclusive_pairs
+                    mutually_exclusive_pairs
             ):
                 raise IllegalGroupFormingException(
                     f"Unable to mix required and optional parameters in the mutually exclusive group: {mutually_exclusive_pairs}"
@@ -388,7 +398,7 @@ class DiagNetTest:
             k
             for k in parsed_arguments
             if k not in defined_required_arguments
-            and k not in defined_optional_arguments
+               and k not in defined_optional_arguments
         ]
         if unknown:
             raise UnknownParameterException(f"Unknown parameters passed: {unknown}")
@@ -449,8 +459,8 @@ class DiagNetTest:
             method = getattr(self, test_name)
             dep = getattr(method, "_depends_on", None)
             if dep and status_map.get(dep) in (
-                "FAIL",
-                "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
+                    "FAIL",
+                    "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
             ):
                 results[test_name] = {
                     "status": "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
@@ -471,7 +481,7 @@ class DiagNetTest:
 
             for i in range(amount_of_repeat):
                 if (
-                    i > 0 and delay > 0
+                        i > 0 and delay > 0
                 ):  # sleep when there is a delay and it is minimum the second cycle
                     time.sleep(delay)
                 start = time.time()
