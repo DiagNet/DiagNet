@@ -3,7 +3,9 @@ from genie.testbed import load
 
 
 class CannotReach(DiagNetTest):
-    _required_params = ["device", "ping_host"]
+    _required_params = ["device:device", "ping_host:IPAddress"]
+    _optional_params = ["device2", "hugo"]
+    _mutually_exclusive_parameters = [("device", "ping_host")]
 
     def test_reachability(self) -> bool:
         response: dict = self.device.parse(f"ping {self.ping_host}")
