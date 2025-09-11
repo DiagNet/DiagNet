@@ -8,7 +8,7 @@ Description: Parent-Class for defining Tests.
 """
 
 __author__ = "Luka Pacar"
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 
 from typing import List, Dict, Tuple
 from collections import defaultdict, deque
@@ -56,10 +56,10 @@ def repeat(times, delay=0):
         delay (float, optional): Delay in seconds between repetitions. Defaults to 0.
     """
 
-    def decorator(func):
-        func._repeat = times
-        func._repeat_delay = delay
-        return func
+    def decorator(func_name):
+        func_name._repeat = times
+        func_name._repeat_delay = delay
+        return func_name
 
     return decorator
 
@@ -78,10 +78,10 @@ def skip(arg=None):
         func._skip_reason = None
         return func
 
-    def decorator(func):
-        func._skip = True
-        func._skip_reason = arg
-        return func
+    def decorator(func_name):
+        func_name._skip = True
+        func_name._skip_reason = arg
+        return func_name
 
     return decorator
 
@@ -94,9 +94,9 @@ def depends_on(dependency_name):
         dependency_name (str): Name of the test method this test depends on.
     """
 
-    def decorator(func):
-        func._depends_on = dependency_name
-        return func
+    def decorator(func_name):
+        func_name._depends_on = dependency_name
+        return func_name
 
     return decorator
 
