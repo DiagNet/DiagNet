@@ -8,6 +8,8 @@ from django.db.models.functions import Lower
 from django.db.models import Q
 import netmiko
 
+device_connections = {}
+
 
 class Device(models.Model):
     DEVICE_TYPES = [
@@ -126,12 +128,19 @@ class Device(models.Model):
             return False
 
     def get_genie_device_object(self):
+        if (
+            self.name in device_connections
+            and device_connections[self.name].is_connected()
+        ):
+            return device_connections[self.name]
+
         conn_info = self.get_genie_device_dict()
         testbed = load({"devices": conn_info})
         device = testbed.devices[list(conn_info)[0]]
 
         try:
             device.connect()
+            device_connections[self.name] = device
             return device
         except Exception:
             return None
