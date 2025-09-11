@@ -44,4 +44,4 @@ def show_all_testcases(request):
 
 def test_page(request):
     context = {"title": "test", "msg": "hello bro"}
-    return render(request, "test.html", context)
+    return render(request, "testpopup.html")
