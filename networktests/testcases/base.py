@@ -8,7 +8,7 @@ Description: Parent-Class for defining Tests.
 """
 
 __author__ = "Luka Pacar"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 from typing import List, Dict, Tuple
 from collections import defaultdict, deque
@@ -69,7 +69,7 @@ def skip(arg=None):
     Decorator to mark a test method to be skipped.
 
     Args:
-        reason (str, optional): Explanation why the test is skipped. Defaults to None.
+        arg (str, optional): Explanation why the test is skipped. Defaults to None.
     """
     if callable(arg):
         # Used as @skip
