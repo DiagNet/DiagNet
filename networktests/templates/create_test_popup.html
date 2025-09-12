@@ -1,0 +1,273 @@
+{% extends "popup.html" %}
+{% load static %}
+
+{% block modal_title %}My First Popup{% endblock %}
+
+{% block modal_body %}
+
+<div class="position-relative" style="max-width: 300px;">
+    <input type="text" id="searchInput" class="form-control" placeholder="Search...">
+
+    <!-- Results dropdown -->
+    <ul id="resultsList" class="list-group position-absolute w-100 shadow-sm"
+        style="z-index: 1000; display: none; max-height: 200px; overflow-y: auto;">
+    </ul>
+
+    <!-- New 50vh div -->
+    <div style="height: 50vh; background-color: #f0f0f0; margin-top: 20px; border: 1px solid #ccc;">
+        This div is 50% of the viewport height.
+    </div>
+
+    <h5>Required Parameters</h5>
+    <div id="requiredParamsContainer"></div>
+
+    <h5>Optional Parameters</h5>
+    <div id="optionalParamsContainer"></div>
+
+    <button id="submitParameters" class="btn btn-primary mt-3">Submit</button>
+
+</div>
+
+<script>
+    // Phase 3 - Validate Input and Create TestCase
+    document.getElementById("submitParameters").addEventListener("click", read_parameter_input);
+    let curr_test = null
+
+    /** Reads values from input container */
+    function readInputs(containerId) {
+        const container = document.getElementById(containerId);
+        const inputs = container.querySelectorAll("input");
+        const values = {};
+
+        inputs.forEach(input => {
+            values[input.name] = input.value; // store name: value
+        });
+
+        return values;
+    }
+
+    /** Needed for Django in order to not get a 403 Forbidden Error and to prevent CSRF Attacks. */
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    async function read_parameter_input() {
+        const requiredParams = readInputs("requiredParamsContainer");
+        const optionalParams = readInputs("optionalParamsContainer");
+
+        // Merge them into a single object
+        const payload = {
+            test: curr_test,
+            required: requiredParams,
+            optional: optionalParams
+        };
+
+        try {
+            const response = await fetch("/networktests/api/create/test", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken") // if using Django
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.status === "success") {
+                alert("Submission successful!");
+            } else {
+                console.error("Error:", result.message || "Unknown error");
+            }
+        } catch (err) {
+            console.error("Error sending parameters:", err);
+        }
+    }
+
+    // Phase 2 - Fetch and Create Parameter Fields
+
+    /** Fetch search results from API */
+    async function fetch_test_parameters(test_name) {
+        if (!test_name) return {required_params: [], optional_params: [], mul_exclusive: null};
+
+        try {
+            const res = await fetch(`/networktests/api/search/test/parameters?test_name=${encodeURIComponent(test_name)}`);
+            const data = await res.json();
+
+            return {
+                required_params: data.required || [],
+                optional_params: data.optional || [],
+                mul: data.mul_exclusive || []
+            };
+        } catch (err) {
+            console.error("Search API error:", err);
+            return {required_params: [], optional_params: [], mul: null};
+        }
+    }
+
+    /** Helper: create a single input field */
+    function createInputField(paramName, isOptional = false) {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.name = paramName;
+        input.placeholder = isOptional ? `${paramName} (optional)` : paramName;
+        input.className = "form-control mb-2"; // Bootstrap styling
+        return input;
+    }
+
+
+    /** Creates input fields for every */
+    async function show_parameters(test_class) {
+        const test_parameters = await fetch_test_parameters(test_class);
+
+        // Containers for the input fields
+        const requiredContainer = document.getElementById("requiredParamsContainer");
+        const optionalContainer = document.getElementById("optionalParamsContainer");
+
+        // Clear previous inputs
+        requiredContainer.innerHTML = "";
+        optionalContainer.innerHTML = "";
+
+        console.log(test_parameters.required_params)
+        console.log(test_parameters.optional_params)
+        // Create inputs for required parameters
+        test_parameters.required_params.forEach(param => {
+            requiredContainer.appendChild(createInputField(param));
+        });
+
+        // Create inputs for optional parameters
+        test_parameters.optional_params.forEach(param => {
+            optionalContainer.appendChild(createInputField(param, true));
+        });
+    }
+
+
+    // Phase 1 - Select Test-Class
+
+    const searchInput = document.getElementById("searchInput");
+    const resultsList = document.getElementById("resultsList");
+    let selectedIndex = -1; // Track items in search results
+    /** Takes the input and fetches needed data */
+    async function select_test_class(test_class) {
+        searchInput.value = test_class;
+        resultsList.style.display = "none";
+        show_parameters(test_class)
+        curr_test = test_class
+    }
+
+    /** Fetch search results from API */
+    async function fetch_test_classes(query) {
+        if (!query) return [];
+        try {
+            const res = await fetch(`/networktests/api/search/test/classes?query=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            return data.results || [];
+        } catch (err) {
+            console.error("Search API error:", err);
+            return [];
+        }
+    }
+
+    /** Takes current possible test-classes and displays them. */
+    function renderResults(results) {
+        resultsList.innerHTML = "";
+
+        if (!results.length) {
+            resultsList.innerHTML = `<li class="list-group-item">No results found</li>`;
+        } else {
+            results.forEach((item) => {
+                const li = document.createElement("li");
+                li.className = "list-group-item list-group-item-action";
+                li.textContent = item;
+
+                li.addEventListener("click", () => {
+                    select_test_class(item);
+                });
+                resultsList.appendChild(li);
+            });
+        }
+
+        resultsList.style.display = "block";
+    }
+
+    // Keyboard Input
+    /** Handle keyboard navigation */
+    function handleKeyboardNavigation(e) {
+        const items = resultsList.querySelectorAll("li.list-group-item-action");
+        if (!items.length) return;
+
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            selectedIndex = (selectedIndex + 1) % items.length;
+            updateSelection(items);
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+            updateSelection(items);
+        } else if (e.key === "Enter") {
+            e.preventDefault();
+            if (selectedIndex >= 0 && selectedIndex < items.length) {
+                select_test_class(items[selectedIndex].textContent);
+            }
+        }
+    }
+
+    /** Update Keyboard Highlight Action */
+    function updateSelection(items) {
+        items.forEach((item, index) => {
+            if (index === selectedIndex) {
+                item.classList.add("active"); // Bootstrap active class
+                item.scrollIntoView({block: "nearest"});
+            } else {
+                item.classList.remove("active");
+            }
+        });
+    }
+
+
+    // Input
+    /** Handle input changes */
+    async function handleInput() {
+        const query = searchInput.value.trim();
+        selectedIndex = -1;
+
+        if (!query) {
+            resultsList.style.display = "none";
+            return;
+        }
+
+        const results = await fetch_test_classes(query);
+        renderResults(results);
+    }
+
+    // Mouse Input
+    /** Hide dropdown if clicked outside */
+    function handleClickOutside(e) {
+        if (!searchInput.contains(e.target) && !resultsList.contains(e.target)) {
+            resultsList.style.display = "none";
+        }
+    }
+
+    /** Initialize event listeners */
+    function init() {
+        searchInput.addEventListener("input", handleInput);
+        searchInput.addEventListener("keydown", handleKeyboardNavigation);
+        document.addEventListener("click", handleClickOutside);
+    }
+
+    init();
+</script>
+
+
+{% endblock %}
