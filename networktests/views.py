@@ -2,7 +2,6 @@ import json
 
 from django.http import JsonResponse
 import importlib.resources
-from django.shortcuts import render
 from .models import TestCase
 from .models import TestParameter
 
@@ -17,9 +16,9 @@ def get_all_testcases(request):
     package = "networktests.testcases"
     for resource in importlib.resources.files(package).iterdir():
         if (
-                resource.suffix == ".py"
-                and resource.is_file()
-                and resource.name not in ["__init__.py", "base.py"]
+            resource.suffix == ".py"
+            and resource.is_file()
+            and resource.name not in ["__init__.py", "base.py"]
         ):
             class_name = resource.stem
             module_name = f"{package}.{class_name}"
@@ -37,19 +36,23 @@ def get_all_testcases(request):
                 if ":" not in param:
                     optional_params[i] = param + ":str"
 
-            testcases[class_name] = {"required": required_params, "optional": optional_params,
-                                     "mut_exclusive": cls._mutually_exclusive_parameters}
+            testcases[class_name] = {
+                "required": required_params,
+                "optional": optional_params,
+                "mut_exclusive": cls._mutually_exclusive_parameters,
+            }
 
     return JsonResponse({"testcases": testcases})
 
 
 def create_test(request):
     if request.method == "POST":
-
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
-            return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+            return JsonResponse(
+                {"status": "error", "message": "Invalid JSON"}, status=400
+            )
 
         test_class = data.get("test")
         required_params = data.get("required", {})
@@ -98,7 +101,12 @@ def get_parameters_of_specific_testcase(request):
             optional_params[i] = param + ":str"
 
     return JsonResponse(
-        {"required": required_params, "optional": optional_params, "mut_exclusive": cls._mutually_exclusive_parameters})
+        {
+            "required": required_params,
+            "optional": optional_params,
+            "mut_exclusive": cls._mutually_exclusive_parameters,
+        }
+    )
 
 
 def search_all_available_testcases(request):
@@ -112,19 +120,14 @@ def update_all_available_testcases():
     package = "networktests.testcases"
     for resource in importlib.resources.files(package).iterdir():
         if (
-                resource.suffix == ".py"
-                and resource.is_file()
-                and resource.name not in ["__init__.py", "base.py"]
+            resource.suffix == ".py"
+            and resource.is_file()
+            and resource.name not in ["__init__.py", "base.py"]
         ):
             class_name = resource.stem
             testcases.append(class_name)
 
     return testcases
-
-
-def test_page(request):
-    context = {"title": "test", "msg": "hello bro"}
-    return render(request, "create_test_popup.html")
 
 
 global_testcases = update_all_available_testcases()
