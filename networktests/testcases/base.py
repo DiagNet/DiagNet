@@ -339,8 +339,8 @@ class DiagNetTest:
             # elements of the mutually exclusive pair have to exist as actual parameters.
             for e in mutually_exclusive_pairs:
                 if (
-                        e not in defined_required_arguments
-                        and e not in defined_optional_arguments
+                    e not in defined_required_arguments
+                    and e not in defined_optional_arguments
                 ):
                     raise ParameterMissingException(
                         f'Element "{e}" in mutually exclusive group "{mutually_exclusive_pairs}" is not a defined parameter.'
@@ -351,7 +351,7 @@ class DiagNetTest:
                 1 for e in mutually_exclusive_pairs if e in self._required_params
             )
             if required_count != 0 and required_count is not len(
-                    mutually_exclusive_pairs
+                mutually_exclusive_pairs
             ):
                 raise IllegalGroupFormingException(
                     f"Unable to mix required and optional parameters in the mutually exclusive group: {mutually_exclusive_pairs}"
@@ -398,7 +398,7 @@ class DiagNetTest:
             k
             for k in parsed_arguments
             if k not in defined_required_arguments
-               and k not in defined_optional_arguments
+            and k not in defined_optional_arguments
         ]
         if unknown:
             raise UnknownParameterException(f"Unknown parameters passed: {unknown}")
@@ -459,8 +459,8 @@ class DiagNetTest:
             method = getattr(self, test_name)
             dep = getattr(method, "_depends_on", None)
             if dep and status_map.get(dep) in (
-                    "FAIL",
-                    "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
+                "FAIL",
+                "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
             ):
                 results[test_name] = {
                     "status": "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
@@ -481,7 +481,7 @@ class DiagNetTest:
 
             for i in range(amount_of_repeat):
                 if (
-                        i > 0 and delay > 0
+                    i > 0 and delay > 0
                 ):  # sleep when there is a delay and it is minimum the second cycle
                     time.sleep(delay)
                 start = time.time()
