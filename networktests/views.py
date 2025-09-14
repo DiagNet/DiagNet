@@ -5,6 +5,7 @@ import json
 from django.http import JsonResponse
 import importlib.resources
 from django.shortcuts import render
+
 from .models import TestCase, TestParameter, TestDevice
 
 package = "networktests.testcases"

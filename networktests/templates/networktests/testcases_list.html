@@ -43,7 +43,7 @@
                                 {{ tc.num_params|default:0 }} Param • {{ tc.num_devices|default:0 }} Devices • {{ tc.num_results|default:0 }} Results
                             </div>
                             <!-- Platzhalter, später als POST -->
-                            <a class="btn btn-sm btn-primary" href="{% url 'tests-list' %}?run={{ tc.id }}">Run</a>
+                            <a class="btn btn-sm btn-primary" href="{% url 'testcases-list' %}?run={{ tc.id }}">Run</a>
                         </div>
                     </div>
                 </div>
