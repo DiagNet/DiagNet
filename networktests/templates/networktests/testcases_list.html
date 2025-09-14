@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ Testcases }}{% endblock %}
+{% block title %}Testcases{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -49,6 +49,8 @@
                 </div>
             {% endfor %}
         </div>
+    {% else %}
+        <div class="alert alert-info">Es sind noch keine Testcases angelegt.</div>
     {% endif %}
 </div>
 
