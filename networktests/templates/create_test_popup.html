@@ -29,6 +29,57 @@
 </div>
 
 <script>
+
+    // Phase 4 - Mutually-Exclusive Group Handling
+
+    /** "Enables" the given field. */
+    function enable_field(field) {
+        field.disabled = false;
+        field.readOnly = false;
+    }
+
+    /** "Disables" the given field. */
+    function disable_field(field) {
+        field.disabled = true;
+        field.readOnly = true;
+    }
+
+    /** Responsible to block all mutually exclusive group members except the selected one. */
+    function create_mutually_exclusive_bindings(param_fields, mutually_exclusive_groups) {
+        /** Activates the first field and deactivates the other ones. */
+        function toggle_pair(activated, all_fields) {
+            enable_field(activated);
+            for (const value of all_fields.values()) {
+                if (value === activated) continue;
+                disable_field(value);
+            }
+        }
+
+        /** Enables all fields given. */
+        function enable_all_fields(all_fields) {
+            for (const value of all_fields.values()) {
+                enable_field(value);
+            }
+        }
+
+        mutually_exclusive_groups.forEach(pair => {
+            const all_fields = new Map(
+                pair.map(v => [v, param_fields.get(v)])
+            );
+
+            for (const field of all_fields.values()) {
+                field.addEventListener("input", () => {
+                    console.log("input detected");
+                    if (field.value.length === 0) {
+                        enable_all_fields(all_fields);
+                    } else {
+                        toggle_pair(field, all_fields);
+                    }
+                });
+            }
+        });
+    }
+
     // Phase 3 - Validate Input and Create TestCase
     document.getElementById("submitParameters").addEventListener("click", read_parameter_input);
     let curr_test = null
@@ -62,6 +113,7 @@
         return cookieValue;
     }
 
+    /** Reads the parameter inputs and returns them as a map. */
     async function read_parameter_input() {
         const requiredParams = readInputs("requiredParamsContainer");
         const optionalParams = readInputs("optionalParamsContainer");
@@ -78,7 +130,7 @@
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie("csrftoken") // if using Django
+                    "X-CSRFToken": getCookie("csrftoken")
                 },
                 body: JSON.stringify(payload)
             });
@@ -121,6 +173,7 @@
         const input = document.createElement("input");
         input.type = "text";
         input.name = paramName;
+        input.id = paramName
         input.placeholder = isOptional ? `${paramName} (optional)` : paramName;
         input.className = "form-control mb-2"; // Bootstrap styling
         return input;
@@ -139,17 +192,34 @@
         requiredContainer.innerHTML = "";
         optionalContainer.innerHTML = "";
 
-        console.log(test_parameters.required_params)
-        console.log(test_parameters.optional_params)
-        // Create inputs for required parameters
-        test_parameters.required_params.forEach(param => {
-            requiredContainer.appendChild(createInputField(param));
-        });
+        const required_parameters = new Map(test_parameters.required_params.map(item => {
+            const [part1, part2] = item.split(":");
+            return [part1, part2];
+        }));
 
-        // Create inputs for optional parameters
-        test_parameters.optional_params.forEach(param => {
-            optionalContainer.appendChild(createInputField(param, true));
-        });
+        const optional_parameters = new Map(test_parameters.optional_params.map(item => {
+            const [part1, part2] = item.split(":");
+            return [part1, part2];
+        }));
+
+        // stores what input field corresponds to what param for mutually exclusive bindings.
+        let mutually_exclusive_params_fields = new Map();
+
+        // Create inputs for required parameters
+        for (const param of required_parameters.keys()) {
+            const new_input_field = createInputField(param);
+            mutually_exclusive_params_fields.set(param, new_input_field);
+            requiredContainer.appendChild(new_input_field);
+        }
+
+        // Create inputs for required parameters
+        for (const param of optional_parameters.keys()) {
+            const new_input_field = createInputField(param);
+            mutually_exclusive_params_fields.set(param, new_input_field);
+            optionalContainer.appendChild(new_input_field);
+        }
+
+        create_mutually_exclusive_bindings(mutually_exclusive_params_fields, test_parameters.mul)
     }
 
 
