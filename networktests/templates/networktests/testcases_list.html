@@ -8,7 +8,7 @@
 
     {% if page_obj.object_list %}
         <div class="list-group">
-            {for tc in page_obj.object_list %}
+            {% for tc in page_obj.object_list %}
                 <div class="list-group-item">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="me-3">
@@ -23,10 +23,33 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
+
+                            {% if tc.devices.all %}
+                                <div class="small text-muted mb-1">Zielgeräte:</div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for td in tc.devices.all %}
+                                        <span class="badge text-bg-light">
+                                            {{ td.device.name }}{% if td.name %} ({{ td.name }}) {% endif %}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="small text-muted">Keine Zielgeräte verknüpft.</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="text-end">
+                            <div class="small text-muted mb-2">
+                                {{ tc.num_params|default:0 }} Param • {{ tc.num_devices|default:0 }} Devices • {{ tc.num_results|default:0 }} Results
+                            </div>
+                            <!-- Platzhalter, später als POST -->
+                            <a class="btn btn-sm btn-primary" href="{% url 'tests-list' %}?run={{ tc.id }}">Run</a>
                         </div>
                     </div>
                 </div>
+            {% endfor %}
         </div>
-</div>
     {% endif %}
+</div>
+
 {% endblock %}
