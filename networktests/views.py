@@ -137,7 +137,7 @@ def test_list(request):
     return render(request, "networktests/testcases_list.html")
 
 def testcases_list(request):
-    qs = ((
+    qs = (
         TestCase.objects
         .prefetch_related(
             Prefetch(
@@ -149,9 +149,8 @@ def testcases_list(request):
                 queryset=TestDevice.objects
                     .select_related('device')
                     .order_by('device_name')
-                )
-            ),
-        )
+                ),
+            )
         .annotate(
             num_params=Count('parameters', distinct=True),
             num_devices=Count('devices', distinct=True),

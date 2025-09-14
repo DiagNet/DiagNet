@@ -3,17 +3,30 @@
 {% block title %}{{ Testcases }}{% endblock %}
 
 {% block content %}
-<h1>{{ Testcases }}</h1>
-<p class="text-muted"> All available Testcases from <code>networktests.testcases</code>.</p>
+<div class="container py-4">
+    <h1 class="m-3">Testcases</h1>
 
-<div id="testsContainer" class="row gy-3"></div>
-
-<div id="testsError" class="alert alert-danger d-none mt-3"></div>
-
-<script>
- async function loadTests(){
-
- }
-</script>
-
+    {% if page_obj.object_list %}
+        <div class="list-group">
+            {for tc in page_obj.object_list %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="me-3">
+                            <h5 class="mb-1">{{ tc.label }}</h5>
+                            {% if tc.parameters.all %}
+                                <div class="small text-muted mb-2">Parameter:</div>
+                                <div class="mb-2">
+                                    {% for p in tc.parameters.all %}
+                                        <span class="badge rounded-pill text-bg-secondary me-1">
+                                            {{ p.name }}{% if p.value %}: {{ p.value }}{% endif %}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+        </div>
+</div>
+    {% endif %}
 {% endblock %}
