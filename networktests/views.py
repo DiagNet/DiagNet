@@ -148,24 +148,23 @@ def testcases_list(request):
                 'devices',
                 queryset=TestDevice.objects
                     .select_related('device')
-                    .order_by('device_name')
-                ),
-            )
+                    .order_by('device__name')
+            ),
+        )
         .annotate(
             num_params=Count('parameters', distinct=True),
             num_devices=Count('devices', distinct=True),
-            num_results=Count('results', distinct=True)
+            num_results=Count('results', distinct=True),
         )
         .order_by('label')
     )
 
     paginator = Paginator(qs, 20)
-    page = request.GET.get('page')
-    page_obj = paginator.get_page(page)
+    page_obj = paginator.get_page(request.GET.get('page'))
 
-    return render(request, "networktests/testcases_list.html", {
-        'page_obj': page_obj,
-        "paginator": paginator,
-    })
-
+    return render(
+        request,
+        "networktests/testcases_list.html",
+        {'page_obj': page_obj, 'paginator': paginator}
+    )
 
