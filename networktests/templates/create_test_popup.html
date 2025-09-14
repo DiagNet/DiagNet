@@ -30,6 +30,58 @@
 
 <script>
 
+    // Phase 5 - Datatypes
+
+    /** Function called when the input of the field is considered unknown */
+    function unknown_datatype(field) {
+        field.style.border = "";
+    }
+
+    /** Function called when the input of the field is considered correct */
+    function correct_datatype(field) {
+        field.style.border = "2px solid green";
+    }
+
+    /** Function called when the input of the field is considered wrong */
+    function wrong_datatype(field) {
+        field.style.border = "2px solid red";
+    }
+
+    /** checks if the given field's input is corresponding to the given datatype */
+    function check_datatype(field, datatype_as_string) {
+        const value = field.value.trim();
+
+        switch (datatype_as_string.toLowerCase()) {
+            case "string":
+            case "str":
+                return true
+
+            case "number":
+            case "int":
+            case "float":
+                return !isNaN(value) && value !== "";
+
+            case "ipv4address":
+            case "ipv4":
+                const ipv4Regex = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+                return ipv4Regex.test(value);
+
+            default:
+                return true
+        }
+    }
+
+    /** handles DOM changes to implement checking datatypes */
+    function handle_check_datatype(field, datatype_as_string) {
+        if (datatype_as_string == null) {
+            unknown_datatype(field)
+        } else if (check_datatype(field, datatype_as_string)) {
+            correct_datatype(field)
+        } else {
+            wrong_datatype(field)
+        }
+    }
+
     // Phase 4 - Mutually-Exclusive Group Handling
 
     /** "Enables" the given field. */
@@ -45,7 +97,7 @@
     }
 
     /** Responsible to block all mutually exclusive group members except the selected one. */
-    function create_mutually_exclusive_bindings(param_fields, mutually_exclusive_groups, param_datatypes) {
+    function create_mutually_exclusive_datatype_bindings(param_fields, mutually_exclusive_groups, param_datatypes) {
         /** Activates the first field and deactivates the other ones. */
         function toggle_pair(activated, all_fields) {
             // enable_field(activated); - Redundant
@@ -81,8 +133,23 @@
                 const all_fields = [...all_fields_set];
                 if (field.value.length === 0) {
                     enable_all_fields(all_fields);
+                    handle_check_datatype(field, null);
                 } else if (field.value.length === 1) { // Could be improved, length from 2 to 1 is a redundant operation here, but this is simple
                     toggle_pair(field, all_fields);
+                    handle_check_datatype(field, param_datatypes.get(field.id));
+                } else {
+                    handle_check_datatype(field, param_datatypes.get(field.id));
+                }
+            });
+        }
+
+        for (const [param, field] of param_fields.entries()) {
+            if (calculate_mut_neighbors.has(field)) continue; // Mutually Exclusive candidate
+            field.addEventListener("input", () => {
+                if (field.value.length === 0) {
+                    handle_check_datatype(field, null);
+                } else {
+                    handle_check_datatype(field, param_datatypes.get(param));
                 }
             });
         }
@@ -228,7 +295,7 @@
             optionalContainer.appendChild(new_input_field);
         }
 
-        create_mutually_exclusive_bindings(mutually_exclusive_params_fields, test_parameters.mul, [...required_parameters, ...optional_parameters])
+        create_mutually_exclusive_datatype_bindings(mutually_exclusive_params_fields, test_parameters.mul, new Map([...required_parameters, ...optional_parameters]));
     }
 
 
