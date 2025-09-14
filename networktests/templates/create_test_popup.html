@@ -69,10 +69,9 @@
 
             for (const field of all_fields.values()) {
                 field.addEventListener("input", () => {
-                    console.log("input detected");
                     if (field.value.length === 0) {
                         enable_all_fields(all_fields);
-                    } else {
+                    } else if (field.value.length === 1) { // Could be improved, length from 2 to 1 is a redundant operation here, but this is simpler
                         toggle_pair(field, all_fields);
                     }
                 });
