@@ -45,10 +45,10 @@
     }
 
     /** Responsible to block all mutually exclusive group members except the selected one. */
-    function create_mutually_exclusive_bindings(param_fields, mutually_exclusive_groups) {
+    function create_mutually_exclusive_bindings(param_fields, mutually_exclusive_groups, param_datatypes) {
         /** Activates the first field and deactivates the other ones. */
         function toggle_pair(activated, all_fields) {
-            enable_field(activated);
+            // enable_field(activated); - Redundant
             for (const value of all_fields.values()) {
                 if (value === activated) continue;
                 disable_field(value);
@@ -62,21 +62,31 @@
             }
         }
 
+        let calculate_mut_neighbors = new Map()
         mutually_exclusive_groups.forEach(pair => {
-            const all_fields = new Map(
-                pair.map(v => [v, param_fields.get(v)])
-            );
+            const all_fields = pair.map(v => param_fields.get(v));
 
-            for (const field of all_fields.values()) {
-                field.addEventListener("input", () => {
-                    if (field.value.length === 0) {
-                        enable_all_fields(all_fields);
-                    } else if (field.value.length === 1) { // Could be improved, length from 2 to 1 is a redundant operation here, but this is simpler
-                        toggle_pair(field, all_fields);
-                    }
-                });
+            for (const field of all_fields) {
+                if (!calculate_mut_neighbors.has(field)) {
+                    calculate_mut_neighbors.set(field, new Set(all_fields));
+                } else {
+                    const s = calculate_mut_neighbors.get(field);
+                    all_fields.forEach(f => s.add(f));
+                }
             }
         });
+
+        for (const [field, all_fields_set] of calculate_mut_neighbors.entries()) {
+            field.addEventListener("input", () => {
+                const all_fields = [...all_fields_set];
+                if (field.value.length === 0) {
+                    enable_all_fields(all_fields);
+                } else if (field.value.length === 1) { // Could be improved, length from 2 to 1 is a redundant operation here, but this is simple
+                    toggle_pair(field, all_fields);
+                }
+            });
+        }
+
     }
 
     // Phase 3 - Validate Input and Create TestCase
@@ -218,7 +228,7 @@
             optionalContainer.appendChild(new_input_field);
         }
 
-        create_mutually_exclusive_bindings(mutually_exclusive_params_fields, test_parameters.mul)
+        create_mutually_exclusive_bindings(mutually_exclusive_params_fields, test_parameters.mul, [...required_parameters, ...optional_parameters])
     }
 
 
