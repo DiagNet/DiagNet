@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path("get-all-testcases", views.get_all_testcases, name="get-all-testcases"),
+    path("tests/", views.testcases_list, name="testcases-list")
     path("tests/", views.test_list, name="testcases-list"),
     path(
         "api/search/test/classes",
