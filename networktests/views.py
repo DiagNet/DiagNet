@@ -107,7 +107,7 @@ def get_parameters_of_specific_testcase(request):
         {
             "required": required_params,
             "optional": optional_params,
-            "mut_exclusive": cls._mutually_exclusive_parameters,
+            "mul_exclusive": cls._mutually_exclusive_parameters,
         }
     )
 
