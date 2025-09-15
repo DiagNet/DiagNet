@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}{{ Testcases }}{% endblock %}
+
+{% block content %}
+<h1>{{ Testcases }}</h1>
+<p class="text-muted"> All available Testcases from <code>networktests.testcases</code>.</p>
+
+<div id="testsContainer" class="row gy-3"></div>
+
+<div id="testsError" class="alert alert-danger d-none mt-3"></div>
+
+<script>
+ async function loadTests(){
+
+ }
+</script>
+
+{% endblock %}

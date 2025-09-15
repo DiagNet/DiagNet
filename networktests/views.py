@@ -1,9 +1,11 @@
+from django.core.paginator import Paginator
+from django.db.models import Prefetch, Count
 import json
 
 from django.http import JsonResponse
 import importlib.resources
-from .models import TestCase
-from .models import TestParameter
+from django.shortcuts import render
+from .models import TestCase, TestParameter, TestDevice
 
 package = "networktests.testcases"
 
@@ -131,3 +133,40 @@ def update_all_available_testcases():
 
 
 global_testcases = update_all_available_testcases()
+def test_list(request):
+    return render(request, "networktests/testcases_list.html")
+
+def testcases_list(request):
+    qs = ((
+        TestCase.objects
+        .prefetch_related(
+            Prefetch(
+                'parameters',
+                queryset=TestParameter.objects.order_by('name')
+            ),
+            Prefetch(
+                'devices',
+                queryset=TestDevice.objects
+                    .select_related('device')
+                    .order_by('device_name')
+                )
+            ),
+        )
+        .annotate(
+            num_params=Count('parameters', distinct=True),
+            num_devices=Count('devices', distinct=True),
+            num_results=Count('results', distinct=True)
+        )
+        .order_by('label')
+    )
+
+    paginator = Paginator(qs, 20)
+    page = request.GET.get('page')
+    page_obj = paginator.get_page(page)
+
+    return render(request, "networktests/testcases_list.html", {
+        'page_obj': page_obj,
+        "paginator": paginator,
+    })
+
+
