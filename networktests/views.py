@@ -4,12 +4,11 @@ import json
 
 from django.http import JsonResponse
 import importlib.resources
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 
 from .models import TestCase, TestParameter, TestDevice
 
 package = "networktests.testcases"
-
 
 def get_all_testcases(request):
     """
@@ -170,5 +169,25 @@ def test_page(request):
     # context = {"title": "test", "msg": "hello bro"}
     return render(request, "create_test_popup.html")
 
+
+def run_test(request, id):
+    tc = get_object_or_404(TestCase, id=id)
+    module_name = f"networktests.testcases.{tc.test_module}"
+
+    try:
+        module = importlib.import_module(module_name)
+        cls = getattr(module, tc.test_module)
+    except Exception as e:
+        return JsonResponse({"ok": False, "error": f"Import error: {e}"}, status=400)
+
+    params = {p.name: p.value for p in tc.parameters.all()}
+    tester = cls()
+
+    try:
+        result = tester.run(**params)
+    except Exception as e:
+        return JsonResponse({"ok": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"ok": True, "result": result})
 
 global_testcases = update_all_available_testcases()
