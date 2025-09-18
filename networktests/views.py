@@ -4,7 +4,7 @@ import json
 
 from django.http import JsonResponse, HttpResponseNotAllowed
 import importlib.resources
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 
 from .models import TestCase, TestParameter, TestDevice
 
@@ -176,18 +176,17 @@ def run_test(request, id):
 
     tc = get_object_or_404(TestCase, id=id)
 
-    module = importlib.import_module(f"networktests.testcases.{tc.test_module}")
-    cls = getattr(module, tc.test_module)
-
-    params = {p.name: p.value for p in tc.parameters.all()}
-
     try:
-        result = cls().run(**params)
+        data = tc.run()  # <- nutzt deine Model-Logik
     except Exception as e:
         return render(request, "networktests/partials/test_result.html",
                       {"status": "error", "error": str(e), "tc": tc})
 
+    status  = (data or {}).get("result")
+    details = (data or {}).get("tests", {})
+
     return render(request, "networktests/partials/test_result.html",
-                  {"status": "ok", "result": result, "tc": tc})
+                  {"status": status, "details": details, "tc": tc})
+
 
 global_testcases = update_all_available_testcases()
