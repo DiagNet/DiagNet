@@ -2,7 +2,7 @@ from django.core.paginator import Paginator
 from django.db.models import Prefetch, Count
 import json
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotAllowed
 import importlib.resources
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -171,23 +171,23 @@ def test_page(request):
 
 
 def run_test(request, id):
-    tc = get_object_or_404(TestCase, id=id)
-    module_name = f"networktests.testcases.{tc.test_module}"
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
 
-    try:
-        module = importlib.import_module(module_name)
-        cls = getattr(module, tc.test_module)
-    except Exception as e:
-        return JsonResponse({"ok": False, "error": f"Import error: {e}"}, status=400)
+    tc = get_object_or_404(TestCase, id=id)
+
+    module = importlib.import_module(f"networktests.testcases.{tc.test_module}")
+    cls = getattr(module, tc.test_module)
 
     params = {p.name: p.value for p in tc.parameters.all()}
-    tester = cls()
 
     try:
-        result = tester.run(**params)
+        result = cls().run(**params)
     except Exception as e:
-        return JsonResponse({"ok": False, "error": str(e)}, status=400)
+        return render(request, "networktests/partials/test_result.html",
+                      {"status": "error", "error": str(e), "tc": tc})
 
-    return JsonResponse({"ok": True, "result": result})
+    return render(request, "networktests/partials/test_result.html",
+                  {"status": "ok", "result": "result", "tc": tc})
 
 global_testcases = update_all_available_testcases()
