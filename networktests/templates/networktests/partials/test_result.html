@@ -1,31 +1,24 @@
-{# templates/networktests/partials/test_result.html #}
-
 {% if status == "error" %}
-<div class="text-danger">{{ error }}</div>
+  <div class="text-danger">⚠️ {{ error }}</div>
 {% else %}
-{% with r=result.result|default_if_none:""|upper %}
-{% if r == "PASS" %}
-<div class="text-success">PASS</div>
-{% elif r == "FAIL" %}
-<div class="text-danger">FAIL</div>
-{% else %}
-<div class="text-secondary">{{ r }}</div>
-{% endif %}
-{% endwith %}
+  {% with s=status|default_if_none:""|upper %}
+    {% if s == "PASS" %}
+      <div class="text-success">✅ PASS</div>
+    {% elif s == "FAIL" %}
+      <div class="text-danger">❌ FAIL</div>
+    {% else %}
+      <div class="text-secondary">ℹ️ {{ status|default:"(kein status)" }}</div>
+    {% endif %}
+  {% endwith %}
 
-{% if result.tests %}
-<details class="mt-1">
-    <summary class="small">Details</summary>
-    <ul class="small mt-1">
-        {% for name, info in result.tests.items %}
-        <li>
-            <strong>{{ name }}</strong>:
-            {{ info.result|upper }}
-            {% if info.message %} — {{ info.message }}{% endif %}
-        </li>
+  {% if details %}
+    <details class="mt-1">
+      <summary class="small">Details</summary>
+      <ul class="small mt-1">
+        {% for name, info in details.items %}
+          <li><strong>{{ name }}</strong>: {{ info.result|upper }}{% if info.message %} — {{ info.message }}{% endif %}</li>
         {% endfor %}
-    </ul>
-</details>
+      </ul>
+    </details>
+  {% endif %}
 {% endif %}
-{% endif %}
-

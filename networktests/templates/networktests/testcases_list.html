@@ -29,16 +29,15 @@
                     <div class="d-flex flex-wrap gap-1">
                         {% for td in tc.devices.all %}
                         <span class="badge text-bg-light">
-                                            {{ td.device.name }}{% if td.name %} ({{ td.name }}) {% endif %}
-                                        </span>
+                            {{ td.device.name }}{% if td.name %} ({{ td.name }}) {% endif %}
+                        </span>
                         {% endfor %}
                     </div>
                     {% else %}
                     <div class="small text-muted">Keine Zielgeräte verknüpft.</div>
                     {% endif %}
                     <div class="small text-muted mb-2">
-                        {{ tc.num_params|default:0 }} Param • {{ tc.num_devices|default:0 }} Devices • {{
-                        tc.num_results|default:0 }} Results
+                        {{ tc.num_params|default:0 }} Param • {{ tc.num_devices|default:0 }} Devices
                     </div>
                     <div id="result-{{ tc.id }}" class="mt-2 small"></div>
 
