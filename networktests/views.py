@@ -4,7 +4,7 @@ import json
 
 from django.http import JsonResponse, HttpResponseNotAllowed
 import importlib.resources
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 
 from .models import TestCase, TestParameter, TestDevice
 
