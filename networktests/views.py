@@ -188,6 +188,6 @@ def run_test(request, id):
                       {"status": "error", "error": str(e), "tc": tc})
 
     return render(request, "networktests/partials/test_result.html",
-                  {"status": "ok", "result": "result", "tc": tc})
+                  {"status": "ok", "result": result, "tc": tc})
 
 global_testcases = update_all_available_testcases()
