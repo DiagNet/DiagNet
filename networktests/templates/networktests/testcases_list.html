@@ -36,14 +36,23 @@
                             {% else %}
                                 <div class="small text-muted">Keine Zielgeräte verknüpft.</div>
                             {% endif %}
-                        </div>
-
-                        <div class="text-end">
                             <div class="small text-muted mb-2">
                                 {{ tc.num_params|default:0 }} Param • {{ tc.num_devices|default:0 }} Devices • {{ tc.num_results|default:0 }} Results
                             </div>
-                            <!-- Platzhalter, später als POST -->
-                            <a class="btn btn-sm btn-primary" href="{% url 'testcases-list' %}?run={{ tc.id }}">Run</a>
+                            <div id="result-{{ tc.id }}" class="mt-2 small"></div>
+
+                            <form class="d-inline"
+                                  hx-post="{% url 'tests-run' tc.id %}"
+                                  hx-target="#result-{{ tc.id }}"
+                                  hx-swap="innerHTML">
+                              {% csrf_token %}
+                              <button class="btn btn-sm btn-primary" hx-indicator="#spinner-{{ tc.id }}">
+                                Run
+                              </button>
+                              <span id="spinner-{{ tc.id }}" class="htmx-indicator ms-2">…lädt</span>
+                            </form>
+
+                            </div>
                         </div>
                     </div>
                 </div>

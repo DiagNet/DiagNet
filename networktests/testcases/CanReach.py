@@ -6,7 +6,7 @@ class CanReach(DiagNetTest):
     _required_params = ["device", "to"]
 
     def test_reachability(self) -> bool:
-        response: dict = self.device.parse(f"ping {self.ping_host}")
+        response: dict = self.device.parse(f"ping {self.to}")
         success_rate: float = response["ping"]["statistics"]["success_rate_percent"]
 
         return success_rate >= 60.0
