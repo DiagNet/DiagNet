@@ -7,82 +7,83 @@
     <h1 class="m-3">Testcases</h1>
 
     {% if page_obj.object_list %}
-        <div class="list-group">
-            {% for tc in page_obj.object_list %}
-                <div class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="me-3">
-                            <h5 class="mb-1">{{ tc.label }}</h5>
-                            {% if tc.parameters.all %}
-                                <div class="small text-muted mb-2">Parameter:</div>
-                                <div class="mb-2">
-                                    {% for p in tc.parameters.all %}
-                                        <span class="badge rounded-pill text-bg-secondary me-1">
+    <div class="list-group">
+        {% for tc in page_obj.object_list %}
+        <div class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="me-3">
+                    <h5 class="mb-1">{{ tc.label }}</h5>
+                    {% if tc.parameters.all %}
+                    <div class="small text-muted mb-2">Parameter:</div>
+                    <div class="mb-2">
+                        {% for p in tc.parameters.all %}
+                        <span class="badge rounded-pill text-bg-secondary me-1">
                                             {{ p.name }}{% if p.value %}: {{ p.value }}{% endif %}
                                         </span>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
 
-                            {% if tc.devices.all %}
-                                <div class="small text-muted mb-1">Zielgeräte:</div>
-                                <div class="d-flex flex-wrap gap-1">
-                                    {% for td in tc.devices.all %}
-                                        <span class="badge text-bg-light">
+                    {% if tc.devices.all %}
+                    <div class="small text-muted mb-1">Zielgeräte:</div>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for td in tc.devices.all %}
+                        <span class="badge text-bg-light">
                                             {{ td.device.name }}{% if td.name %} ({{ td.name }}) {% endif %}
                                         </span>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <div class="small text-muted">Keine Zielgeräte verknüpft.</div>
-                            {% endif %}
-                            <div class="small text-muted mb-2">
-                                {{ tc.num_params|default:0 }} Param • {{ tc.num_devices|default:0 }} Devices • {{ tc.num_results|default:0 }} Results
-                            </div>
-                            <div id="result-{{ tc.id }}" class="mt-2 small"></div>
-
-                            <form class="d-inline"
-                                  hx-post="{% url 'tests-run' tc.id %}"
-                                  hx-target="#result-{{ tc.id }}"
-                                  hx-swap="innerHTML">
-                              {% csrf_token %}
-                              <button class="btn btn-sm btn-primary" hx-indicator="#spinner-{{ tc.id }}">
-                                Run
-                              </button>
-                              <span id="spinner-{{ tc.id }}" class="htmx-indicator ms-2">…lädt</span>
-                            </form>
-
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
+                    {% else %}
+                    <div class="small text-muted">Keine Zielgeräte verknüpft.</div>
+                    {% endif %}
+                    <div class="small text-muted mb-2">
+                        {{ tc.num_params|default:0 }} Param • {{ tc.num_devices|default:0 }} Devices • {{
+                        tc.num_results|default:0 }} Results
+                    </div>
+                    <div id="result-{{ tc.id }}" class="mt-2 small"></div>
+
+                    <form class="d-inline"
+                          hx-post="{% url 'tests-run' tc.id %}"
+                          hx-target="#result-{{ tc.id }}"
+                          hx-swap="innerHTML">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-primary" hx-indicator="#spinner-{{ tc.id }}">
+                            Run
+                        </button>
+                        <span id="spinner-{{ tc.id }}" class="htmx-indicator ms-2">…lädt</span>
+                    </form>
+
                 </div>
-            {% endfor %}
+            </div>
         </div>
+    </div>
+    {% endfor %}
+</div>
 
-    <!-- Pagination -->
-    <nav class="mt-3">
-        <ul class="pagination">
-            {% if page_obj.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>
-            {% else %}
-                <li class="page-item disabled"><span class="page-link">«</span></li>
-            {% endif %}
+<!-- Pagination -->
+<nav class="mt-3">
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">«</span></li>
+        {% endif %}
 
-            <li class="page-item disabled">
-                <span class="page-link">Seite {{ page_obj.number }} / {{page_obj.paginator.num_pages }}</span>
-            </li>
+        <li class="page-item disabled">
+            <span class="page-link">Seite {{ page_obj.number }} / {{page_obj.paginator.num_pages }}</span>
+        </li>
 
-            {% if page_obj.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a></li>
-            {% else %}
-               <li class="page-item disabled"><span class="page-link">»</span></li>
-            {% endif %}
-        </ul>
-    </nav>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a></li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">»</span></li>
+        {% endif %}
+    </ul>
+</nav>
 
-    {% else %}
-        <div class="alert alert-info">Es sind noch keine Testcases angelegt.</div>
-    {% endif %}
+{% else %}
+<div class="alert alert-info">Es sind noch keine Testcases angelegt.</div>
+{% endif %}
 </div>
 
 {% endblock %}
