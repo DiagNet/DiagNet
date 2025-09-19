@@ -4,19 +4,30 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('devices', '0003_remove_device_id_device_protocol_and_more'),
+        ("devices", "0003_remove_device_id_device_protocol_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='device',
-            name='status',
-            field=models.CharField(choices=[('unknown', '❓'), ('reachable', '✅'), ('unreachable', '❌')], default='unknown', verbose_name='Status'),
+            model_name="device",
+            name="status",
+            field=models.CharField(
+                choices=[("unknown", "❓"), ("reachable", "✅"), ("unreachable", "❌")],
+                default="unknown",
+                verbose_name="Status",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='device',
-            constraint=models.CheckConstraint(condition=models.Q(('protocol', 'telnet'), ('device_type__endswith', 'iosxe'), _negated=True), name='no_telnet_on_iosxe', violation_error_message='Telnet is not allowed for IOSXE devices.'),
+            model_name="device",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("protocol", "telnet"),
+                    ("device_type__endswith", "iosxe"),
+                    _negated=True,
+                ),
+                name="no_telnet_on_iosxe",
+                violation_error_message="Telnet is not allowed for IOSXE devices.",
+            ),
         ),
     ]

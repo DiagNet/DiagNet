@@ -6,55 +6,124 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('devices', '0004_device_status_device_no_telnet_on_iosxe'),
+        ("devices", "0004_device_status_device_no_telnet_on_iosxe"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TestCase',
+            name="TestCase",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('test_module', models.TextField(validators=[django.core.validators.RegexValidator(message='Module name must follow Python class naming convention (PascalCase).', regex='^[A-Z][A-Za-z0-9_]*$')])),
-                ('expected_result', models.BooleanField()),
-                ('label', models.TextField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "test_module",
+                    models.TextField(
+                        validators=[
+                            django.core.validators.RegexValidator(
+                                message="Module name must follow Python class naming convention (PascalCase).",
+                                regex="^[A-Z][A-Za-z0-9_]*$",
+                            )
+                        ]
+                    ),
+                ),
+                ("expected_result", models.BooleanField()),
+                ("label", models.TextField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.CreateModel(
-            name='TestDevice',
+            name="TestDevice",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField()),
-                ('device', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='device', to='devices.device')),
-                ('test_case', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='devices', to='networktests.testcase')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.TextField()),
+                (
+                    "device",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="device",
+                        to="devices.device",
+                    ),
+                ),
+                (
+                    "test_case",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="devices",
+                        to="networktests.testcase",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='TestParameter',
+            name="TestParameter",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField()),
-                ('value', models.TextField(blank=True, null=True)),
-                ('test_case', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='parameters', to='networktests.testcase')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.TextField()),
+                ("value", models.TextField(blank=True, null=True)),
+                (
+                    "test_case",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="parameters",
+                        to="networktests.testcase",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='TestResult',
+            name="TestResult",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('attempt_id', models.IntegerField()),
-                ('started_at', models.DateTimeField()),
-                ('finished_at', models.DateTimeField(blank=True, null=True)),
-                ('result', models.BooleanField()),
-                ('log', models.TextField(blank=True, null=True)),
-                ('test_case', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='results', to='networktests.testcase')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("attempt_id", models.IntegerField()),
+                ("started_at", models.DateTimeField()),
+                ("finished_at", models.DateTimeField(blank=True, null=True)),
+                ("result", models.BooleanField()),
+                ("log", models.TextField(blank=True, null=True)),
+                (
+                    "test_case",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="results",
+                        to="networktests.testcase",
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('attempt_id', 'test_case')},
+                "unique_together": {("attempt_id", "test_case")},
             },
         ),
     ]
