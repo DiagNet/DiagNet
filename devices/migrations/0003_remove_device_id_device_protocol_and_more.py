@@ -5,38 +5,62 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('devices', '0002_device_port_alter_device_device_type'),
+        ("devices", "0002_device_port_alter_device_device_type"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='device',
-            name='id',
+            model_name="device",
+            name="id",
         ),
         migrations.AddField(
-            model_name='device',
-            name='protocol',
-            field=models.CharField(choices=[('ssh', 'SSH'), ('telnet', 'Telnet')], default='ssh', verbose_name='Protocol'),
+            model_name="device",
+            name="protocol",
+            field=models.CharField(
+                choices=[("ssh", "SSH"), ("telnet", "Telnet")],
+                default="ssh",
+                verbose_name="Protocol",
+            ),
         ),
         migrations.AlterField(
-            model_name='device',
-            name='device_type',
-            field=models.CharField(choices=[('router_ios', 'Router (IOS)'), ('router_iosxe', 'Router (IOSXE)'), ('router_iosxr', 'Router (IOSXR)'), ('switch_ios', 'Switch (IOS)'), ('switch_iosxe', 'Switch (IOSXE)'), ('switch_iosxr', 'Switch (IOSXR)')], max_length=20, verbose_name='Device Type'),
+            model_name="device",
+            name="device_type",
+            field=models.CharField(
+                choices=[
+                    ("router_ios", "Router (IOS)"),
+                    ("router_iosxe", "Router (IOSXE)"),
+                    ("router_iosxr", "Router (IOSXR)"),
+                    ("switch_ios", "Switch (IOS)"),
+                    ("switch_iosxe", "Switch (IOSXE)"),
+                    ("switch_iosxr", "Switch (IOSXR)"),
+                ],
+                max_length=20,
+                verbose_name="Device Type",
+            ),
         ),
         migrations.AlterField(
-            model_name='device',
-            name='ip_address',
-            field=models.GenericIPAddressField(verbose_name='IP Address'),
+            model_name="device",
+            name="ip_address",
+            field=models.GenericIPAddressField(verbose_name="IP Address"),
         ),
         migrations.AlterField(
-            model_name='device',
-            name='name',
-            field=models.CharField(max_length=100, primary_key=True, serialize=False, unique=True, verbose_name='Hostname'),
+            model_name="device",
+            name="name",
+            field=models.CharField(
+                max_length=100,
+                primary_key=True,
+                serialize=False,
+                unique=True,
+                verbose_name="Hostname",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='device',
-            constraint=models.UniqueConstraint(django.db.models.functions.text.Lower('name'), name='name_case_insensitive_unique', violation_error_message='Hostname already exists (case insensitive match)'),
+            model_name="device",
+            constraint=models.UniqueConstraint(
+                django.db.models.functions.text.Lower("name"),
+                name="name_case_insensitive_unique",
+                violation_error_message="Hostname already exists (case insensitive match)",
+            ),
         ),
     ]

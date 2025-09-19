@@ -5,20 +5,35 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('devices', '0001_initial'),
+        ("devices", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='device',
-            name='port',
-            field=models.IntegerField(default=22, validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(65535)]),
+            model_name="device",
+            name="port",
+            field=models.IntegerField(
+                default=22,
+                validators=[
+                    django.core.validators.MinValueValidator(1),
+                    django.core.validators.MaxValueValidator(65535),
+                ],
+            ),
         ),
         migrations.AlterField(
-            model_name='device',
-            name='device_type',
-            field=models.CharField(choices=[('router_ios', 'Router (IOS)'), ('router_iosxe', 'Router (IOSXE)'), ('router_iosxr', 'Router (IOSXR)'), ('switch_ios', 'Switch (IOS)'), ('switch_iosxe', 'Switch (IOSXE)'), ('switch_iosxr', 'Switch (IOSXR)')], max_length=20),
+            model_name="device",
+            name="device_type",
+            field=models.CharField(
+                choices=[
+                    ("router_ios", "Router (IOS)"),
+                    ("router_iosxe", "Router (IOSXE)"),
+                    ("router_iosxr", "Router (IOSXR)"),
+                    ("switch_ios", "Switch (IOS)"),
+                    ("switch_iosxe", "Switch (IOSXE)"),
+                    ("switch_iosxr", "Switch (IOSXR)"),
+                ],
+                max_length=20,
+            ),
         ),
     ]
