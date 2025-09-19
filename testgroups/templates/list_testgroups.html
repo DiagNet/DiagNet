@@ -1,0 +1,35 @@
+
+<div class="table-responsive" id="testgroup-table">
+  {% if error %}
+  <div class="alert alert-danger">
+    <strong>Error:</strong> {{ error }}
+  </div>
+  {% endif %}
+  <table class="table table-striped">
+      <thead>
+      <tr>
+          <th>Name</th>
+          <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% if testgroup_list %}
+      {% for testgroup in testgroup_list %}
+      <tr id="testgroups-{{ testgroup.name }}">
+          <td>{{ testgroup.name }}</td>
+          <td class="status">
+              <span class="connection-status">status</span>
+              <span id="{{ testgroup.name }}-spinner" class="htmx-indicator">
+                      <span class="spinner-grow spinner-grow-sm" role="status"></span>
+                  </span>
+          </td>
+      </tr>
+      {% endfor %}
+      {% else %}
+      <tr>
+          <td colspan="100%">No Test Groups yet.</td>
+      </tr>
+      {% endif %}
+      </tbody>
+  </table>
+</div>
