@@ -11,6 +11,8 @@
         inherit (pkgs)
           just
           uv
+          neovim
+          git
           ;
       }
       ++ [ python ];
