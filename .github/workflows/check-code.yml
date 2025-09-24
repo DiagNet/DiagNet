@@ -1,7 +1,8 @@
 name: Check Code
 
 on:
-  push:
+  pull_request:
+  merge_group:
 
 jobs:
   check-code:

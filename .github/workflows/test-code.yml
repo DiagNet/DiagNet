@@ -1,7 +1,8 @@
 name: Test code
 
 on:
-  push:
+  pull_request:
+  merge_group:
 
 jobs:
   test-code:
