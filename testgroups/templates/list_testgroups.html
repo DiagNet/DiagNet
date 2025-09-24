@@ -9,7 +9,6 @@
       <thead>
       <tr>
           <th>Name</th>
-          <th>Actions</th>
       </tr>
       </thead>
       <tbody>
@@ -17,11 +16,10 @@
       {% for testgroup in testgroup_list %}
       <tr id="testgroups-{{ testgroup.name }}">
           <td>{{ testgroup.name }}</td>
-          <td class="status">
-              <span class="connection-status">status</span>
-              <span id="{{ testgroup.name }}-spinner" class="htmx-indicator">
-                      <span class="spinner-grow spinner-grow-sm" role="status"></span>
-                  </span>
+          <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
+            <a hx-vals='{"name": "{{ testgroup.name }}"}' hx-post="delete-testgroup/" hx-target="#testgroup-table" class="btn btn-sm btn-danger" title="Delete">
+                  <i class="bi bi-trash"></i>
+              </a>
           </td>
       </tr>
       {% endfor %}

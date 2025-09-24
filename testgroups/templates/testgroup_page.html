@@ -4,7 +4,7 @@
 
 {% block content %}
 <h1>Test Groups</h1>
-<form hx-post="create-testgroup/" hx-target="#testgroup-table" hx-swap="outerHTML">
+<form hx-post="create-testgroup/" hx-target="#testgroup-table" hx-swap="outerHTML" hx-on::after-request="this.reset()">
   {% csrf_token %}
   <div class="from-group row">
     <div class="col-sm-8">
@@ -18,33 +18,12 @@
     </div>
   </div>
 </form>
-<div class="table-responsive" id="testgroup-table">
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% if testgroup_list %}
-        {% for testgroup in testgroup_list %}
-        <tr id="testgroups-{{ testgroup.name }}">
-            <td>{{ testgroup.name }}</td>
-            <td class="status">
-                <span class="connection-status">status</span>
-                <span id="{{ testgroup.name }}-spinner" class="htmx-indicator">
-                        <span class="spinner-grow spinner-grow-sm" role="status"></span>
-                    </span>
-            </td>
-        </tr>
-        {% endfor %}
-        {% else %}
-        <tr>
-            <td colspan="100%">No Test Groups yet.</td>
-        </tr>
-        {% endif %}
-        </tbody>
-    </table>
+
+<div 
+  hx-get="/testgroups/list-testgroups/"
+  hx-trigger="load"
+  hx-swap="outerHTML">
+  <p>Loading content…</p>
 </div>
+
 {% endblock %}
