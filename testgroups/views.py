@@ -26,25 +26,39 @@ def list_testgroups(request, error=None):
     return render(request, "list_testgroups.html", context=context)
 
 
-testgroup_name_pattern = r"[A-Za-z_-]+"
+testgroup_name_pattern = r"[A-Za-z0-9\._-]+"
 
 
 def create_testgroup(request):
     if request.method != "POST":
-        return HttpResponse("Wrong request method")
+        return HttpResponse("bad request method.")
 
     name = name = request.POST.get("name")
 
     error = None
     if not name:
-        error = "Name cannot be empty"
+        error = "name cannot be empty"
     elif not re.fullmatch(testgroup_name_pattern, name):
-        error = "Name can only contain letters, underscores (_) and dashes (-)"
+        error = "name can only contain letters, numbers, underscores, dashes and dots."
     else:
         try:
             tg = TestGroup(name=name)
             tg.save()
         except IntegrityError:
-            error = "A group with that name already exists"
+            error = "a group with that name already exists."
 
     return list_testgroups(request, error=error)
+
+
+def delete_testgroup(request):
+    if request.method != "POST":
+        return HttpResponse("wrong request method.")
+
+    name = name = request.POST.get("name")
+
+    try:
+        TestGroup.objects.get(name=name).delete()
+    except TestGroup.DoesNotExist:
+        return list_testgroups(request, "a group with that name does not exist.")
+
+    return list_testgroups(request)
