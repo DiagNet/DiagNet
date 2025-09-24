@@ -1,11 +1,11 @@
-name: Check Code
+name: Test code
 
 on:
   push:
 
 jobs:
-  check-code:
-    name: Check code
+  test-code:
+    name: Test code
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -25,6 +25,6 @@ jobs:
         with:
           diagnostic-endpoint: ""
 
-      - name: Run checks
+      - name: Run Tests
         run: |
-          nix flake check
+          nix develop --command uv run manage.py test
