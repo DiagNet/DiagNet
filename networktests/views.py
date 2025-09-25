@@ -2,8 +2,13 @@ from django.core.paginator import Paginator
 from django.db.models import Prefetch, Count
 import json
 
-from django.http import JsonResponse, HttpResponseNotAllowed
+from django.http import (
+    JsonResponse,
+    HttpResponseNotAllowed,
+    HttpResponse,
+)
 import importlib.resources
+from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, get_object_or_404
 
 from .models import TestCase, TestParameter, TestDevice
@@ -194,6 +199,13 @@ def run_test(request, id):
         "networktests/partials/test_result.html",
         {"status": status, "details": details, "tc": tc},
     )
+
+
+@require_http_methods(["DELETE"])
+def delete_testcase(request, pk):
+    testcase = get_object_or_404(TestCase, pk=pk)
+    testcase.delete()
+    return HttpResponse(status=204)
 
 
 global_testcases = update_all_available_testcases()
