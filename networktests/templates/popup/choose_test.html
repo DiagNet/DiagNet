@@ -1,19 +1,20 @@
-<!-- Template content -->
-<div class="position-relative" style="max-width: 300px;">
-    <input type="text" id="searchInput" class="form-control" placeholder="Search...">
+<div class="modal-body d-flex flex-column p-2" style="height: 100%;">
+  <div class="d-flex flex-grow-1 gap-2" style="min-height: 0;">
 
-    <!-- Results dropdown -->
-    <ul id="resultsList" class="list-group position-absolute w-100 shadow-sm"
-        style="z-index: 1000; display: none; max-height: 200px; overflow-y: auto;">
-    </ul>
+    <!-- LEFT SIDE -->
+    <div class="d-flex flex-column flex-grow-1" style="min-height: 0;">
+      <div class="mb-2"><h5>Search Testcase</h5></div>
+      <div class="mb-2"><input type="text" class="form-control" placeholder="Search..."></div>
+      <div class="flex-grow-1 border rounded p-2 overflow-auto" style="min-height: 0;">
+        <p>Results / list of test cases...</p>
+      </div>
+    </div>
 
+    <!-- RIGHT SIDE -->
+    <div class="d-flex flex-column flex-grow-1 border rounded p-2 overflow-auto" style="min-height: 0;">
+      <p>Right side content goes here</p>
+      <div class="flex-grow-1"></div>
+    </div>
 
-    <h5>Required Parameters</h5>
-    <div id="requiredParamsContainer"></div>
-
-    <h5>Optional Parameters</h5>
-    <div id="optionalParamsContainer"></div>
-
-    <button id="submitParameters" class="btn btn-primary mt-3">Submit</button>
-
+  </div>
 </div>
