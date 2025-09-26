@@ -2,6 +2,8 @@
 
 const searchInput = document.getElementById("searchInput");
 const resultsList = document.getElementById("resultsList");
+const popup_window = document.getElementById("largeModal");
+const doc_window = document.getElementById("doc");
 
 const emptyItem = document.createElement("li");
 emptyItem.textContent = "No testcases found";
@@ -9,6 +11,24 @@ emptyItem.classList.add("list-group-item", "text-muted", "text-center");
 emptyItem.dataset.empty = "true";
 
 let all_test_classes = []
+
+function showInfoForTestClass(data) {
+    doc_window.innerHTML = data;
+}
+
+function hideInfoForTestClass() {
+    doc_window.innerHTML = "Select a test class to view its documentation."
+}
+
+const fetchTestClassInfoDebounced = debounce(async (testClassName) => {
+    try {
+        const res = await fetch(`/networktests/api/get/test/info?name=${encodeURIComponent(testClassName)}`);
+        const data = await res.json();
+        showInfoForTestClass(data.results);
+    } catch (err) {
+        console.error("Failed to fetch test class info:", err);
+    }
+}, 300);
 
 /**
  * Fetches all available test classes from the backend API once
@@ -34,30 +54,9 @@ async function fetch_all_test_classes() {
  */
 function search_for_test_class(query) {
     query = query.trim().toLowerCase();
-    console.log(all_test_classes)
     if (!query) return all_test_classes.slice();
 
     return all_test_classes.filter(tc => tc.toLowerCase().includes(query));
-}
-
-/**
- * Creates a single <li> DOM element representing a test class.
- * @param name test class info.
- * @returns <li> element representing the test class.
- */
-function createResultItem(name) {
-    const li = document.createElement("li");
-    li.textContent = name;
-    li.classList.add("list-group-item"); // optional styling
-    li.dataset.name = name;
-
-    // Optional: click handler
-    li.addEventListener("click", () => {
-        console.log("Selected testcase:", name);
-        // handle selection logic here
-    });
-
-    return li;
 }
 
 /**
@@ -113,12 +112,82 @@ function renderResults(results) {
     if (fragment.childNodes.length) resultsList.appendChild(fragment);
 
     resultsList.scrollTop = currentScroll;
+
+    if (results.length === 1) {
+        fetchTestClassInfoDebounced(results[0])
+    } else {
+        hideInfoForTestClass()
+    }
 }
 
+/**
+ * Creates a single <li> DOM element representing a test class.
+ * @param name test class info.
+ * @returns <li> element representing the test class.
+ */
+function createResultItem(name) {
+    const li = document.createElement("li");
+    li.textContent = name;
+    li.classList.add("list-group-item"); // optional styling
+    li.dataset.name = name;
+
+    li.addEventListener("click", () => {
+        const items = Array.from(resultsList.querySelectorAll("li:not([data-empty])"));
+        currentIndex = items.indexOf(li);
+        updateActive(items)
+        fetchTestClassInfoDebounced(items[currentIndex].dataset.name)
+        searchInput.focus()
+    });
+
+
+    return li;
+}
+
+// Keyboard Navigation
+/** Update active test-class and scroll to current selected item */
+function updateActive(items) {
+    items.forEach((li, i) => li.classList.toggle("active", i === currentIndex));
+    if (currentIndex >= 0) items[currentIndex].scrollIntoView({block: "nearest"});
+}
+
+
+let currentIndex = -1;
+
+/** Handle keyboard navigation inside the results list */
+function handleKeyboardNavigation(e) {
+    const items = Array.from(resultsList.querySelectorAll("li:not([data-empty])"));
+    if (!items.length) return;
+
+    switch (e.key) {
+        case "ArrowDown":
+            e.preventDefault();
+            currentIndex = (currentIndex + 1) % items.length;
+            break;
+
+        case "ArrowUp":
+            e.preventDefault();
+            currentIndex = (currentIndex - 1 + items.length) % items.length;
+            break;
+
+        case "Enter":
+            e.preventDefault();
+            if (currentIndex >= 0 && currentIndex < items.length) {
+                items[currentIndex].click();
+            }
+            break;
+
+        default:
+            currentIndex = -1;
+    }
+
+    updateActive(items)
+    fetchTestClassInfoDebounced(items[currentIndex].dataset.name)
+}
 
 // Input
 /** Handles changes in the search input field. */
 async function handleInput() {
+    currentIndex = -1
     const query = searchInput.value.trim();
     renderResults(search_for_test_class(query));
 }
@@ -144,6 +213,11 @@ function debounce(fn, delay) {
 async function init() {
     await fetch_all_test_classes();
     searchInput.addEventListener("input", debounce(handleInput, 200));
+    searchInput.addEventListener("keydown", handleKeyboardNavigation);
+    popup_window.addEventListener("keydown", (e) => {
+
+        searchInput.focus();
+    });
     await handleInput();
 }
 
