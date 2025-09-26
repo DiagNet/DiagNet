@@ -1,20 +1,22 @@
 <div class="modal-body d-flex flex-column p-2" style="height: 100%;">
-  <div class="d-flex flex-grow-1 gap-2" style="min-height: 0;">
+    <div class="d-flex flex-grow-1 gap-2" style="min-height: 0;">
 
-    <!-- LEFT SIDE -->
-    <div class="d-flex flex-column flex-grow-1" style="min-height: 0;">
-      <div class="mb-2"><h5>Search Testcase</h5></div>
-      <div class="mb-2"><input type="text" class="form-control" placeholder="Search..."></div>
-      <div class="flex-grow-1 border rounded p-2 overflow-auto" style="min-height: 0;">
-        <p>Results / list of test cases...</p>
-      </div>
+        <div class="d-flex flex-column flex-grow-1" style="min-height: 0;">
+            <div class="mb-2">
+                <label for="searchInput">Search Testcase</label>
+            </div>
+            <div class="mb-2">
+                <input id="searchInput" type="text" class="form-control" placeholder="Search Testcase...">
+            </div>
+            <div id="resultsList" class="flex-grow-1 border rounded p-2 overflow-auto" style="min-height: 0;">
+                <p>Results / list of test cases...</p>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column flex-grow-1 border rounded p-2 overflow-auto" style="min-height: 0;">
+            <p>Right side content goes here</p>
+            <div class="flex-grow-1"></div>
+        </div>
+
     </div>
-
-    <!-- RIGHT SIDE -->
-    <div class="d-flex flex-column flex-grow-1 border rounded p-2 overflow-auto" style="min-height: 0;">
-      <p>Right side content goes here</p>
-      <div class="flex-grow-1"></div>
-    </div>
-
-  </div>
 </div>
