@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.http import JsonResponse
 
 from devices.forms import DeviceForm
 
@@ -77,3 +78,9 @@ def device_check(request, pk):
         "devices/partials/device_status_cell.html",
         {"status": STATE_MAP[new_status]},
     )
+
+
+def get_all_devices(request):
+    devices = Device.objects.all()
+    names = [obj.name for obj in devices]
+    return JsonResponse({"results": names})
