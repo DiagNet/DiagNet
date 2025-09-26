@@ -48,10 +48,10 @@
             <button class="nav-link active" id="template-tab" type="button">Template</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="parameters-tab" type="button">Parameters</button>
+            <button class="nav-link disabled" id="parameters-tab" type="button">Parameters</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="info-tab" type="button">Info</button>
+            <button class="nav-link disabled" id="info-tab" type="button">Info</button>
         </li>
     </ul>
     <button type="button" class="btn-close position-absolute end-0 me-3" data-bs-dismiss="modal"
@@ -63,11 +63,11 @@
 
 <div class="modal-body p-0" style="overflow:hidden;">
     <div id="popupTabsContent" class="d-flex transition-transform">
-        <div class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
+        <div id="template-site" class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
             {% include "popup/choose_test.html" %}
         </div>
         <div class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
-            Parameters content here
+            {% include "popup/choose_parameters.html" %}
         </div>
         <div class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
             Info content here
@@ -91,8 +91,8 @@
 
 </script>
 
-<script src="{% static 'js/choose_test.js' %}"></script>
 <script src="{% static 'js/choose_parameters.js' %}"></script>
+<script src="{% static 'js/choose_test.js' %}"></script>
 
 
 {% endblock %}

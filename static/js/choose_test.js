@@ -5,6 +5,7 @@ const resultsList = document.getElementById("resultsList");
 const popupWindow = document.getElementById("largeModal");
 const docWindow = document.getElementById("doc");
 
+
 const emptyItem = document.createElement("li");
 emptyItem.textContent = "No testcases found";
 emptyItem.classList.add("list-group-item", "text-muted", "text-center");
@@ -12,14 +13,12 @@ emptyItem.dataset.empty = "true";
 
 let allTestClasses = []
 
-/** "Selects" the given Class for further handling. */
-function selectTestClass(testClass) {
-
-}
-
 /** Shows the given data as documentation. */
 function showInfoForTestClass(testCase, data) {
     docWindow.innerHTML = data;
+    docWindow.addEventListener("click", () => {
+        selectTestClass(testCase, popupWindow);
+    });
 }
 
 /** Hides the documentation. */
@@ -165,7 +164,6 @@ let currentIndex = -1;
 function handleKeyboardNavigation(e) {
     const items = Array.from(resultsList.querySelectorAll("li:not([data-empty])"));
     if (!items.length) return;
-
     switch (e.key) {
         case "ArrowDown":
             e.preventDefault();
@@ -180,7 +178,7 @@ function handleKeyboardNavigation(e) {
         case "Enter":
             e.preventDefault();
             if (currentIndex >= 0 && currentIndex < items.length) {
-                items[currentIndex].click();
+                selectTestClass(items[currentIndex].dataset.name, popupWindow);
             }
             break;
 
@@ -189,7 +187,9 @@ function handleKeyboardNavigation(e) {
     }
 
     updateActive(items)
-    fetchTestClassInfoDebounced(items[currentIndex].dataset.name)
+    if (currentIndex !== -1) {
+        fetchTestClassInfoDebounced(items[currentIndex].dataset.name)
+    }
 }
 
 // Input
@@ -222,10 +222,7 @@ async function init() {
     await fetchAllTestClasses();
     searchInput.addEventListener("input", debounce(handleInput, 200));
     searchInput.addEventListener("keydown", handleKeyboardNavigation);
-    popupWindow.addEventListener("keydown", (e) => {
-
-        searchInput.focus();
-    });
+    popupWindow.addEventListener("keydown", onPopUpClickHandler);
     await handleInput();
 }
 
