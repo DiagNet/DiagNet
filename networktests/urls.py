@@ -24,4 +24,9 @@ urlpatterns = [
         views.get_all_available_testcases,
         name="get_all_tests_api",
     ),
+    path(
+        "api/get/test/info",
+        views.get_doc_of_testcase,
+        name="get_doc_of_testcase",
+    ),
 ]

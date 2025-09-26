@@ -119,6 +119,9 @@ def get_parameters_of_specific_testcase(request):
 def get_all_available_testcases(request):
     return JsonResponse({"results": global_testcases})
 
+def get_doc_of_testcase(request):
+    return JsonResponse({"results": "work in progress"})
+
 def search_all_available_testcases(request):
     query = request.GET.get("query", "")
     if len(query) == 0:
