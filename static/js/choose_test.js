@@ -1,383 +1,150 @@
-// Phase 5 - Datatypes
-
-/** Function called when the input of the field is considered unknown */
-function unknown_datatype(field) {
-    field.style.border = "";
-}
-
-/** Function called when the input of the field is considered correct */
-function correct_datatype(field) {
-    field.style.border = "2px solid green";
-}
-
-/** Function called when the input of the field is considered wrong */
-function wrong_datatype(field) {
-    field.style.border = "2px solid red";
-}
-
-/** checks if the given field's input is corresponding to the given datatype */
-function check_datatype(field, datatype_as_string) {
-    const value = field.value.trim();
-
-    switch (datatype_as_string.toLowerCase()) {
-        case "string":
-        case "str":
-            return true
-
-        case "number":
-        case "int":
-        case "float":
-            return !isNaN(value) && value !== "";
-
-        case "ipv4address":
-        case "ipv4":
-            const ipv4Regex = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
-            return ipv4Regex.test(value);
-
-        default:
-            return true
-    }
-}
-
-/** handles DOM changes to implement checking datatypes */
-function handle_check_datatype(field, datatype_as_string) {
-    if (datatype_as_string == null) {
-        unknown_datatype(field)
-    } else if (check_datatype(field, datatype_as_string)) {
-        correct_datatype(field)
-    } else {
-        wrong_datatype(field)
-    }
-}
-
-// Phase 4 - Mutually-Exclusive Group Handling
-
-/** "Enables" the given field. */
-function enable_field(field) {
-    field.disabled = false;
-    field.readOnly = false;
-}
-
-/** "Disables" the given field. */
-function disable_field(field) {
-    field.disabled = true;
-    field.readOnly = true;
-}
-
-/** Responsible to block all mutually exclusive group members except the selected one. */
-function create_mutually_exclusive_datatype_bindings(param_fields, mutually_exclusive_groups, param_datatypes) {
-    /** Activates the first field and deactivates the other ones. */
-    function toggle_pair(activated, all_fields) {
-        // enable_field(activated); - Redundant
-        for (const value of all_fields.values()) {
-            if (value === activated) continue;
-            disable_field(value);
-        }
-    }
-
-    /** Enables all fields given. */
-    function enable_all_fields(all_fields) {
-        for (const value of all_fields.values()) {
-            enable_field(value);
-        }
-    }
-
-    let calculate_mut_neighbors = new Map()
-    mutually_exclusive_groups.forEach(pair => {
-        const all_fields = pair.map(v => param_fields.get(v));
-
-        for (const field of all_fields) {
-            if (!calculate_mut_neighbors.has(field)) {
-                calculate_mut_neighbors.set(field, new Set(all_fields));
-            } else {
-                const s = calculate_mut_neighbors.get(field);
-                all_fields.forEach(f => s.add(f));
-            }
-        }
-    });
-
-    for (const [field, all_fields_set] of calculate_mut_neighbors.entries()) {
-        field.addEventListener("input", () => {
-            const all_fields = [...all_fields_set];
-            if (field.value.length === 0) {
-                enable_all_fields(all_fields);
-                handle_check_datatype(field, null);
-            } else if (field.value.length === 1) { // Could be improved, length from 2 to 1 is a redundant operation here, but this is simple
-                toggle_pair(field, all_fields);
-                handle_check_datatype(field, param_datatypes.get(field.id));
-            } else {
-                handle_check_datatype(field, param_datatypes.get(field.id));
-            }
-        });
-    }
-
-    for (const [param, field] of param_fields.entries()) {
-        if (calculate_mut_neighbors.has(field)) continue; // Mutually Exclusive candidate
-        field.addEventListener("input", () => {
-            if (field.value.length === 0) {
-                handle_check_datatype(field, null);
-            } else {
-                handle_check_datatype(field, param_datatypes.get(param));
-            }
-        });
-    }
-
-}
-
-// Phase 3 - Validate Input and Create TestCase
-document.getElementById("submitParameters").addEventListener("click", read_parameter_input);
-let curr_test = null
-
-/** Reads values from input container */
-function readInputs(containerId) {
-    const container = document.getElementById(containerId);
-    const inputs = container.querySelectorAll("input");
-    const values = {};
-
-    inputs.forEach(input => {
-        values[input.name] = input.value; // store name: value
-    });
-
-    return values;
-}
-
-/** Needed for Django in order to not get a 403 Forbidden Error and to prevent CSRF Attacks. */
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-        for (let cookie of cookies) {
-            cookie = cookie.trim();
-            if (cookie.startsWith(name + "=")) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-/** Reads the parameter inputs and returns them as a map. */
-async function read_parameter_input() {
-    const requiredParams = readInputs("requiredParamsContainer");
-    const optionalParams = readInputs("optionalParamsContainer");
-
-    // Merge them into a single object
-    const payload = {
-        test: curr_test,
-        required: requiredParams,
-        optional: optionalParams
-    };
-
-    try {
-        const response = await fetch("/networktests/api/create/test", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken")
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result.status === "success") {
-            alert("Submission successful!");
-        } else {
-            console.error("Error:", result.message || "Unknown error");
-        }
-    } catch (err) {
-        console.error("Error sending parameters:", err);
-    }
-}
-
-// Phase 2 - Fetch and Create Parameter Fields
-
-/** Fetch search results from API */
-async function fetch_test_parameters(test_name) {
-    if (!test_name) return {required_params: [], optional_params: [], mul_exclusive: null};
-
-    try {
-        const res = await fetch(`/networktests/api/search/test/parameters?test_name=${encodeURIComponent(test_name)}`);
-        const data = await res.json();
-
-        return {
-            required_params: data.required || [],
-            optional_params: data.optional || [],
-            mul: data.mul_exclusive || []
-        };
-    } catch (err) {
-        console.error("Search API error:", err);
-        return {required_params: [], optional_params: [], mul: null};
-    }
-}
-
-/** Helper: create a single input field */
-function createInputField(paramName, isOptional = false) {
-    const input = document.createElement("input");
-    input.type = "text";
-    input.name = paramName;
-    input.id = paramName
-    input.placeholder = isOptional ? `${paramName} (optional)` : paramName;
-    input.className = "form-control mb-2"; // Bootstrap styling
-    return input;
-}
-
-
-/** Creates input fields for every */
-async function show_parameters(test_class) {
-    const test_parameters = await fetch_test_parameters(test_class);
-
-    // Containers for the input fields
-    const requiredContainer = document.getElementById("requiredParamsContainer");
-    const optionalContainer = document.getElementById("optionalParamsContainer");
-
-    // Clear previous inputs
-    requiredContainer.innerHTML = "";
-    optionalContainer.innerHTML = "";
-
-    const required_parameters = new Map(test_parameters.required_params.map(item => {
-        const [part1, part2] = item.split(":");
-        return [part1, part2];
-    }));
-
-    const optional_parameters = new Map(test_parameters.optional_params.map(item => {
-        const [part1, part2] = item.split(":");
-        return [part1, part2];
-    }));
-
-    // stores what input field corresponds to what param for mutually exclusive bindings.
-    let mutually_exclusive_params_fields = new Map();
-
-    // Create inputs for required parameters
-    for (const param of required_parameters.keys()) {
-        const new_input_field = createInputField(param);
-        mutually_exclusive_params_fields.set(param, new_input_field);
-        requiredContainer.appendChild(new_input_field);
-    }
-
-    // Create inputs for required parameters
-    for (const param of optional_parameters.keys()) {
-        const new_input_field = createInputField(param);
-        mutually_exclusive_params_fields.set(param, new_input_field);
-        optionalContainer.appendChild(new_input_field);
-    }
-
-    create_mutually_exclusive_datatype_bindings(mutually_exclusive_params_fields, test_parameters.mul, new Map([...required_parameters, ...optional_parameters]));
-}
-
-
-// Phase 1 - Select Test-Class
+/* Handles Search-Inputs and displays available testcases */
 
 const searchInput = document.getElementById("searchInput");
 const resultsList = document.getElementById("resultsList");
-let selectedIndex = -1; // Track items in search results
-/** Takes the input and fetches needed data */
-async function select_test_class(test_class) {
-    searchInput.value = test_class;
-    resultsList.style.display = "none";
-    show_parameters(test_class)
-    curr_test = test_class
-}
 
-/** Fetch search results from API */
-async function fetch_test_classes(query) {
-    if (!query) return [];
+const emptyItem = document.createElement("li");
+emptyItem.textContent = "No testcases found";
+emptyItem.classList.add("list-group-item", "text-muted", "text-center");
+emptyItem.dataset.empty = "true";
+
+let all_test_classes = []
+
+/**
+ * Fetches all available test classes from the backend API once
+ * and stores them locally in `all_test_classes`.
+ */
+async function fetch_all_test_classes() {
     try {
-        const res = await fetch(`/networktests/api/search/test/classes?query=${encodeURIComponent(query)}`);
+        const res = await fetch(`/networktests/api/get/tests`);
         const data = await res.json();
-        return data.results || [];
+        all_test_classes = data.results || [];
     } catch (err) {
         console.error("Search API error:", err);
         return [];
     }
 }
 
-/** Takes current possible test-classes and displays them. */
+/**
+ * Searches the locally stored `all_test_classes` for names
+ * that contain the given query (case-insensitive).
+ * Returns all classes if the query is empty.
+ * @param query The string to search for.
+ * @returns Array of matching test class names.
+ */
+function search_for_test_class(query) {
+    query = query.trim().toLowerCase();
+    console.log(all_test_classes)
+    if (!query) return all_test_classes.slice();
+
+    return all_test_classes.filter(tc => tc.toLowerCase().includes(query));
+}
+
+/**
+ * Creates a single <li> DOM element representing a test class.
+ * @param name test class info.
+ * @returns <li> element representing the test class.
+ */
+function createResultItem(name) {
+    const li = document.createElement("li");
+    li.textContent = name;
+    li.classList.add("list-group-item"); // optional styling
+    li.dataset.name = name;
+
+    // Optional: click handler
+    li.addEventListener("click", () => {
+        console.log("Selected testcase:", name);
+        // handle selection logic here
+    });
+
+    return li;
+}
+
+/**
+ * Renders the given results as DOM elements and shows them in the Web-GUI.
+ * @param results Array of elements that have been searched and are supposed to show on the Web-GUI.
+ */
 function renderResults(results) {
-    resultsList.innerHTML = "";
+    const currentScroll = resultsList.scrollTop;
 
-    if (!results.length) {
-        resultsList.innerHTML = `<li class="list-group-item">No results found</li>`;
-    } else {
-        results.forEach((item) => {
-            const li = document.createElement("li");
-            li.className = "list-group-item list-group-item-action";
-            li.textContent = item;
-
-            li.addEventListener("click", () => {
-                select_test_class(item);
-            });
-            resultsList.appendChild(li);
-        });
-    }
-
-    resultsList.style.display = "block";
-}
-
-// Keyboard Input
-/** Handle keyboard navigation */
-function handleKeyboardNavigation(e) {
-    const items = resultsList.querySelectorAll("li.list-group-item-action");
-    if (!items.length) return;
-
-    if (e.key === "ArrowDown") {
-        e.preventDefault();
-        selectedIndex = (selectedIndex + 1) % items.length;
-        updateSelection(items);
-    } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        selectedIndex = (selectedIndex - 1 + items.length) % items.length;
-        updateSelection(items);
-    } else if (e.key === "Enter") {
-        e.preventDefault();
-        if (selectedIndex >= 0 && selectedIndex < items.length) {
-            select_test_class(items[selectedIndex].textContent);
+    // Show "empty label" message to user when no matches are found
+    if (results.length === 0) {
+        if (!resultsList.contains(emptyItem)) {
+            resultsList.innerHTML = "";
+            resultsList.appendChild(emptyItem);
         }
+        resultsList.scrollTop = currentScroll;
+        return;
     }
-}
 
-/** Update Keyboard Highlight Action */
-function updateSelection(items) {
-    items.forEach((item, index) => {
-        if (index === selectedIndex) {
-            item.classList.add("active"); // Bootstrap active class
-            item.scrollIntoView({block: "nearest"});
-        } else {
-            item.classList.remove("active");
+    if (resultsList.contains(emptyItem)) emptyItem.remove();
+
+    // Map already created DOM elements to testcases
+    const existingItems = new Map();
+    Array.from(resultsList.children).forEach(li => {
+        existingItems.set(li.dataset.name, li);
+    });
+
+    const newSet = new Set(results);
+
+    // Remove items that are no longer in results
+    existingItems.forEach((li, name) => {
+        if (!newSet.has(name)) {
+            li.remove();
         }
     });
+
+    // Batch DOM updates (insert results that are shown at the end at the same time)
+    const fragment = document.createDocumentFragment();
+
+    // Keeps the results order the same in the Web-GUI
+    results.forEach((name, index) => {
+        let li = existingItems.get(name);
+        if (!li) li = createResultItem(name);
+
+        const nextSibling = resultsList.children[index];
+        if (!nextSibling) {
+            fragment.appendChild(li);
+        } else if (nextSibling !== li) {
+            resultsList.insertBefore(li, nextSibling);
+        }
+    });
+
+    if (fragment.childNodes.length) resultsList.appendChild(fragment);
+
+    resultsList.scrollTop = currentScroll;
 }
 
 
 // Input
-/** Handle input changes */
+/** Handles changes in the search input field. */
 async function handleInput() {
     const query = searchInput.value.trim();
-    selectedIndex = -1;
-
-    if (!query) {
-        resultsList.style.display = "none";
-        return;
-    }
-
-    const results = await fetch_test_classes(query);
-    renderResults(results);
+    renderResults(search_for_test_class(query));
 }
 
-// Mouse Input
-/** Hide dropdown if clicked outside */
-function handleClickOutside(e) {
-    if (!searchInput.contains(e.target) && !resultsList.contains(e.target)) {
-        resultsList.style.display = "none";
-    }
+/**
+ * Returns a debounced version of a function that delays execution
+ * until after `delay` milliseconds have passed since the last call.
+ * (used for not having to search Test-Cases every input)
+ *
+ * @param fn Function to debounce.
+ * @param delay Delay in milliseconds.
+ * @returns Debounced function.
+ */
+function debounce(fn, delay) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), delay);
+    };
 }
 
 /** Initialize event listeners */
-function init() {
-    searchInput.addEventListener("input", handleInput);
-    searchInput.addEventListener("keydown", handleKeyboardNavigation);
-    document.addEventListener("click", handleClickOutside);
+async function init() {
+    await fetch_all_test_classes();
+    searchInput.addEventListener("input", debounce(handleInput, 200));
+    await handleInput();
 }
 
-init();
+_ = init()

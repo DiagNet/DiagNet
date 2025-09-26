@@ -116,9 +116,13 @@ def get_parameters_of_specific_testcase(request):
         }
     )
 
+def get_all_available_testcases(request):
+    return JsonResponse({"results": global_testcases})
 
 def search_all_available_testcases(request):
     query = request.GET.get("query", "")
+    if len(query) == 0:
+        return JsonResponse({"results": global_testcases})
     results = [item for item in global_testcases if query.lower() in str(item.lower())]
     return JsonResponse({"results": results})
 
@@ -136,6 +140,7 @@ def update_all_available_testcases():
             testcases.append(class_name)
 
     return testcases
+
 
 
 def test_list(request):

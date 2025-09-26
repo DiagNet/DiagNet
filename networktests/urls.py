@@ -19,4 +19,9 @@ urlpatterns = [
     path("test/", views.test_page, name="test-page"),
     path("tests/<int:id>/run/", views.run_test, name="tests-run"),
     path("tests/<int:pk>/delete/", views.delete_testcase, name="testcase_delete"),
+    path(
+        "api/get/tests",
+        views.get_all_available_testcases,
+        name="get_all_tests_api",
+    ),
 ]
