@@ -6,6 +6,7 @@ from django.http import JsonResponse, HttpResponseNotAllowed
 import importlib.resources
 from django.shortcuts import render, get_object_or_404
 
+
 from .models import TestCase, TestParameter, TestDevice
 
 package = "networktests.testcases"
@@ -116,14 +117,6 @@ def get_all_available_testcases(request):
 
 def get_doc_of_testcase(request):
     return JsonResponse({"results": "work in progress"})
-
-def search_all_available_testcases(request):
-    query = request.GET.get("query", "")
-    if len(query) == 0:
-        return JsonResponse({"results": global_testcases})
-    results = [item for item in global_testcases if query.lower() in str(item.lower())]
-    return JsonResponse({"results": results})
-
 
 def update_all_available_testcases():
     testcases = []

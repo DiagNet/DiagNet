@@ -4,9 +4,24 @@ const templateTab = document.getElementById('template-tab')
 const requiredContainer = document.getElementById("requiredParamsContainer");
 const optionalContainer = document.getElementById("optionalParamsContainer");
 
+let allDevices = []
+
 /** Puts Focus always on searchInput */
 function onPopUpClickHandler(e) {
     searchInput.focus()
+}
+
+/** Fetch search results from API */
+async function fetchAllDevices() {
+    try {
+        const res = await fetch(`/devices/all`);
+        const data = await res.json();
+
+        return data.results || []
+    } catch (err) {
+        console.error("Search API error:", err);
+        return []
+    }
 }
 
 /** "Selects" the given Class for further handling. */
@@ -96,7 +111,7 @@ function disable_field(field) {
 }
 
 /** Responsible to block all mutually exclusive group members except the selected one. */
-function create_mutually_exclusive_datatype_bindings(param_fields, mutually_exclusive_groups, param_datatypes) {
+async function create_mutually_exclusive_datatype_bindings(param_fields, mutually_exclusive_groups, param_datatypes) {
     /** Activates the first field and deactivates the other ones. */
     function toggle_pair(activated, all_fields) {
         // enable_field(activated); - Redundant
@@ -222,10 +237,15 @@ function wrong_datatype(field) {
 }
 
 /** checks if the given field's input is corresponding to the given datatype */
-function check_datatype(field, datatype_as_string) {
+async function check_datatype(field, datatype_as_string) {
     const value = field.value.trim();
-
+    if (allDevices.length === 0 && datatype_as_string.trim().toLowerCase() === "device") {
+        allDevices = await fetchAllDevices();
+        console.log("finished" + allDevices);
+    }
     switch (datatype_as_string.toLowerCase()) {
+        case "device":
+            return allDevices.includes(value)
         case "string":
         case "str":
             return true
@@ -246,10 +266,10 @@ function check_datatype(field, datatype_as_string) {
 }
 
 /** handles DOM changes to implement checking datatypes */
-function handle_check_datatype(field, datatype_as_string) {
+async function handle_check_datatype(field, datatype_as_string) {
     if (datatype_as_string == null) {
         unknown_datatype(field)
-    } else if (check_datatype(field, datatype_as_string)) {
+    } else if (await check_datatype(field, datatype_as_string)) {
         correct_datatype(field)
     } else {
         wrong_datatype(field)
