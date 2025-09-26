@@ -1,54 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Popup</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
+    <title>Popup</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
 
-    .modal-dialog-large {
-      max-width: 50vw;
-      max-height: 90vh;
-      min-height: 50vh;
-      height: auto;
-      margin: 2.5vh auto;
-    }
+        .modal-dialog.modal-dialog-large {
+            width: 80vw;
+            max-width: 1200px;
+            height: calc(100vh - 150px);
+            margin: 75px auto !important;
+        }
 
-    .modal-body {
-      overflow-y: auto;
-    }
-  </style>
+        .modal-content {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+    </style>
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
 
 <!-- Button to open the modal -->
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#largeModal">
-  Open Nearly Full-Page Popup
+    Open Nearly Full-Page Popup
 </button>
 
 <!-- Modal -->
 <div class="modal fade shadow-sm" id="largeModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-large">
-    <div class="modal-content">
-      <div class="modal-header">
-        {% block modal_header %}
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        {% endblock %}
-      </div>
+    <div class="modal-dialog modal-dialog-large">
+        <div class="modal-content">
+            {% block modal_header %}
+            {% endblock %}
 
-      <div class="modal-body">
-        {% block modal_body %}
-        {% endblock %}
-      </div>
+            {% block modal_body %}
+            {% endblock %}
 
-      <div class="modal-footer">
-        {% block modal_footer %}
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="save-button">Save changes</button>
-        {% endblock %}
-      </div>
+            {% block modal_footer %}
+            {% endblock %}
+        </div>
     </div>
-  </div>
 </div>
 
 <!-- Bootstrap JS Bundle -->
