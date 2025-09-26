@@ -2,29 +2,37 @@
 
 const searchInput = document.getElementById("searchInput");
 const resultsList = document.getElementById("resultsList");
-const popup_window = document.getElementById("largeModal");
-const doc_window = document.getElementById("doc");
+const popupWindow = document.getElementById("largeModal");
+const docWindow = document.getElementById("doc");
 
 const emptyItem = document.createElement("li");
 emptyItem.textContent = "No testcases found";
 emptyItem.classList.add("list-group-item", "text-muted", "text-center");
 emptyItem.dataset.empty = "true";
 
-let all_test_classes = []
+let allTestClasses = []
 
-function showInfoForTestClass(data) {
-    doc_window.innerHTML = data;
+/** "Selects" the given Class for further handling. */
+function selectTestClass(testClass) {
+
 }
 
+/** Shows the given data as documentation. */
+function showInfoForTestClass(testCase, data) {
+    docWindow.innerHTML = data;
+}
+
+/** Hides the documentation. */
 function hideInfoForTestClass() {
-    doc_window.innerHTML = "Select a test class to view its documentation."
+    docWindow.innerHTML = "Select a test class to view its documentation."
 }
 
+/** Debounced Documentation fetching in order to reduce backend calls. */
 const fetchTestClassInfoDebounced = debounce(async (testClassName) => {
     try {
         const res = await fetch(`/networktests/api/get/test/info?name=${encodeURIComponent(testClassName)}`);
         const data = await res.json();
-        showInfoForTestClass(data.results);
+        showInfoForTestClass(testClassName, data.results);
     } catch (err) {
         console.error("Failed to fetch test class info:", err);
     }
@@ -32,13 +40,13 @@ const fetchTestClassInfoDebounced = debounce(async (testClassName) => {
 
 /**
  * Fetches all available test classes from the backend API once
- * and stores them locally in `all_test_classes`.
+ * and stores them locally in `allTestClasses`.
  */
-async function fetch_all_test_classes() {
+async function fetchAllTestClasses() {
     try {
         const res = await fetch(`/networktests/api/get/tests`);
         const data = await res.json();
-        all_test_classes = data.results || [];
+        allTestClasses = data.results || [];
     } catch (err) {
         console.error("Search API error:", err);
         return [];
@@ -46,17 +54,17 @@ async function fetch_all_test_classes() {
 }
 
 /**
- * Searches the locally stored `all_test_classes` for names
+ * Searches the locally stored `allTestClasses` for names
  * that contain the given query (case-insensitive).
  * Returns all classes if the query is empty.
  * @param query The string to search for.
  * @returns Array of matching test class names.
  */
-function search_for_test_class(query) {
+function searchForTestClass(query) {
     query = query.trim().toLowerCase();
-    if (!query) return all_test_classes.slice();
+    if (!query) return allTestClasses.slice();
 
-    return all_test_classes.filter(tc => tc.toLowerCase().includes(query));
+    return allTestClasses.filter(tc => tc.toLowerCase().includes(query));
 }
 
 /**
@@ -144,7 +152,7 @@ function createResultItem(name) {
 }
 
 // Keyboard Navigation
-/** Update active test-class and scroll to current selected item */
+/** Update active test-class and scroll to current selected item. */
 function updateActive(items) {
     items.forEach((li, i) => li.classList.toggle("active", i === currentIndex));
     if (currentIndex >= 0) items[currentIndex].scrollIntoView({block: "nearest"});
@@ -153,7 +161,7 @@ function updateActive(items) {
 
 let currentIndex = -1;
 
-/** Handle keyboard navigation inside the results list */
+/** Handle keyboard navigation inside the results list. */
 function handleKeyboardNavigation(e) {
     const items = Array.from(resultsList.querySelectorAll("li:not([data-empty])"));
     if (!items.length) return;
@@ -189,7 +197,7 @@ function handleKeyboardNavigation(e) {
 async function handleInput() {
     currentIndex = -1
     const query = searchInput.value.trim();
-    renderResults(search_for_test_class(query));
+    renderResults(searchForTestClass(query));
 }
 
 /**
@@ -209,12 +217,12 @@ function debounce(fn, delay) {
     };
 }
 
-/** Initialize event listeners */
+/** Initialize event listeners. */
 async function init() {
-    await fetch_all_test_classes();
+    await fetchAllTestClasses();
     searchInput.addEventListener("input", debounce(handleInput, 200));
     searchInput.addEventListener("keydown", handleKeyboardNavigation);
-    popup_window.addEventListener("keydown", (e) => {
+    popupWindow.addEventListener("keydown", (e) => {
 
         searchInput.focus();
     });
