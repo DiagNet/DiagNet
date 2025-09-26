@@ -6,11 +6,6 @@ urlpatterns = [
     path("tests/", views.testcases_list, name="testcases-list"),
     path("tests/", views.test_list, name="testcases-list"),
     path(
-        "api/search/test/classes",
-        views.search_all_available_testcases,
-        name="search_testclasses_api",
-    ),
-    path(
         "api/search/test/parameters",
         views.get_parameters_of_specific_testcase,
         name="search_test_parameters_api",
@@ -23,6 +18,11 @@ urlpatterns = [
         "api/get/tests",
         views.get_all_available_testcases,
         name="get_all_tests_api",
+    ),
+    path(
+        "api/get/test/info",
+        views.get_doc_of_testcase,
+        name="get_doc_of_testcase",
     ),
     path(
         "api/get/test/info",
