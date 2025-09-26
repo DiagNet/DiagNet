@@ -7,6 +7,10 @@
 <style>
     .modal-body {
         overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
     }
 
     .transition-transform {
@@ -18,9 +22,18 @@
     }
 
     .tab-pane {
-        display: block;
-        width: 100%;
-        flex-shrink: 0;
+        flex: 0 0 100%; /* each tab takes full width */
+        display: flex;
+        flex-direction: column;
+        height: 100%; /* fill container height */
+        overflow: hidden;
+    }
+
+    #popupTabsContent {
+        display: flex;
+        flex-grow: 1;
+        transition: transform 0.4s ease;
+        height: 100%;
     }
 </style>
 {% endblock %}
@@ -68,11 +81,8 @@
 
     tabs.forEach((tab, i) => {
         tab.addEventListener('click', () => {
-            // activate current tab
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-
-            // slide container
             container.style.transform = `translateX(-${i * 100}%)`;
         });
     });
