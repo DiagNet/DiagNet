@@ -21,35 +21,20 @@ function showInfoForTestClass(testCase, data) {
     });
 }
 
+/**
+ * Debounced function to fetch and display test class info.
+ *
+ * @function
+ * @param {string} testClassName - The name of the test class to fetch and display info for.
+ */
+const fetchTestClassInfoDebounced = debounce(async (testClassName) => {
+    const results = await fetchTestClassInfoAPI(testClassName);
+    showInfoForTestClass(testClassName, results);
+}, 300);
+
 /** Hides the documentation. */
 function hideInfoForTestClass() {
     docWindow.innerHTML = "Select a test class to view its documentation."
-}
-
-/** Debounced Documentation fetching in order to reduce backend calls. */
-const fetchTestClassInfoDebounced = debounce(async (testClassName) => {
-    try {
-        const res = await fetch(`/networktests/api/get/test/info?name=${encodeURIComponent(testClassName)}`);
-        const data = await res.json();
-        showInfoForTestClass(testClassName, data.results);
-    } catch (err) {
-        console.error("Failed to fetch test class info:", err);
-    }
-}, 300);
-
-/**
- * Fetches all available test classes from the backend API once
- * and stores them locally in `allTestClasses`.
- */
-async function fetchAllTestClasses() {
-    try {
-        const res = await fetch(`/networktests/api/get/tests`);
-        const data = await res.json();
-        allTestClasses = data.results || [];
-    } catch (err) {
-        console.error("Search API error:", err);
-        return [];
-    }
 }
 
 /**
@@ -198,23 +183,6 @@ async function handleInput() {
     currentIndex = -1
     const query = searchInput.value.trim();
     renderResults(searchForTestClass(query));
-}
-
-/**
- * Returns a debounced version of a function that delays execution
- * until after `delay` milliseconds have passed since the last call.
- * (used for not having to search Test-Cases every input)
- *
- * @param fn Function to debounce.
- * @param delay Delay in milliseconds.
- * @returns Debounced function.
- */
-function debounce(fn, delay) {
-    let timeout;
-    return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => fn(...args), delay);
-    };
 }
 
 /** Initialize event listeners. */

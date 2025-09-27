@@ -3,24 +3,6 @@
 let allDevices = []
 
 /**
- * Fetches the list of all devices from the API.
- *
- * @async
- * @returns {Promise<string[]>} An array of device names. Returns an empty array if the request fails or no results are returned.
- */
-async function fetchAllDevices() {
-    try {
-        const res = await fetch(`/devices/all`);
-        const data = await res.json();
-
-        return data.results || []
-    } catch (err) {
-        console.error("Search API error:", err);
-        return []
-    }
-}
-
-/**
  * Checks whether the value of a given input field matches the specified datatype.
  *
  * @async
