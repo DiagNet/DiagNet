@@ -57,7 +57,8 @@
                     <button class="btn btn-sm btn-danger ms-2" hx-delete="{% url 'testcase_delete' tc.id %}"
                         hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-target="closest .list-group-item"
                         hx-swap="outerHTML" hx-confirm="Do you really want to delete this test case?"
-                        hx-on::after-request="location.reload()">
+                        hx-on::after-request="location.reload()"
+                        hx-indicator="#del-spinner-{{ tc.id }}">
                         🗑️
                     </button>
                     <span id="del-spinner-{{ tc.id }}" class="htmx-indicator ms-2">…deleting</span>
