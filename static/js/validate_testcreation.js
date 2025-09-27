@@ -2,17 +2,29 @@ const submit = document.getElementById("submitParameters");
 
 submit.addEventListener("click", read_parameter_input);
 
-/** Reads values from input container */
+/**
+ * Read non-empty inputs from a container and collect device-type inputs separately.
+ *
+ * @param {string} containerId - ID of the container element.
+ * @returns {{values: Object, device_parameters: string[]}} Map of input names to values and list of device values.
+ */
 function readInputs(containerId) {
     const container = document.getElementById(containerId);
     const inputs = container.querySelectorAll("input");
-    const values = {};
+    const values = {};        // map of all non-empty inputs
+    const device_parameters = [];       // list of inputs with data-type="device"
 
     inputs.forEach(input => {
-        values[input.name] = input.value; // store name: value
+        if (input.value.length !== 0) {
+            values[input.name] = input.value;
+
+            if (input.dataset.datatype.trim().toLowerCase() === "device") {
+                device_parameters.push(input.dataset.param_name);
+            }
+        }
     });
 
-    return values;
+    return {values, device_parameters};
 }
 
 
@@ -37,11 +49,13 @@ async function read_parameter_input() {
     const requiredParams = readInputs("requiredParamsContainer");
     const optionalParams = readInputs("optionalParamsContainer");
 
-    // Merge them into a single object
+    const allDeviceParameters = [...requiredParams.device_parameters, ...optionalParams.device_parameters];
+
     const payload = {
-        test: selectedTestClass,
-        required: requiredParams,
-        optional: optionalParams
+        test_class: selectedTestClass,
+        required_parameters: requiredParams.values,
+        optional_parameters: optionalParams.values,
+        device_parameters: allDeviceParameters
     };
 
     try {
