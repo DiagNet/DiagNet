@@ -51,31 +51,10 @@ async function read_parameter_input() {
 
     const allDeviceParameters = [...requiredParams.device_parameters, ...optionalParams.device_parameters];
 
-    const payload = {
-        test_class: selectedTestClass,
-        required_parameters: requiredParams.values,
-        optional_parameters: optionalParams.values,
-        device_parameters: allDeviceParameters
-    };
-
-    try {
-        const response = await fetch("/networktests/api/create/test", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken")
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result.status === "success") {
-            alert("Submission successful!");
-        } else {
-            console.error("Error:", result.message || "Unknown error");
-        }
-    } catch (err) {
-        console.error("Error sending parameters:", err);
-    }
+    await createTest(
+        selectedTestClass,
+        requiredParams.values,
+        optionalParams.values,
+        allDeviceParameters
+    );
 }
