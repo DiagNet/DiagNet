@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Test Group - DiagNet{% endblock %}
+
+{% block content %}
+
+
+<h1>Test Group: {{ testgroup.name }}</h1>
+
+<a href="/testgroups/" class="btn btn-outline-secondary mt-3">
+  <i class="bi bi-arrow-left"></i> Back
+</a>
+
+<div 
+  hx-get="/testgroups/list-testcases/{{ testgroup.name }}"
+  hx-trigger="load"
+  hx-swap="outerHTML">
+  <p>Loading content…</p>
+</div>
+
+{% endblock %}
