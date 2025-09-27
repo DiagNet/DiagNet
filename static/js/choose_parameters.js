@@ -4,26 +4,6 @@ const templateTab = document.getElementById('template-tab')
 const requiredContainer = document.getElementById("requiredParamsContainer");
 const optionalContainer = document.getElementById("optionalParamsContainer");
 
-let allDevices = []
-
-/** Puts Focus always on searchInput */
-function onPopUpClickHandler(e) {
-    searchInput.focus()
-}
-
-/** Fetch search results from API */
-async function fetchAllDevices() {
-    try {
-        const res = await fetch(`/devices/all`);
-        const data = await res.json();
-
-        return data.results || []
-    } catch (err) {
-        console.error("Search API error:", err);
-        return []
-    }
-}
-
 /** "Selects" the given Class for further handling. */
 function selectTestClass(testClass, popup) {
     selectedTestClass = testClass;
@@ -225,57 +205,13 @@ async function show_parameters(test_class) {
     create_mutually_exclusive_datatype_bindings(mutually_exclusive_params_fields, test_parameters.mul, new Map([...required_parameters, ...optional_parameters]));
 }
 
-/** Function called when the input of the field is considered unknown */
-function unknown_datatype(field) {
-    field.style.border = "";
-}
 
-/** Function called when the input of the field is considered correct */
-function correct_datatype(field) {
-    field.style.border = "2px solid green";
-}
-
-/** Function called when the input of the field is considered wrong */
-function wrong_datatype(field) {
-    field.style.border = "2px solid red";
-}
-
-/** checks if the given field's input is corresponding to the given datatype */
-async function check_datatype(field, datatype_as_string) {
-    const value = field.value.trim();
-    if (allDevices.length === 0 && datatype_as_string.trim().toLowerCase() === "device") {
-        allDevices = await fetchAllDevices();
-        console.log("finished" + allDevices);
-    }
-    switch (datatype_as_string.toLowerCase()) {
-        case "device":
-            return allDevices.includes(value)
-        case "string":
-        case "str":
-            return true
-
-        case "number":
-        case "int":
-        case "float":
-            return !isNaN(value) && value !== "";
-
-        case "ipv4address":
-        case "ipv4":
-            const ipv4Regex = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
-            return ipv4Regex.test(value);
-
-        default:
-            return true
-    }
-}
-
-/** handles DOM changes to implement checking datatypes */
-async function handle_check_datatype(field, datatype_as_string) {
-    if (datatype_as_string == null) {
-        unknown_datatype(field)
-    } else if (await check_datatype(field, datatype_as_string)) {
-        correct_datatype(field)
-    } else {
-        wrong_datatype(field)
-    }
+/**
+ * Automatically sets focus to the search input when the popup is clicked.
+ * Used in EventListeners between the Test-Class and Parameter tab.
+ *
+ * @param {Event} e event Object
+ */
+function onPopUpClickHandler(e) {
+    searchInput.focus()
 }
