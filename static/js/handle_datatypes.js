@@ -1,6 +1,7 @@
 /* Handles Datatype-Checks */
 
 let allDevices = []
+let datatypeStatus = new Map();
 
 /**
  * Checks whether the value of a given input field matches the specified datatype.
@@ -10,14 +11,15 @@ let allDevices = []
  * @param {string} datatype_as_string Expected datatype as a string.
  * @returns {Promise<boolean>} Resolves to true if the field's value matches the datatype, false otherwise.
  */
-async function check_datatype(field, datatype_as_string) {
+async function checkDatatype(field, datatype_as_string) {
     const value = field.value.trim();
     if (allDevices.length === 0 && datatype_as_string.trim().toLowerCase() === "device") {
         allDevices = await fetchAllDevices();
     }
     switch (datatype_as_string.toLowerCase()) {
         case "device":
-            return allDevices.includes(value)
+            return allDevices.includes(value);
+
         case "string":
         case "str":
             return true
@@ -42,8 +44,9 @@ async function check_datatype(field, datatype_as_string) {
  *
  * @param {HTMLElement} field The input field to update.
  */
-function unknown_datatype(field) {
+function unknownDatatype(field) {
     field.style.border = "";
+    datatypeStatus.set(field, true);
 }
 
 /**
@@ -51,8 +54,9 @@ function unknown_datatype(field) {
  *
  * @param {HTMLElement} field The input field to update.
  */
-function correct_datatype(field) {
+function correctDatatype(field) {
     field.style.border = "2px solid green";
+    datatypeStatus.set(field, true);
 }
 
 /**
@@ -60,8 +64,9 @@ function correct_datatype(field) {
  *
  * @param {HTMLElement} field The input field to update.
  */
-function wrong_datatype(field) {
+function wrongDatatype(field) {
     field.style.border = "2px solid red";
+    datatypeStatus.set(field, false);
 }
 
 /**
@@ -71,12 +76,12 @@ function wrong_datatype(field) {
  * @param {HTMLElement} field The input field or DOM element to check.
  * @param {string|null} datatype_as_string The expected datatype as a string. If null, treated as unknown.
  */
-async function handle_check_datatype(field, datatype_as_string) {
+async function handleCheckDataType(field, datatype_as_string) {
     if (datatype_as_string == null) {
-        unknown_datatype(field)
-    } else if (await check_datatype(field, datatype_as_string)) {
-        correct_datatype(field)
+        unknownDatatype(field);
+    } else if (await checkDatatype(field, datatype_as_string)) {
+        correctDatatype(field);
     } else {
-        wrong_datatype(field)
+        wrongDatatype(field);
     }
 }
