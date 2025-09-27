@@ -2,26 +2,26 @@
  * Fetches the required and optional parameters for a given test class from the API.
  *
  * @async
- * @param {string} test_name The name of the test class to fetch parameters for.
- * @returns {Promise<{required_params: string[], optional_params: string[], mul: string[] | null}>}
+ * @param {string} testClass The name of the test class to fetch parameters for.
+ * @returns {Promise<{requiredParams: string[], optionalParams: string[], mul: string[] | null}>}
  *   Resolves to an object containing arrays of required and optional parameters,
- *   and mutually exclusive parameter groups (`mul`). Returns empty arrays and null on error or if no test_name is provided.
+ *   and mutually exclusive parameter groups (`mul`). Returns empty arrays and null on error or if no testClass is provided.
  */
-async function fetch_test_parameters(test_name) {
-    if (!test_name) return {required_params: [], optional_params: [], mul_exclusive: null};
+async function fetchTestParameters(testClass) {
+    if (!testClass) return {requiredParams: [], optionalParams: [], mul: null};
 
     try {
-        const res = await fetch(`/networktests/api/search/test/parameters?test_class=${encodeURIComponent(test_name)}`);
+        const res = await fetch(`/networktests/api/search/test/parameters?test_class=${encodeURIComponent(testClass)}`);
         const data = await res.json();
 
         return {
-            required_params: data.required || [],
-            optional_params: data.optional || [],
+            requiredParams: data.required || [],
+            optionalParams: data.optional || [],
             mul: data.mul_exclusive || []
         };
     } catch (err) {
         console.error("Search API error:", err);
-        return {required_params: [], optional_params: [], mul: null};
+        return {requiredParams: [], optionalParams: [], mul: null};
     }
 }
 
