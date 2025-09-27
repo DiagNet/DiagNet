@@ -57,6 +57,8 @@ function createInputField(paramName, datatype, isOptional = false) {
         input.name = paramName;
         input.id = paramName;
         input.className = "form-select mb-2";
+        input.dataset.datatype = datatype;
+        input.dataset.param_name = paramName
 
         const options = parseOptions(datatype);
         options.unshift("");
@@ -74,6 +76,8 @@ function createInputField(paramName, datatype, isOptional = false) {
         input.id = paramName
         input.placeholder = isOptional ? `${paramName} (optional)` : paramName;
         input.className = "form-control mb-2";
+        input.dataset.datatype = datatype;
+        input.dataset.param_name = paramName
         return input;
     }
 }
@@ -83,7 +87,7 @@ async function fetch_test_parameters(test_name) {
     if (!test_name) return {required_params: [], optional_params: [], mul_exclusive: null};
 
     try {
-        const res = await fetch(`/networktests/api/search/test/parameters?test_name=${encodeURIComponent(test_name)}`);
+        const res = await fetch(`/networktests/api/search/test/parameters?test_class=${encodeURIComponent(test_name)}`);
         const data = await res.json();
 
         return {
