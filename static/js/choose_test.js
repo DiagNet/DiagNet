@@ -5,7 +5,6 @@ const resultsList = document.getElementById("resultsList");
 const popupWindow = document.getElementById("largeModal");
 const docWindow = document.getElementById("doc");
 
-
 const emptyItem = document.createElement("li");
 emptyItem.textContent = "No testcases found";
 emptyItem.classList.add("list-group-item", "text-muted", "text-center");
@@ -13,7 +12,13 @@ emptyItem.dataset.empty = "true";
 
 let allTestClasses = []
 
-/** Shows the given data as documentation. */
+// Test-Info
+/**
+ * Displays the provided documentation data for a test class in the documentation window.
+ *
+ * @param {string} testCase The name of the test class.
+ * @param {string} data HTML or text content representing the documentation.
+ */
 function showInfoForTestClass(testCase, data) {
     docWindow.innerHTML = data;
     docWindow.addEventListener("click", () => {
@@ -37,6 +42,8 @@ function hideInfoForTestClass() {
     docWindow.innerHTML = "Select a test class to view its documentation."
 }
 
+
+// Test-Classes
 /**
  * Searches the locally stored `allTestClasses` for names
  * that contain the given query (case-insensitive).
@@ -136,7 +143,11 @@ function createResultItem(name) {
 }
 
 // Keyboard Navigation
-/** Update active test-class and scroll to current selected item. */
+/**
+ * Updates the active state of a list of items and scrolls the currently selected item into view.
+ *
+ * @param {HTMLElement[]} items Array of list item elements.
+ */
 function updateActive(items) {
     items.forEach((li, i) => li.classList.toggle("active", i === currentIndex));
     if (currentIndex >= 0) items[currentIndex].scrollIntoView({block: "nearest"});
@@ -145,7 +156,12 @@ function updateActive(items) {
 
 let currentIndex = -1;
 
-/** Handle keyboard navigation inside the results list. */
+/**
+ * Handles keyboard navigation within the results list.
+ *
+ * @param {KeyboardEvent} e The keyboard event triggered by user input.
+ * @returns {void}
+ */
 function handleKeyboardNavigation(e) {
     const items = Array.from(resultsList.querySelectorAll("li:not([data-empty])"));
     if (!items.length) return;
@@ -178,14 +194,22 @@ function handleKeyboardNavigation(e) {
 }
 
 // Input
-/** Handles changes in the search input field. */
+/**
+ * Handles changes in the search input field.
+ *
+ * @async
+ */
 async function handleInput() {
     currentIndex = -1
     const query = searchInput.value.trim();
     renderResults(searchForTestClass(query));
 }
 
-/** Initialize event listeners. */
+/**
+ * Initializes the search interface and event listeners.
+ *
+ * @async
+ */
 async function init() {
     await fetchAllTestClasses();
     searchInput.addEventListener("input", debounce(handleInput, 200));
