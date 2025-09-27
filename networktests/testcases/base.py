@@ -8,7 +8,7 @@ Description: Parent-Class for defining Tests.
 """
 
 __author__ = "Luka Pacar"
-__version__ = "1.2.3"
+__version__ = "1.2.4"
 
 from typing import List, Dict, Tuple
 from collections import defaultdict, deque
@@ -151,15 +151,18 @@ def sort_by_dependencies(test_methods: dict):
 
 def filter_out_skipped(test_methods, skipped, results, status_map):
     """
-    filters out "skipped" tests.
+    Filters out skipped tests.
 
-    :param test_methods: methods to be examined
-    :param skipped: collection to store skipped methods
-    :param results: stores test_results and therefore also skipped method results.
-    :param status_map: saves what method has what result. (simplified compared to results)
+    Args:
+        test_methods: Methods to be examined.
+        skipped: Collection to store skipped methods.
+        results: Stores test results, including skipped ones.
+        status_map: Tracks the status of each method.
 
-    :returns: The skipped methods added in [0] -> results and [1] -> status_map
+    Returns:
+        tuple: (results, status_map) with skipped methods included.
     """
+
     amount_skipped: int = 0
     # mark skipped tests immediately
     for name, method in test_methods:
@@ -275,31 +278,16 @@ class DiagNetTest:
 
         return params
 
-    def run(self, test_method_prefix="test_", verbose=False, **kwargs) -> Dict:
+    def check_parameter_validity(self, **kwargs):
         """
-        Runs the test and returns the output.
+        Validate provided parameters against the test's declared requirements.
 
         Args:
-            verbose (bool): verbose output
-            test_method_prefix (str): defines the prefix of the test methods
+            **kwargs: Parsed parameters passed to the test run.
 
         Returns:
-            dict: {
-            "result": "PASS"|"FAIL",
-            "tests": {
-                test_method_name: {
-                    "status": "PASS"|"FAIL"|"SKIPPED"|"SKIPPED_DUE_TO_DEPENDENCY_FAIL"|"SKIPPED_DUE_TO_DEPENDENCY_SKIP",
-                    "message": "",
-                    "time": float (seconds)
-                },
-                test_method_name2: {}
-            },
-            "summary": (total, passed, failed, skipped)
-            }
+            True if legal, otherwise False.
         """
-        # output data structures
-        results = {}
-        status_map = {}
 
         #  --- 1. validate parameters ---
 
@@ -339,8 +327,8 @@ class DiagNetTest:
             # elements of the mutually exclusive pair have to exist as actual parameters.
             for e in mutually_exclusive_pairs:
                 if (
-                    e not in defined_required_arguments
-                    and e not in defined_optional_arguments
+                        e not in defined_required_arguments
+                        and e not in defined_optional_arguments
                 ):
                     raise ParameterMissingException(
                         f'Element "{e}" in mutually exclusive group "{mutually_exclusive_pairs}" is not a defined parameter.'
@@ -351,7 +339,7 @@ class DiagNetTest:
                 1 for e in mutually_exclusive_pairs if e in self._required_params
             )
             if required_count != 0 and required_count is not len(
-                mutually_exclusive_pairs
+                    mutually_exclusive_pairs
             ):
                 raise IllegalGroupFormingException(
                     f"Unable to mix required and optional parameters in the mutually exclusive group: {mutually_exclusive_pairs}"
@@ -398,10 +386,40 @@ class DiagNetTest:
             k
             for k in parsed_arguments
             if k not in defined_required_arguments
-            and k not in defined_optional_arguments
+               and k not in defined_optional_arguments
         ]
         if unknown:
             raise UnknownParameterException(f"Unknown parameters passed: {unknown}")
+
+
+    def run(self, test_method_prefix="test_", verbose=False, **kwargs) -> Dict:
+        """
+        Runs the test and returns the output.
+
+        Args:
+            verbose (bool): verbose output
+            test_method_prefix (str): defines the prefix of the test methods
+
+        Returns:
+            dict: {
+            "result": "PASS"|"FAIL",
+            "tests": {
+                test_method_name: {
+                    "status": "PASS"|"FAIL"|"SKIPPED"|"SKIPPED_DUE_TO_DEPENDENCY_FAIL"|"SKIPPED_DUE_TO_DEPENDENCY_SKIP",
+                    "message": "",
+                    "time": float (seconds)
+                },
+                test_method_name2: {}
+            },
+            "summary": (total, passed, failed, skipped)
+            }
+        """
+
+        self.check_parameter_validity(**kwargs)
+
+        # output data structures
+        results = {}
+        status_map = {}
 
         # set parameters as attributes
         for name, value in kwargs.items():
