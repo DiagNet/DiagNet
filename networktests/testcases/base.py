@@ -286,7 +286,7 @@ class DiagNetTest:
             **kwargs: Parsed parameters passed to the test run.
 
         Returns:
-            True if legal, otherwise False.
+            None
         """
 
         #  --- 1. validate parameters ---
