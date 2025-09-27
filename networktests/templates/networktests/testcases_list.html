@@ -46,8 +46,8 @@
                     <form class="d-inline" hx-post="{% url 'tests-run' tc.id %}" hx-target="#result-{{ tc.id }}"
                         hx-swap="innerHTML">
                         {% csrf_token %}
-                        <button class="btn btn-sm btn-primary" hx-indicator="#spinner-{{ tc.id }}">
-                            Run
+                        <button class="btn btn-sm btn-primary" hx-indicator="#spinner-{{ tc.id }}" title="Run test">
+                            <i class="bi bi-play-fill"></i>
                         </button>
                         <span id="spinner-{{ tc.id }}" class='htmx-indicator ms-2'>Running test…</span>
                     </form>
@@ -57,8 +57,9 @@
                     <button class="btn btn-sm btn-danger ms-2" hx-delete="{% url 'testcase_delete' tc.id %}"
                         hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-target="closest .list-group-item"
                         hx-swap="outerHTML" hx-confirm="Do you really want to delete this test case?"
-                        hx-on::after-request="location.reload()" hx-indicator="#del-spinner-{{ tc.id }}">
-                        🗑️
+                        hx-on::after-request="location.reload()" hx-indicator="#del-spinner-{{ tc.id }}"
+                        title="Delete test">
+                        <i class="bi bi-trash-fill"></i>
                     </button>
                     <span id="del-spinner-{{ tc.id }}" class="htmx-indicator ms-2">Deleting test…</span>
                 </div>
