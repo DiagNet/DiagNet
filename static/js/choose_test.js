@@ -21,8 +21,8 @@ let allTestClasses = []
  */
 function showInfoForTestClass(testCase, data) {
     docWindow.innerHTML = data;
-    docWindow.addEventListener("click", () => {
-        selectTestClass(testCase, popupWindow);
+    docWindow.addEventListener("click", async () => {
+        await selectTestClass(testCase, popupWindow);
     });
 }
 
@@ -162,7 +162,7 @@ let currentIndex = -1;
  * @param {KeyboardEvent} e The keyboard event triggered by user input.
  * @returns {void}
  */
-function handleKeyboardNavigation(e) {
+async function handleKeyboardNavigation(e) {
     const items = Array.from(resultsList.querySelectorAll("li:not([data-empty])"));
     if (!items.length) return;
     switch (e.key) {
@@ -179,7 +179,7 @@ function handleKeyboardNavigation(e) {
         case "Enter":
             e.preventDefault();
             if (currentIndex >= 0 && currentIndex < items.length) {
-                selectTestClass(items[currentIndex].dataset.name, popupWindow);
+                await selectTestClass(items[currentIndex].dataset.name, popupWindow);
             }
             break;
 
