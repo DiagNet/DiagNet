@@ -1,4 +1,4 @@
-<div class="table-responsive" id="testgroup-table">
+<div class="table-responsive" id="testcase-table">
   {% if error %}
   <div class="alert alert-danger">
     <strong>Error:</strong> {{ error }}
@@ -11,13 +11,13 @@
       </tr>
       </thead>
       <tbody>
-      {% if testgroup_list %}
-      {% for testgroup in testgroup_list %}
-      <tr id="testgroups-{{ testgroup.name }}">
+      {% if testcase_list %}
+      {% for testcase in testcase_list %}
+      <tr>
           <td>
-            <a href="detail/{{ testgroup.name }}/"> {{ testgroup.name }} </a>
+            <a href="detail/{{ testcase.name }}/"> {{ testcase.name }} </a>
           <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
-            <a hx-vals='{"name": "{{ testgroup.name }}"}' hx-post="delete-testgroup/" hx-target="#testgroup-table" class="btn btn-sm btn-danger" title="Delete">
+            <a hx-vals='{"name": "{{ testcase.name }}"}' hx-post="delete-testcase/" hx-target="#testcase-table" class="btn btn-sm btn-danger" title="Delete">
                   <i class="bi bi-trash"></i>
               </a>
           </td>
@@ -25,7 +25,7 @@
       {% endfor %}
       {% else %}
       <tr>
-          <td colspan="100%">No Test Groups yet.</td>
+          <td colspan="100%">No Testcases yet.</td>
       </tr>
       {% endif %}
       </tbody>
