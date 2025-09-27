@@ -1,0 +1,11 @@
+<div id="title-div" class="d-flex align-items-center justify-content-between mb-3">
+  <h1 class="mb-0">Test Group: {{ name }}</h1>
+  <button id="edit-btn" class="btn btn-outline-primary btn-sm">
+    <i class="bi bi-pencil"></i> Rename
+  </button>
+</div>
+{% if error %}
+<div class="alert alert-danger">
+  <strong>Error:</strong> {{ error }}
+</div>
+{% endif %}
