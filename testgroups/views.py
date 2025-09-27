@@ -1,6 +1,6 @@
 import re
 from django.db.utils import IntegrityError
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from .models import TestGroup
 
@@ -62,3 +62,29 @@ def delete_testgroup(request):
         return list_testgroups(request, "a group with that name does not exist.")
 
     return list_testgroups(request)
+
+
+def get_testgroup_detail(request, name: str):
+    testgroup: TestGroup
+    try:
+        testgroup = TestGroup.objects.get(name=name)
+    except TestGroup.DoesNotExist:
+        raise Http404(" This Test Group does not exist")
+
+    context = {"testgroup": testgroup}
+    return render(request, "testgroup_detail.html", context)
+
+
+def list_testcases(request, name: str):
+    testgroup: TestGroup
+    try:
+        testgroup = TestGroup.objects.get(name=name)
+    except TestGroup.DoesNotExist:
+        raise Http404(" This Test Group does not exist")
+
+    testcases = list(testgroup.testcases.all())
+    context = {}
+    if len(testcases) > 0:
+        context["testcases_list"] = testcases
+
+    return render(request, "list_testcases.html", context)
