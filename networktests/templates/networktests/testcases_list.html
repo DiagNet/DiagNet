@@ -68,7 +68,7 @@
     </div>
 
     <!-- Pagination -->
-    <div class="mt-3">
+    <nav aria-label="Pagination" class="mt-3">
         <ul class="pagination">
             {% if page_obj.has_previous %}
             <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>
@@ -86,7 +86,7 @@
             <li class="page-item disabled"><span class="page-link">»</span></li>
             {% endif %}
         </ul>
-    </div>
+    </nav>
 
     {% else %}
     <div class="alert alert-info">No test cases created yet.</div>
