@@ -8,12 +8,28 @@ from devices.forms import DeviceForm
 
 from .models import Device
 
+state_map = {
+    "unknown": "❓",
+    "reachable": "✅",
+    "unreachable": "❌",
+}
+
 
 class DeviceListView(generic.ListView):
     """Generic class-based view for a list of devices."""
 
     devices = Device.objects.all()
     model = Device
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        session_devices = self.request.session.get("devices", {})
+        for device in context["device_list"]:
+            status = session_devices.get(str(device.pk), {}).get("status", "unknown")
+            device.session_status = state_map[status]
+
+        return context
 
 
 class DeviceCreate(CreateView):
@@ -48,15 +64,16 @@ class DeviceDelete(DeleteView):
 
 def device_check(request, pk):
     device = get_object_or_404(Device, pk=pk)
-    status = device.can_connect()
-    if status:
-        device.status = "reachable"
-    else:
-        device.status = "unreachable"
+    new_status = "reachable" if device.can_connect() else "unreachable"
 
-    device.save()
+    if "devices" not in request.session:
+        request.session["devices"] = {}
+
+    request.session["devices"][str(pk)] = {"status": new_status}
+    request.session.modified = True
+
     return render(
         request,
         "devices/partials/device_status_cell.html",
-        {"status": device.get_status_display()},
+        {"status": state_map[new_status]},
     )
