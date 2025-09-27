@@ -8,7 +8,7 @@ from devices.forms import DeviceForm
 
 from .models import Device
 
-state_map = {
+STATE_MAP = {
     "unknown": "❓",
     "reachable": "✅",
     "unreachable": "❌",
@@ -27,7 +27,7 @@ class DeviceListView(generic.ListView):
         session_devices = self.request.session.get("devices", {})
         for device in context["device_list"]:
             status = session_devices.get(str(device.pk), {}).get("status", "unknown")
-            device.session_status = state_map[status]
+            device.session_status = STATE_MAP[status]
 
         return context
 
@@ -75,5 +75,5 @@ def device_check(request, pk):
     return render(
         request,
         "devices/partials/device_status_cell.html",
-        {"status": state_map[new_status]},
+        {"status": STATE_MAP[new_status]},
     )
