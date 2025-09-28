@@ -24,11 +24,10 @@ let docClickHandler = null;
 function showInfoForTestClass(testCase, data) {
     docWindow.innerHTML = data;
 
-    // remove previous listener
     if (docClickHandler) {
         docWindow.removeEventListener("click", docClickHandler);
     }
-    // create a new stable handler
+
     docClickHandler = async () => {
         await selectTestClass(testCase, popupWindow);
     };
