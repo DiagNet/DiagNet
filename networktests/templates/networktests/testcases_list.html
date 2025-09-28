@@ -1,97 +1,94 @@
 {% extends "base.html" %}
 
-{% block title %}Testcases{% endblock %}
+{% block title %} Test Cases {% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <h1 class="m-3">Test Cases</h1>
-
+    <h1 class="mb-4">Test Cases</h1>
     {% if page_obj.object_list %}
-    <div class="list-group">
-        {% for tc in page_obj.object_list %}
-        <div class="list-group-item">
-            <div class="d-flex justify-content-between align-items-start">
-                <div class="me-3">
-                    <h5 class="mb-1">{{ tc.label }}</h5>
-                    {% if tc.parameters.all %}
-                    <div class="small text-muted mb-2">Parameters:</div>
-                    <div class="mb-2">
-                        {% for p in tc.parameters.all %}
-                        <span class="badge rounded-pill text-bg-secondary me-1">
-                            {{ p.name }}{% if p.value %}: {{ p.value }}{% endif %}
-                        </span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
+    {% regroup page_obj.object_list by devices.all.0.device.name as grouped_testcases %}
+    {% for group in grouped_testcases %}
+    <h4 class="mt-4"> {{ group.grouper|default:"Unassigned" }}</h4>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Label</th>
+                    <th scope="col">Parameters</th>
+                    <th scope="col">Devices</th>
+                    <th scope="col">Actions</th>
+                    <th scope="col" class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tc in group.list %}
+                <tr id="testcase-row-{{ tc.id }}">
+                    <!-- Label -->
+                    <td><strong>{{ tc.label }}</strong></td>
 
-                    {% if tc.devices.all %}
-                    <div class="small text-muted mb-1">Target Devices:</div>
-                    <div class="d-flex flex-wrap gap-1">
-                        {% for td in tc.devices.all %}
-                        <span class="badge text-bg-light">
-                            {{ td.device.name }}{% if td.name %} ({{ td.name }}) {% endif %}
-                        </span>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="small text-muted">No target devices linked.</div>
-                    {% endif %}
-                    <div class="small text-muted mb-2">
-                        {{ tc.num_params|default:0 }} Param • {{ tc.num_devices|default:0 }} Devices
-                    </div>
-                    <div id="result-{{ tc.id }}" class="mt-2 small"></div>
-
-                    <!-- Run -->
-
-                    <form class="d-inline" hx-post="{% url 'tests-run' tc.id %}" hx-target="#result-{{ tc.id }}"
-                        hx-swap="innerHTML">
-                        {% csrf_token %}
-                        <button class="btn btn-sm btn-primary" hx-indicator="#spinner-{{ tc.id }}" title="Run test">
-                            <i class="bi bi-play-fill"></i>
+                    <!-- Parameters -->
+                    <td>
+                        {% if tc.num_params %}
+                        <button class="btn btn-link p-0 tet-decoration-none" data-bs-toggle="collapse"
+                            data-bs-target="#params-{{ tc.id }}" aria-expanded="false"
+                            aria-controls="params-{{ tc.id }}">
+                            {{ tc.num_params }} param{{ tc.num_params|pluralize }}
                         </button>
-                        <span id="spinner-{{ tc.id }}" class='htmx-indicator ms-2'>Running test…</span>
-                    </form>
+                        <div id="params-{{ tc.id }}" class="collapse">
+                            <div class="mt-1 small">
+                                {% for p in tc.parameters.all %}
+                                <span class="badge bg-secondary me-1">
+                                    {{ p.name }}{% if p.value %}: {{ p.value }}{% endif %}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        0 params
+                        {% endif %}
+                    </td>
 
-                    <!-- Delete -->
+                    <!-- Devices -->
+                    <td>
+                        {% if tc.num_devices %}
+                        {% for td in tc.devices.all %}
+                        <span class="badge bg-light border me-1">
+                            {{ td.device.name }}{% if td.name %} ({{ td.name }}){% endif %}
+                        </span>
+                        {% endfor %}
+                        {% else %}
+                        None
+                        {% endif %}
+                    </td>
 
-                    <button class="btn btn-sm btn-danger ms-2" hx-delete="{% url 'testcase_delete' tc.id %}"
-                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-target="closest .list-group-item"
-                        hx-swap="outerHTML" hx-confirm="Do you really want to delete this test case?"
-                        hx-on::after-request="location.reload()" hx-indicator="#del-spinner-{{ tc.id }}"
-                        title="Delete test">
-                        <i class="bi bi-trash-fill"></i>
-                    </button>
-                    <span id="del-spinner-{{ tc.id }}" class="htmx-indicator ms-2">Deleting test…</span>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
+                    <!-- Actions -->
+
+                    <td class="text-end">
+                        <!-- Run -->
+
+                        <form class="d-inline" hx-post="{% url 'tests-run' tc.id %}" hx-target="#result-{{ tc.id }}"
+                            hx-swap="innerHTML">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-primary me-1" hx-indicator="#spinner-{{ tc.id }}">
+                                Run
+                            </button>
+                            <span id="spinner-{{ tc.id }}" class="htmx-indicator ms-1 small">...loading
+                            </span>
+                        </form>
+                        <!-- Delete -->
+                        <button class="btn btn-sm btn-danger" hx-delete="{% url 'testcase_delete' tc.id %}"
+                            hx-headers='{"X_CSRFToken": "{{ csrf_token }}"}' hx-target="#testcase-row-{{ tc.id }}"
+                            hx-swap="outerHTML" hx-confirm="Do you really want to delete this test case?"
+                            hx-on::after-request="location.reload()">
+                            🗑️
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-
-    <!-- Pagination -->
-    <nav aria-label="Pagination" class="mt-3">
-        <ul class="pagination">
-            {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>
-            {% else %}
-            <li class="page-item disabled"><span class="page-link">«</span></li>
-            {% endif %}
-
-            <li class="page-item disabled">
-                <span class="page-link">Page {{ page_obj.number }} / {{page_obj.paginator.num_pages }}</span>
-            </li>
-
-            {% if page_obj.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a></li>
-            {% else %}
-            <li class="page-item disabled"><span class="page-link">»</span></li>
-            {% endif %}
-        </ul>
-    </nav>
-
-    {% else %}
-    <div class="alert alert-info">No test cases created yet.</div>
+    {% endfor %}
     {% endif %}
 </div>
-
 {% endblock %}
