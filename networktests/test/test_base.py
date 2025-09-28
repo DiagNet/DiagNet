@@ -84,6 +84,20 @@ class TestTest(unittest.TestCase):
         assert required == {"host": ["str", "IP"]}
         assert optional == {"label": ["str"]}
 
+    def test_multiple_choice(self):
+        class MultipleChoiceTest(DiagNetTest):
+            _required_params = ["test:[one,two]"]
+
+        test_class = MultipleChoiceTest()
+        with self.assertRaises(UnknownParameterException):
+            _ = test_class.run(test="three")
+
+        class MultipleChoiceTest2(DiagNetTest):
+            _required_params = ["test:[one,two]"]
+
+        test_class = MultipleChoiceTest2()
+        assert test_class.run(test="one")["result"] == "PASS"
+
     def test_mutually_exclusive(self):
         class MutuallyExclusiveTest(DiagNetTest):
             _required_params = ["host"]
