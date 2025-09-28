@@ -64,25 +64,29 @@
 
                     <td class="text-end">
                         <!-- Run -->
-                            <form class="d-inline" hx-post="{% url 'tests-run' tc.id %}" hx-target="#result-{{ tc.id }}"
-                                hx-swap="innerHTML">
-                                buttons)
-                                {% csrf_token %}
-                                <button class="btn btn-sm btn-primary me-1" hx-indicator="#spinner-{{ tc.id }}">
-                                    Run
-                                </button>
-                                <span id="spinner-{{ tc.id }}" class="htmx-indicator ms-1 small">...loading
-                                </span>
-                            </form>
-                            <!-- Delete -->
-                                <button class="btn btn-sm btn-danger" hx-delete="{% url 'testcase_delete' tc.id %}"
-                                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                    hx-target="#testcase-row-{{ tc.id }}" hx-swap="outerHTML"
-                                    hx-confirm="Do you really want to delete this test case?"
-                                    hx-on::after-request="location.reload()">
-                                    🗑️
-                                    buttons)
-                                </button>
+                        <form class="d-inline"
+                              hx-post="{% url 'tests-run' tc.id %}"
+                              hx-target="#result-{{ tc.id }}"
+                              hx-swap="innerHTML">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-primary me-1"
+                                    hx-indicator="#spinner-{{ tc.id }}">
+                                Run
+                            </button>
+                            <span id="spinner-{{ tc.id }}"
+                                  class="htmx-indicator ms-1 small">...loading
+                            </span>
+                        </form>
+                        <!-- Delete -->
+                        <button class="btn btn-sm btn-danger"
+                            hx-delete="{% url 'testcase_delete' tc.id %}"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                            hx-target="#testcase-row-{{ tc.id }}"
+                            hx-swap="outerHTML"
+                            hx-confirm="Do you really want to delete this test case?"
+                            hx-on::after-request="location.reload()">
+                        <i class="bi bi-trash"></i>
+                        </button>
                     </td>
                 </tr>
                 <!-- Result row -->
