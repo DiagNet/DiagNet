@@ -12,6 +12,8 @@ emptyItem.dataset.empty = "true";
 
 let allTestClasses = []
 
+let docClickHandler = null;
+
 // Test-Info
 /**
  * Displays the provided documentation data for a test class in the documentation window.
@@ -21,9 +23,17 @@ let allTestClasses = []
  */
 function showInfoForTestClass(testCase, data) {
     docWindow.innerHTML = data;
-    docWindow.addEventListener("click", async () => {
+
+    // remove previous listener
+    if (docClickHandler) {
+        docWindow.removeEventListener("click", docClickHandler);
+    }
+    // create a new stable handler
+    docClickHandler = async () => {
         await selectTestClass(testCase, popupWindow);
-    });
+    };
+
+    docWindow.addEventListener("click", docClickHandler);
 }
 
 /**
