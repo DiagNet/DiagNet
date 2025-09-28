@@ -295,11 +295,29 @@ class DiagNetTest:
 
         # --- 1.1 Strip datatype from parameters ---
 
+        def extract_multiple_choice(choice_list: str):
+            """
+            Extracts the values out of a string list. "[one,two,three]" -> [one,two,three]
+
+            Args:
+                choice_list: The parsed string list.
+
+            Returns:
+                A list representation of the parsed string list.
+            """
+            return choice_list[1:-1].split(",")
+
+
         # required parameters
         defined_required_arguments: List[...] = []
         for e in self._required_params:
             if ":" in e:
-                base_name = e.split(":")[0].strip()
+                split_str = e.split(":")
+
+                base_name, datatype = split_str[0].strip(), split_str[1].strip()
+                if datatype.startswith("[") and datatype.endswith("]"):
+                    if base_name in kwargs and kwargs[base_name] not in extract_multiple_choice(datatype):
+                        raise UnknownParameterException(f"Unknown value ({kwargs[base_name]}) parsed for parameter {base_name} - expected one of the following values: {datatype}")
                 defined_required_arguments.append(base_name)
             else:
                 defined_required_arguments.append(e)
@@ -308,7 +326,12 @@ class DiagNetTest:
         defined_optional_arguments: List[...] = []
         for e in self._optional_params:
             if ":" in e:
-                base_name = e.split(":")[0].strip()
+                split_str = e.split(":")
+
+                base_name, datatype = split_str[0].strip(), split_str[1].strip()
+                if datatype.startswith("[") and datatype.endswith("]"):
+                    if base_name in kwargs and kwargs[e] not in extract_multiple_choice(datatype):
+                        raise UnknownParameterException(f"Unknown value ({kwargs[base_name]}) parsed for parameter {base_name} - expected one of the following values: {datatype}")
                 defined_optional_arguments.append(base_name)
             else:
                 defined_optional_arguments.append(e)
