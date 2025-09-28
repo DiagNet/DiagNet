@@ -1,11 +1,12 @@
 /* Handles Parameters */
 
-let selectedTestClass = "";
+let previousTestClass = "";
+let settingUp = false;
 const paramTab = document.getElementById('parameters-tab')
 const templateTab = document.getElementById('template-tab')
-const requiredContainer = document.getElementById("requiredParamsContainer");
-const optionalContainer = document.getElementById("optionalParamsContainer");
-const submitButton = document.getElementById("submitParameters");
+let requiredContainer = document.getElementById("requiredParamsContainer");
+let optionalContainer = document.getElementById("optionalParamsContainer");
+let submitButton = document.getElementById("submitParameters");
 
 let requiredStatus = new Map();
 
@@ -19,6 +20,7 @@ let requiredStatus = new Map();
  */
 function createInputField(paramName, datatype, type) {
     let input = null
+
     if (datatype.includes("[")) {
         // Multiple Choice
         input = document.createElement("select");
@@ -40,6 +42,8 @@ function createInputField(paramName, datatype, type) {
         input = document.createElement("input");
         input.type = "text";
         input.className = "form-control mb-2";
+
+        input.placeholder = paramName
     }
     input.name = paramName;
     input.id = paramName;
@@ -282,20 +286,37 @@ function checkSubmitLegality() {
  * @param {HTMLElement} popup The popup.
  */
 async function selectTestClass(testClass, popup) {
-    selectedTestClass = testClass;
+    if (settingUp) return;
+    settingUp = true;
+    requiredStatus.clear();
+    datatypeStatus.clear();
+    if (previousTestClass === testClass) { // Already loaded
+        paramTab.disabled = false;
+        paramTab.click();
+        settingUp = false;
+        return;
+    }
+
+    previousTestClass = testClass;
+
+    while (requiredContainer.firstChild) {
+        requiredContainer.removeChild(requiredContainer.firstChild);
+    }
+    while (optionalContainer.firstChild) {
+        optionalContainer.removeChild(optionalContainer.firstChild);
+    }
 
     paramTab.disabled = false;
     paramTab.click();
 
     popup.removeEventListener("keydown", onPopUpClickHandler);
     templateTab.addEventListener("click", (e) => {
-        selectedTestClass = "";
         paramTab.disabled = true;
         popup.addEventListener("keydown", onPopUpClickHandler);
     })
-
     _ = await showParameters(testClass);
     checkSubmitLegality();
+    settingUp = false;
 }
 
 /**
