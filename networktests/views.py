@@ -25,9 +25,9 @@ def get_all_testcases(request):
     package = "networktests.testcases"
     for resource in importlib.resources.files(package).iterdir():
         if (
-                resource.suffix == ".py"
-                and resource.is_file()
-                and resource.name not in ["__init__.py", "base.py"]
+            resource.suffix == ".py"
+            and resource.is_file()
+            and resource.name not in ["__init__.py", "base.py"]
         ):
             class_name = resource.stem
             module_name = f"{package}.{class_name}"
@@ -193,9 +193,9 @@ def get_all_available_testcases(request):
     package = "networktests.testcases"
     for resource in importlib.resources.files(package).iterdir():
         if (
-                resource.suffix == ".py"
-                and resource.is_file()
-                and resource.name not in ["__init__.py", "base.py"]
+            resource.suffix == ".py"
+            and resource.is_file()
+            and resource.name not in ["__init__.py", "base.py"]
         ):
             class_name = resource.stem
             testcases.append(class_name)
