@@ -2,11 +2,12 @@
 
 let previousTestClass = "";
 let settingUp = false;
+
 const paramTab = document.getElementById('parameters-tab')
 const templateTab = document.getElementById('template-tab')
 let requiredContainer = document.getElementById("requiredParamsContainer");
 let optionalContainer = document.getElementById("optionalParamsContainer");
-let submitButton = document.getElementById("submitParameters");
+let submitParametersButton = document.getElementById("submitParameters");
 
 let requiredStatus = new Map();
 
@@ -254,14 +255,14 @@ function checkRequiredParameters(fields) {
  * Enables the form's submit button.
  */
 function enableSubmit() {
-    submitButton.disabled = false;
+    submitParametersButton.disabled = false;
 }
 
 /**
  * Disables the form's submit button.
  */
 function disableSubmit() {
-    submitButton.disabled = true;
+    submitParametersButton.disabled = true;
 }
 
 /**
@@ -306,6 +307,7 @@ async function selectTestClass(testClass, popup) {
         optionalContainer.removeChild(optionalContainer.firstChild);
     }
 
+    paramTab.classList.remove('disabled');
     paramTab.disabled = false;
     paramTab.click();
 
