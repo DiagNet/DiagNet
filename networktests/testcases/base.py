@@ -307,7 +307,6 @@ class DiagNetTest:
             """
             return choice_list[1:-1].split(",")
 
-
         # required parameters
         defined_required_arguments: List[...] = []
         for e in self._required_params:
@@ -316,8 +315,12 @@ class DiagNetTest:
 
                 base_name, datatype = split_str[0].strip(), split_str[1].strip()
                 if datatype.startswith("[") and datatype.endswith("]"):
-                    if base_name in kwargs and kwargs[base_name] not in extract_multiple_choice(datatype):
-                        raise UnknownParameterException(f"Unknown value ({kwargs[base_name]}) parsed for parameter {base_name} - expected one of the following values: {datatype}")
+                    if base_name in kwargs and kwargs[
+                        base_name
+                    ] not in extract_multiple_choice(datatype):
+                        raise UnknownParameterException(
+                            f"Unknown value ({kwargs[base_name]}) parsed for parameter {base_name} - expected one of the following values: {datatype}"
+                        )
                 defined_required_arguments.append(base_name)
             else:
                 defined_required_arguments.append(e)
@@ -330,8 +333,12 @@ class DiagNetTest:
 
                 base_name, datatype = split_str[0].strip(), split_str[1].strip()
                 if datatype.startswith("[") and datatype.endswith("]"):
-                    if base_name in kwargs and kwargs[e] not in extract_multiple_choice(datatype):
-                        raise UnknownParameterException(f"Unknown value ({kwargs[base_name]}) parsed for parameter {base_name} - expected one of the following values: {datatype}")
+                    if base_name in kwargs and kwargs[e] not in extract_multiple_choice(
+                        datatype
+                    ):
+                        raise UnknownParameterException(
+                            f"Unknown value ({kwargs[base_name]}) parsed for parameter {base_name} - expected one of the following values: {datatype}"
+                        )
                 defined_optional_arguments.append(base_name)
             else:
                 defined_optional_arguments.append(e)
@@ -350,8 +357,8 @@ class DiagNetTest:
             # elements of the mutually exclusive pair have to exist as actual parameters.
             for e in mutually_exclusive_pairs:
                 if (
-                        e not in defined_required_arguments
-                        and e not in defined_optional_arguments
+                    e not in defined_required_arguments
+                    and e not in defined_optional_arguments
                 ):
                     raise ParameterMissingException(
                         f'Element "{e}" in mutually exclusive group "{mutually_exclusive_pairs}" is not a defined parameter.'
@@ -362,7 +369,7 @@ class DiagNetTest:
                 1 for e in mutually_exclusive_pairs if e in self._required_params
             )
             if required_count != 0 and required_count is not len(
-                    mutually_exclusive_pairs
+                mutually_exclusive_pairs
             ):
                 raise IllegalGroupFormingException(
                     f"Unable to mix required and optional parameters in the mutually exclusive group: {mutually_exclusive_pairs}"
@@ -409,11 +416,10 @@ class DiagNetTest:
             k
             for k in parsed_arguments
             if k not in defined_required_arguments
-               and k not in defined_optional_arguments
+            and k not in defined_optional_arguments
         ]
         if unknown:
             raise UnknownParameterException(f"Unknown parameters passed: {unknown}")
-
 
     def run(self, test_method_prefix="test_", verbose=False, **kwargs) -> Dict:
         """
