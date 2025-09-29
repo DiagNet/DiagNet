@@ -17,6 +17,11 @@ serve:
 shell:
     @just manage shell
 
+[group("django")]
+migrate:
+    @just manage makemigrations
+    @just manage migrate
+
 [group("nix")]
 update:
     nix flake update
