@@ -25,9 +25,9 @@ def get_all_testcases(request):
     package = "networktests.testcases"
     for resource in importlib.resources.files(package).iterdir():
         if (
-            resource.suffix == ".py"
-            and resource.is_file()
-            and resource.name not in ["__init__.py", "base.py"]
+                resource.suffix == ".py"
+                and resource.is_file()
+                and resource.name not in ["__init__.py", "base.py"]
         ):
             class_name = resource.stem
             module_name = f"{package}.{class_name}"
@@ -106,6 +106,8 @@ def create_test(request):
     required_params = data.get("required_parameters", {})
     optional_params = data.get("optional_parameters", {})
     device_params = data.get("device_parameters", {})
+    label = data.get("label", {})
+    expected_result = data.get("expected_result", {})
 
     # Check if parsed parameters are valid
     class_reference = get_class_reference_for_test_class_string(test_class)
@@ -119,8 +121,8 @@ def create_test(request):
     try:
         new_test = TestCase()
         new_test.test_module = test_class
-        new_test.expected_result = True
-        new_test.label = "Work in Progress"
+        new_test.expected_result = expected_result
+        new_test.label = label
         new_test.save()
     except Exception as e:
         return JsonResponse({"status": "fail", "message": str(e)}, status=500)
@@ -191,9 +193,9 @@ def get_all_available_testcases(request):
     package = "networktests.testcases"
     for resource in importlib.resources.files(package).iterdir():
         if (
-            resource.suffix == ".py"
-            and resource.is_file()
-            and resource.name not in ["__init__.py", "base.py"]
+                resource.suffix == ".py"
+                and resource.is_file()
+                and resource.name not in ["__init__.py", "base.py"]
         ):
             class_name = resource.stem
             testcases.append(class_name)

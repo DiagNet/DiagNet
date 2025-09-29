@@ -1,3 +1,5 @@
+const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
 /**
  * Fetches the required and optional parameters for a given test class from the API.
  *
@@ -66,13 +68,17 @@ async function fetchAllDevices() {
  * @param {Object} requiredParams Map of required parameter names to values.
  * @param {Object} optionalParams Map of optional parameter names to values.
  * @param {string[]} deviceParams List of device parameter names.
+ * @param {string} label The label associated with the test class.
+ * @param {boolean} expectedResult If the test class is supposed to pass (true) or fail (false).
  */
-async function createTest(testClass, requiredParams, optionalParams, deviceParams) {
+async function createTest(testClass, requiredParams, optionalParams, deviceParams, label, expectedResult) {
     const payload = {
         test_class: testClass,
         required_parameters: requiredParams,
         optional_parameters: optionalParams,
-        device_parameters: deviceParams
+        device_parameters: deviceParams,
+        label: label,
+        expected_result: expectedResult
     };
 
     try {
@@ -80,7 +86,7 @@ async function createTest(testClass, requiredParams, optionalParams, deviceParam
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken")
+                "X-CSRFToken": csrfToken
             },
             body: JSON.stringify(payload)
         });
