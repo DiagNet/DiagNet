@@ -1,0 +1,12 @@
+<div class="modal-body d-flex flex-column p-2" style="height: 100%;">
+    {% csrf_token %}
+    <input id="labelInput" type="text" class="form-control" placeholder="Name your Testcase...">
+
+    <label for="expectedResult">Expected Result:</label>
+    <select id="expectedResult" class="form-select mt-2">
+        <option value="PASS" selected>PASS</option>
+        <option value="FAIL">FAIL</option>
+    </select>
+
+    <button id="createTest" class="btn btn-primary mt-3" data-bs-dismiss="modal">Create Test</button>
+</div>
