@@ -269,22 +269,9 @@ class TestCaseListView(generic.ListView):
 
 
 @require_http_methods(["GET"])
-def run_testcase(request, id):
-    testcase = get_object_or_404(TestCase, pk=id)
-    start = timezone.now()
-    test_data = testcase.run()
-    end = timezone.now()
-    result = test_data.get("result") == "PASS"
-
-    last_result = testcase.results.order_by("-attempt_id").first()
-    attempt_id = (last_result.attempt_id + 1) if last_result else 1
-
-    testcase.results.create(
-        attempt_id=attempt_id,
-        started_at=start,
-        finished_at=end,
-        result=result,
-    )
+def run_testcase(request, pk):
+    testcase = get_object_or_404(TestCase, pk=pk)
+    _ = testcase.run()
 
     return redirect("networktests-list")
 
