@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Network Tests - DiagNet{% endblock %}
+
+{% block content %}
+<h1>Network Tests</h1>
+<a class="btn btn-primary mb-3" href="">
+	<i class="bi bi-database-add"></i> Add Test Case
+</a>
+{% include "networktests/partials/testcase_table.html" with testcase_list=testcase_list %}
+{% endblock %}

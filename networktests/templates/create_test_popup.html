@@ -4,98 +4,100 @@
 {% block modal_title %}My First Popup{% endblock %}
 
 {% block extra_head %}
-    <style>
-        .modal-body {
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            overflow: hidden;
-        }
+<style>
+    .modal-body {
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+    }
 
-        .transition-transform {
-            transition: transform 0.4s ease;
-        }
+    .transition-transform {
+        transition: transform 0.4s ease;
+    }
 
-        .modal-header {
-            border: none !important;
-        }
+    .modal-header {
+        border: none !important;
+    }
 
-        .tab-pane {
-            flex: 0 0 100%; /* each tab takes full width */
-            display: flex;
-            flex-direction: column;
-            height: 100%; /* fill container height */
-            overflow: hidden;
-        }
+    .tab-pane {
+        flex: 0 0 100%;
+        /* each tab takes full width */
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        /* fill container height */
+        overflow: hidden;
+    }
 
-        #popupTabsContent {
-            display: flex;
-            flex-grow: 1;
-            transition: transform 0.4s ease;
-            height: 100%;
-        }
-    </style>
-    <link rel="stylesheet" href="{% static 'css/choose_test.css' %}">
-    <link rel="stylesheet" href="{% static 'css/choose_parameters.css' %}">
+    #popupTabsContent {
+        display: flex;
+        flex-grow: 1;
+        transition: transform 0.4s ease;
+        height: 100%;
+    }
+</style>
+<link rel="stylesheet" href="{% static 'css/choose_test.css' %}">
+<link rel="stylesheet" href="{% static 'css/choose_parameters.css' %}">
 {% endblock %}
 
 
 {% block modal_header %}
-    <div class="modal-header justify-content-center">
-        <ul class="nav nav-pills" id="popupTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="template-tab" type="button">Template</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link disabled" id="parameters-tab" type="button">Parameters</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link disabled" id="info-tab" type="button">Info</button>
-            </li>
-        </ul>
-        <button type="button" class="btn-close position-absolute end-0 me-3" data-bs-dismiss="modal"
-                aria-label="Close"></button>
-    </div>
+<div class="modal-header justify-content-center">
+    <ul class="nav nav-pills" id="popupTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="template-tab" type="button">Template</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link disabled" id="parameters-tab" type="button">Parameters</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link disabled" id="info-tab" type="button">Info</button>
+        </li>
+    </ul>
+    <button type="button" class="btn-close position-absolute end-0 me-3" data-bs-dismiss="modal"
+        aria-label="Close"></button>
+</div>
 {% endblock %}
 
 {% block modal_body %}
 
-    <div class="modal-body p-0" style="overflow:hidden;">
-        <div id="popupTabsContent" class="d-flex transition-transform">
-            <div id="template-site" class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
-                {% include "popup/choose_test.html" %}
-            </div>
-            <div class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
-                {% include "popup/choose_parameters.html" %}
-            </div>
-            <div class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
-                {% include "popup/choose_test_values.html" %}
-            </div>
+<div class="modal-body p-0" style="overflow:hidden;">
+    <div id="popupTabsContent" class="d-flex transition-transform">
+        <div id="template-site" class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
+            {% include "popup/choose_test.html" %}
+        </div>
+        <div class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
+            {% include "popup/choose_parameters.html" %}
+        </div>
+        <div class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
+            {% include "popup/choose_test_values.html" %}
         </div>
     </div>
+</div>
 
 
-    <script>
+<script>
 
-        const tabs = document.querySelectorAll('#popupTabs .nav-link');
-        const container = document.getElementById('popupTabsContent');
+    const tabs = document.querySelectorAll('#popupTabs .nav-link');
+    const container = document.getElementById('popupTabsContent');
 
-        tabs.forEach((tab, i) => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                container.style.transform = `translateX(-${i * 100}%)`;
-            });
+    tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            container.style.transform = `translateX(-${i * 100}%)`;
         });
+    });
 
-    </script>
+</script>
 
-    <script src="{% static 'js/api_calls.js' %}"></script>
-    <script src="{% static 'js/handle_datatypes.js' %}"></script>
-    <script src="{% static 'js/choose_parameters.js' %}"></script>
-    <script src="{% static 'js/choose_test_values.js' %}"></script>
-    <script src="{% static 'js/choose_test.js' %}"></script>
+<script src="{% static 'js/api_calls.js' %}"></script>
+<script src="{% static 'js/handle_datatypes.js' %}"></script>
+<script src="{% static 'js/choose_parameters.js' %}"></script>
+<script src="{% static 'js/choose_test_values.js' %}"></script>
+<script src="{% static 'js/choose_test.js' %}"></script>
 
 
 
