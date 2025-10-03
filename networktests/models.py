@@ -3,6 +3,9 @@ from django.db import models
 from devices.models import Device
 import importlib
 
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
 
 class TestCase(models.Model):
     test_module = models.TextField(
@@ -16,7 +19,6 @@ class TestCase(models.Model):
     expected_result = models.BooleanField()
     label = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    id = models.AutoField(primary_key=True)
 
     def run(self):
         module = importlib.import_module(f"networktests.testcases.{self.test_module}")
@@ -25,7 +27,21 @@ class TestCase(models.Model):
         params = {p.name: p.value for p in self.parameters.all()}
         params = params | {p.name: p.device for p in self.devices.all()}
 
-        result = cls().run(**params)
+        start = timezone.now()
+
+        test_data = cls().run(**params)
+
+        end = timezone.now()
+        result = test_data.get("result") == "PASS"
+
+        self.results.create(
+            started_at=start,
+            finished_at=end,
+            result=result,
+            log=test_data,
+        )
+
+        return test_data
 
         if isinstance(result, (list, tuple)):
             return result[0] if result else {"result": "FAIL", "tests": {}}
@@ -83,7 +99,7 @@ class TestResult(models.Model):
     started_at = models.DateTimeField()
     finished_at = models.DateTimeField(blank=True, null=True)
     result = models.BooleanField()
-    log = models.TextField(blank=True, null=True)
+    log = models.JSONField(blank=True, null=True)
 
     # Guarantees that there are not multiple results for the same attempt
     class Meta:
