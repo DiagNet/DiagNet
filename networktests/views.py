@@ -267,6 +267,7 @@ def run_test(request, id):
         return HttpResponseNotAllowed(["POST"])
 
     tc = get_object_or_404(TestCase, pk=id)
+
     data = tc.run() or {}
     status = data.get("result")
     now = timezone.now()
@@ -280,15 +281,13 @@ def run_test(request, id):
     )
 
     csrf = get_token(request)
-    status = data.get("result")
 
     if status == "PASS":
         status_html = '<span style="color:#9acd32;">PASS</span>'
     elif status == "FAIL":
         status_html = '<span style="color:#ff6f61;">FAIL</span>'
     else:
-        status_html = ""  # leer wenn noch kein Ergebnis
-
+        status_html = ""
     return HttpResponse(f"""
     <tr id="testcase-row-{tc.id}">
       <td><strong>{tc.label}</strong></td>
