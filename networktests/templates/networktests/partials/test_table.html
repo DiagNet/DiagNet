@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Test Case Table{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    {% if rows %}
+    <div class="table-responsive">
+        <table id="testcase-table" class="table table-hover align-middle">
+            <thead class="table-light">
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Test Case</th>
+                <th scope="col">Last Run</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end">Actions</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for row in rows %}
+            <tr id="testcase-row-{{ row.id }}">
+                <td><strong>{{ row.label }}</strong></td>
+                <td>{{ row.module }}</td>
+                <td>
+                    {% if row.last_run is None %}
+
+                    {% elif row.last_run %}
+                    {{ row.last_run|timesince }} ago
+
+                    {% endif %}
+                </td>
+                <td>
+                    {% if row.status is None %}
+
+                    {% elif row.status %}
+                    <span style="color:#9acd32;">PASS</span>
+                    {% else %}
+                    <span style="color:#ff6f61;">FAIL</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <form class="d-inline"
+                          hx-post="{% url 'tests-run' row.id %}"
+                          hx-target="#testcase-row-{{ row.id }}">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-primary me-1">Run</button>
+                    </form>
+                    <button class="btn btn-sm btn-danger"
+                        hx-delete="{% url 'testcase_delete' row.id %}"
+                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                        hx-target="#testcase-row-{{ row.id }}"
+                        hx-on::after-request="location.reload()">
+                    <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No test cases created yet.</div>
+    {% endif %}
+</div>
+{% endblock %}
