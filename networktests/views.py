@@ -8,11 +8,16 @@ from django.http import (
     HttpResponse,
 )
 import importlib.resources
+
+from django.middleware.csrf import get_token
+from django.utils import timezone
+from django.utils.timesince import timesince
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, get_object_or_404
 
 from devices.models import Device
 from .models import TestCase, TestParameter, TestDevice
+from .models import TestCase, TestParameter, TestDevice, TestResult
 
 package = "networktests.testcases"
 
@@ -261,25 +266,50 @@ def run_test(request, id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
-    tc = get_object_or_404(TestCase, id=id)
+    tc = get_object_or_404(TestCase, pk=id)
+    data = tc.run() or {}
+    status = data.get("result")
+    now = timezone.now()
 
-    try:
-        data = tc.run()  # <- nutzt deine Model-Logik
-    except Exception as e:
-        return render(
-            request,
-            "networktests/partials/test_result.html",
-            {"status": "error", "error": str(e), "tc": tc},
-        )
-
-    status = (data or {}).get("result")
-    details = (data or {}).get("tests", {})
-
-    return render(
-        request,
-        "networktests/partials/test_result.html",
-        {"status": status, "details": details, "tc": tc},
+    TestResult.objects.create(
+        test_case=tc,
+        attempt_id=TestResult.objects.filter(test_case=tc).count() + 1,
+        started_at=now,
+        finished_at=now,
+        result=(status == "PASS"),
     )
+
+    csrf = get_token(request)
+    status = data.get("result")
+
+    if status == "PASS":
+        status_html = '<span style="color:#9acd32;">PASS</span>'
+    elif status == "FAIL":
+        status_html = '<span style="color:#ff6f61;">FAIL</span>'
+    else:
+        status_html = ""  # leer wenn noch kein Ergebnis
+
+    return HttpResponse(f"""
+    <tr id="testcase-row-{tc.id}">
+      <td><strong>{tc.label}</strong></td>
+      <td>{tc.test_module}</td>
+      <td>{timesince(now)} ago</td>
+      <td>{status_html}</td>
+      <td class="text-end">
+        <form class="d-inline" hx-post="/networktests/tests/{tc.id}/run/"
+              hx-target="#testcase-row-{tc.id}" hx-swap="outerHTML">
+          <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}">
+          <button class="btn btn-sm btn-primary me-1">Run</button>
+        </form>
+        <button class="btn btn-sm btn-danger"
+                hx-delete="/networktests/tests/{tc.id}/delete/"
+                hx-headers='{{"X-CSRFToken":"{csrf}"}}'
+                hx-target="#testcase-row-{tc.id}" hx-swap="outerHTML">
+          <i class="bi bi-trash"></i>
+        </button>
+      </td>
+    </tr>
+    """)
 
 
 @require_http_methods(["DELETE"])
@@ -287,3 +317,35 @@ def delete_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     testcase.delete()
     return HttpResponse(status=204)
+
+
+def testcase_table(request):
+    testcases = TestCase.objects.all()
+    rows = []
+    for tc in testcases:
+        last_result = (
+            TestResult.objects.filter(test_case=tc)
+            .order_by("-finished_at", "-started_at")
+            .first()
+        )
+        if last_result:
+            last_run = last_result.finished_at or last_result.started_at
+            status = last_result.result
+        else:
+            last_run = None
+            status = None
+
+        rows.append(
+            {
+                "id": tc.id,
+                "label": tc.label,
+                "module": tc.test_module,
+                "last_run": last_run,
+                "status": status,
+            }
+        )
+
+    return render(request, "networktests/partials/test_table.html", {"rows": rows})
+
+
+global_testcases = update_all_available_testcases()
