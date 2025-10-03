@@ -1,23 +1,19 @@
-from django.core.paginator import Paginator
-from django.db.models import Prefetch, Count
-import json
-
-from django.http import (
-    JsonResponse,
-    HttpResponseNotAllowed,
-    HttpResponse,
-)
 import importlib.resources
-
-from django.middleware.csrf import get_token
+import json
 from django.utils import timezone
-from django.utils.timesince import timesince
+from django.core.paginator import Paginator
+from django.db.models import Count, Prefetch, QuerySet
+from django.http import (
+    HttpResponse,
+    JsonResponse,
+)
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views import generic
 from django.views.decorators.http import require_http_methods
-from django.shortcuts import render, get_object_or_404
 
 from devices.models import Device
-from .models import TestCase, TestParameter, TestDevice
-from .models import TestCase, TestParameter, TestDevice, TestResult
+
+from .models import TestCase, TestDevice, TestParameter
 
 package = "networktests.testcases"
 
@@ -262,53 +258,35 @@ def test_page(request):
     return render(request, "create_test_popup.html")
 
 
-def run_test(request, id):
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
+class TestCaseListView(generic.ListView):
+    model = TestCase
+    paginate_by = 20
 
-    tc = get_object_or_404(TestCase, pk=id)
+    def get_queryset(self) -> QuerySet:
+        if hasattr(self, "queryset") and self.queryset is not None:
+            return self.queryset
+        return super().get_queryset()
 
-    data = tc.run() or {}
-    status = data.get("result")
-    now = timezone.now()
 
-    TestResult.objects.create(
-        test_case=tc,
-        attempt_id=TestResult.objects.filter(test_case=tc).count() + 1,
-        started_at=now,
-        finished_at=now,
-        result=(status == "PASS"),
+@require_http_methods(["GET"])
+def run_testcase(request, id):
+    testcase = get_object_or_404(TestCase, pk=id)
+    start = timezone.now()
+    test_data = testcase.run()
+    end = timezone.now()
+    result = test_data.get("result") == "PASS"
+
+    last_result = testcase.results.order_by("-attempt_id").first()
+    attempt_id = (last_result.attempt_id + 1) if last_result else 1
+
+    testcase.results.create(
+        attempt_id=attempt_id,
+        started_at=start,
+        finished_at=end,
+        result=result,
     )
 
-    csrf = get_token(request)
-
-    if status == "PASS":
-        status_html = '<span style="color:#9acd32;">PASS</span>'
-    elif status == "FAIL":
-        status_html = '<span style="color:#ff6f61;">FAIL</span>'
-    else:
-        status_html = ""
-    return HttpResponse(f"""
-    <tr id="testcase-row-{tc.id}">
-      <td><strong>{tc.label}</strong></td>
-      <td>{tc.test_module}</td>
-      <td>{timesince(now)} ago</td>
-      <td>{status_html}</td>
-      <td class="text-end">
-        <form class="d-inline" hx-post="/networktests/tests/{tc.id}/run/"
-              hx-target="#testcase-row-{tc.id}" hx-swap="outerHTML">
-          <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}">
-          <button class="btn btn-sm btn-primary me-1">Run</button>
-        </form>
-        <button class="btn btn-sm btn-danger"
-                hx-delete="/networktests/tests/{tc.id}/delete/"
-                hx-headers='{{"X-CSRFToken":"{csrf}"}}'
-                hx-target="#testcase-row-{tc.id}" hx-swap="outerHTML">
-          <i class="bi bi-trash"></i>
-        </button>
-      </td>
-    </tr>
-    """)
+    return redirect("networktests-list")
 
 
 @require_http_methods(["DELETE"])
@@ -316,35 +294,3 @@ def delete_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     testcase.delete()
     return HttpResponse(status=204)
-
-
-def testcase_table(request):
-    testcases = TestCase.objects.all()
-    rows = []
-    for tc in testcases:
-        last_result = (
-            TestResult.objects.filter(test_case=tc)
-            .order_by("-finished_at", "-started_at")
-            .first()
-        )
-        if last_result:
-            last_run = last_result.finished_at or last_result.started_at
-            status = last_result.result
-        else:
-            last_run = None
-            status = None
-
-        rows.append(
-            {
-                "id": tc.id,
-                "label": tc.label,
-                "module": tc.test_module,
-                "last_run": last_run,
-                "status": status,
-            }
-        )
-
-    return render(request, "networktests/partials/test_table.html", {"rows": rows})
-
-
-global_testcases = update_all_available_testcases()
