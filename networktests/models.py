@@ -74,7 +74,7 @@ class TestDevice(models.Model):
 
 
 class TestResult(models.Model):
-    attempt_id = models.IntegerField()
+    attempt_id = models.IntegerField(null=True, blank=True)
     # All Parameters accessible using test_case.results.all()
     # When the parent TestCase is deleted the Parameter is deleted as well.
     test_case = models.ForeignKey(
@@ -88,6 +88,12 @@ class TestResult(models.Model):
     # Guarantees that there are not multiple results for the same attempt
     class Meta:
         unique_together = ("attempt_id", "test_case")
+
+    def save(self, *args, **kwargs):
+        if self.attempt_id is None:
+            last = TestResult.objects.filter(test_case=self.test_case).order_by('-attempt_id').first()
+            self.attempt_id = (last.attempt_id + 1) if last else 1
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Attempt {self.attempt_id} for {self.test_case}"
