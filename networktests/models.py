@@ -43,20 +43,6 @@ class TestCase(models.Model):
 
         return test_data
 
-        if isinstance(result, (list, tuple)):
-            return result[0] if result else {"result": "FAIL", "tests": {}}
-        elif isinstance(result, dict):
-            return result
-        elif isinstance(result, bool):
-            return {"result": "PASS" if result else "FAIL", "tests": {}}
-        elif isinstance(result, int):
-            return {"result": "PASS" if result == 1 else "FAIL", "tests": {}}
-        else:
-            s = str(result).upper()
-            if s in ("PASS", "FAIL"):
-                return {"result": s, "tests": {}}
-            return {"result": str(result), "tests": {}}
-
     def __str__(self):
         return f"{self.label}"
 
