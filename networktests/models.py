@@ -3,7 +3,6 @@ from django.db import models
 from devices.models import Device
 import importlib
 
-from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 
@@ -93,7 +92,11 @@ class TestResult(models.Model):
 
     def save(self, *args, **kwargs):
         if self.attempt_id is None:
-            last = TestResult.objects.filter(test_case=self.test_case).order_by('-attempt_id').first()
+            last = (
+                TestResult.objects.filter(test_case=self.test_case)
+                .order_by("-attempt_id")
+                .first()
+            )
             self.attempt_id = (last.attempt_id + 1) if last else 1
         super().save(*args, **kwargs)
 
