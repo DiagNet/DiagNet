@@ -253,9 +253,9 @@ def testcases_list(request):
     )
 
 
-def test_page(request):
+def create_test_page(request):
     # context = {"title": "test", "msg": "hello bro"}
-    return render(request, "create_test_popup.html")
+    return render(request, "networktests/partials/create_popup/create_test_popup.html")
 
 
 class TestCaseListView(generic.ListView):

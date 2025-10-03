@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     path("", views.TestCaseListView.as_view(), name="networktests-list"),
-    path("create/", views.test_page, name="test-page"),
+    path("create/", views.create_test_page, name="test-page"),
     path("get-all-testcases", views.get_all_testcases, name="get-all-testcases"),
     path(
         "api/search/test/parameters",
