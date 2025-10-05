@@ -3,8 +3,7 @@
 let previousTestClass = "";
 let settingUp = false;
 
-const paramTab = document.getElementById('parameters-tab')
-const templateTab = document.getElementById('template-tab')
+const paramTab = document.getElementById('parameters-tab');
 let requiredContainer = document.getElementById("requiredParamsContainer");
 let optionalContainer = document.getElementById("optionalParamsContainer");
 let submitParametersButton = document.getElementById("submitParameters");
@@ -288,6 +287,7 @@ function checkSubmitLegality() {
  */
 async function selectTestClass(testClass, popup) {
     if (settingUp) return;
+    popup.removeEventListener("keydown", onPopUpClickHandler);
     settingUp = true;
     requiredStatus.clear();
     datatypeStatus.clear();
@@ -311,11 +311,6 @@ async function selectTestClass(testClass, popup) {
     paramTab.disabled = false;
     paramTab.click();
 
-    popup.removeEventListener("keydown", onPopUpClickHandler);
-    templateTab.addEventListener("click", (e) => {
-        paramTab.disabled = true;
-        popup.addEventListener("keydown", onPopUpClickHandler);
-    })
     _ = await showParameters(testClass);
     checkSubmitLegality();
     settingUp = false;
