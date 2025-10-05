@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    labels:
+      - "automated"
+    schedule:
+      interval: "daily"
+    assignees:
+      - "MrSom3body"
+    commit-message:
+      prefix: "workflows"
+      include: "scope"
