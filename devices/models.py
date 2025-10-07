@@ -153,3 +153,31 @@ class Device(models.Model):
             return device
         except Exception:
             return None
+    
+    def export_to_yaml(self):
+        """
+        Exports the device to a yaml format.
+
+        The output yaml structure looks like this:
+
+        devices:
+          <device_name>:
+            ip: <ip_address>
+            port: <port>
+            protocol: <protocol>
+            username: <username>
+            password: <password>
+            device_type: <device_type>
+        """
+        import yaml
+
+        data = {
+            "devices": {
+                self.name: {
+                    field.name: getattr(self, field.name)
+                    for field in self._meta.fields
+                }
+            }
+        }
+
+        return yaml.dump(data, sort_keys=False)
