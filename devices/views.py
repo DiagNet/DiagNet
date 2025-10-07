@@ -134,3 +134,7 @@ def get_all_devices(request):
     devices = Device.objects.all()
     names = [obj.name for obj in devices]
     return JsonResponse({"results": names})
+
+
+def import_devices_from_csv():
+    pass
