@@ -5,7 +5,7 @@ from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.http import JsonResponse
 
-from devices.forms import DeviceForm
+from devices.forms import DeviceForm, UploadFileForm
 
 from .models import Device
 
@@ -86,5 +86,18 @@ def get_all_devices(request):
     return JsonResponse({"results": names})
 
 
-def import_devices_from_csv():
-    pass
+def handle_uploaded_file(f):
+    for l in f:
+        print(l)
+
+
+def import_devices_from_csv(request):
+    if request.method == "POST":
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            print("here")
+            handle_uploaded_file(request.FILES["file"])
+            return HttpResponseRedirect("/success/url/")
+    else:
+        form = UploadFileForm()
+    return render(request, "upload.html", {"form": form})
