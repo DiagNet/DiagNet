@@ -1,4 +1,5 @@
 * @DiagNet/diagnet-devs
+/.gitignore @MrSom3body
 
 # nix stuff
 /nix @MrSom3body
