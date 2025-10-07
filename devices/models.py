@@ -138,8 +138,8 @@ class Device(models.Model):
 
     def get_genie_device_object(self):
         if (
-            self.name in device_connections
-            and device_connections[self.name].is_connected()
+                self.name in device_connections
+                and device_connections[self.name].is_connected()
         ):
             return device_connections[self.name]
 
@@ -153,7 +153,69 @@ class Device(models.Model):
             return device
         except Exception:
             return None
-    
+
+    def save_as_yaml(self, filepath: str, mode: str = "OVERWRITE"):
+        """
+    Saves the current device instance to a YAML file using export_to_yaml().
+
+    Modes:
+        - "OVERWRITE": Replace any existing file.
+        - "APPEND": Append this device to existing devices.
+        - "UPDATE": Update this device if it exists, keep others.
+
+    Args:
+        filepath (str): Path to the output YAML file.
+        mode (str): File handling mode ("OVERWRITE", "APPEND", or "UPDATE").
+
+    Raises:
+        ValueError: If mode is invalid.
+        IOError: If file read or write fails.
+        yaml.YAMLError: If YAML content is invalid or cannot be parsed.
+    """
+
+        import yaml
+        import os
+
+        if mode not in {"OVERWRITE", "APPEND", "UPDATE"}:
+            raise ValueError(f"Invalid mode: {mode}")
+
+        try:
+            new_data = yaml.safe_load(self.export_to_yaml())
+        except yaml.YAMLError as e:
+            raise yaml.YAMLError(f"Failed to generate YAML for device '{self.name}': {e}")
+
+        data = {"devices": {}}
+
+        # handle existing file safely
+        if os.path.exists(filepath) and mode != "OVERWRITE":
+            try:
+                with open(filepath, "r") as f:
+                    existing = yaml.safe_load(f) or {}
+                    if not isinstance(existing, dict):
+                        raise yaml.YAMLError("YAML root must be a mapping")
+                    data = existing
+            except FileNotFoundError:
+                pass
+            except yaml.YAMLError as e:
+                raise yaml.YAMLError(f"Invalid YAML in '{filepath}': {e}")
+            except OSError as e:
+                raise IOError(f"Error reading '{filepath}': {e}")
+
+        data.setdefault("devices", {})
+
+        if mode == "APPEND":
+            data["devices"].update(new_data["devices"])
+        elif mode == "UPDATE":
+            data["devices"][self.name] = new_data["devices"][self.name]
+        else:  # OVERWRITE
+            data = new_data
+
+        try:
+            with open(filepath, "w") as f:
+                yaml.dump(data, f, sort_keys=False)
+        except OSError as e:
+            raise IOError(f"Error writing to '{filepath}': {e}")
+
     def export_to_yaml(self):
         """
         Exports the device to a yaml format.
