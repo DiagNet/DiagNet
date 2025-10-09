@@ -14,13 +14,71 @@
       {% if testgroup_list %}
       {% for testgroup in testgroup_list %}
       <tr id="testgroups-{{ testgroup.name }}">
-          <td>
-            <a href="detail/{{ testgroup.name }}/"> {{ testgroup.name }} </a>
-          <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
-            <a hx-vals='{"name": "{{ testgroup.name }}"}' hx-post="delete-testgroup/" hx-target="#testgroup-table" class="btn btn-sm btn-danger" title="Delete">
-                  <i class="bi bi-trash"></i>
-              </a>
-          </td>
+        <td style="width: 2rem;">
+          <button 
+            class="btn btn-sm btn-outline-secondary" 
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapse-{{ testgroup.name }}"
+            aria-expanded="false"
+            aria-controls="collapse-{{ testgroup.name }}">
+            <i class="bi bi-chevron-down"></i>
+          </button>
+        </td>
+
+        <td>
+          <a href="detail/{{ testgroup.name }}/"> {{ testgroup.name }} </a>
+        </td>
+
+        <td class="text-end">
+          <button 
+            data-bs-toggle="collapse"
+            data-bs-target="#collapse-{{ testgroup.name }}"
+            aria-expanded="false"
+            aria-controls="collapse-{{ testgroup.name }}"
+            class="btn btn-sm btn-outline-success">
+            <i class="bi bi-plus"></i> Add Testcase
+          </button>
+        </td>
+
+        <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
+          <a 
+            hx-vals='{"name": "{{ testgroup.name }}"}'
+            hx-post="delete-testgroup/"
+            hx-target="#testgroup-table"
+            class="btn btn-sm btn-danger"
+            title="Delete">
+            <i class="bi bi-trash"></i>
+          </a>
+        </td>
+      </tr>
+
+      <!-- Collapsible row -->
+      <tr class="collapse" id="collapse-{{ testgroup.name }}">
+        <td colspan="3" class="bg-light">
+          <div class="">
+            <b>Add test case to group</b>
+            <div class="d-flex align-items-left">
+              <input 
+                  type="text" 
+                  name="name" 
+                  class="form-control me-2" 
+                  placeholder="Test case name"
+                  style="max-width: 300px;">
+              
+              <button id="rename-submit" type="submit" class="btn btn-success btn-sm me-2">
+                <i class="bi bi-check"></i>
+              </button>
+              
+              <button 
+                  type="button"
+                  id ="aboart"
+                  class="btn btn-secondary btn-sm">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          </div>
+        </td>
       </tr>
       {% endfor %}
       {% else %}
