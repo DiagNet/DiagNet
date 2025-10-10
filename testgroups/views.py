@@ -121,3 +121,7 @@ def list_testcases(request, name: str):
         context["testcases_list"] = testcases
 
     return render(request, "list_testcases.html", context)
+
+
+def add_testcase_to_testgroup(request):
+    return HttpResponse()
