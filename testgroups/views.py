@@ -26,7 +26,7 @@ def list_testgroups(request, error=None):
     return render(request, "list_testgroups.html", context=context)
 
 
-testgroup_name_pattern = r"[A-Za-z0-9\._-]+"
+testgroup_name_pattern = r"[A-Za-z0-9_]+"
 
 
 def create_testgroup(request):
@@ -39,7 +39,7 @@ def create_testgroup(request):
     if not name:
         error = "name cannot be empty"
     elif not re.fullmatch(testgroup_name_pattern, name):
-        error = "name can only contain letters, numbers, underscores, dashes and dots."
+        error = "name can only contain letters, numbers and underscores"
     else:
         try:
             tg = TestGroup(name=name)
@@ -77,7 +77,7 @@ def get_testgroup_detail(request, name: str):
 
 def rename_testgroup(request, name: str):
     if request.method != "POST":
-        return HttpResponse("bad request method.")
+        return HttpResponse("bad request method")
 
     testgroup: TestGroup
     try:
@@ -93,7 +93,7 @@ def rename_testgroup(request, name: str):
         error = "name cannot be empty"
         context["error"] = error
     elif not re.fullmatch(testgroup_name_pattern, new_name):
-        error = "name can only contain letters, numbers, underscores, dashes and dots."
+        error = "name can only contain letters, numbers and underscores"
         context["error"] = error
     else:
         try:
@@ -124,4 +124,5 @@ def list_testcases(request, name: str):
 
 
 def add_testcase_to_testgroup(request):
+    print(request.POST)
     return HttpResponse()
