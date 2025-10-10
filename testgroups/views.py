@@ -1,8 +1,9 @@
 import re
 from django.db.utils import IntegrityError
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from .models import TestGroup
+from networktests.models import TestCase
 
 
 def testgroups_page(request):
@@ -108,21 +109,38 @@ def rename_testgroup(request, name: str):
     return render(request, "testcases_detail_title.html", context)
 
 
-def list_testcases(request, name: str):
+def add_testcase_to_testgroup(request: HttpRequest):
+    if request.method != "POST":
+        return HttpResponseBadRequest()
+
+    testgroup_name = request.POST.get("testgroup")
+    testcase_name = request.POST.get("testcase")
+    if not testgroup_name or not testcase_name:
+        return HttpResponseBadRequest()
+
+    try:
+        testgroup = TestGroup.objects.get(name=testgroup_name)
+        testcase = TestCase.objects.get(label=testcase_name)
+    except (TestGroup.DoesNotExist, TestCase.DoesNotExist):
+        return HttpResponseBadRequest("Testcase or test group does not exist")
+
+    testgroup.testcases.add(testcase)
+    return list_testcases(request, testgroup_name)
+
+
+def list_testcases(request, testgroup_name: str):
     testgroup: TestGroup
     try:
-        testgroup = TestGroup.objects.get(name=name)
+        testgroup = TestGroup.objects.get(name=testgroup_name)
     except TestGroup.DoesNotExist:
-        raise Http404(" This Test Group does not exist")
+        return HttpResponseBadRequest("This Test Group does not exist")
 
     testcases = list(testgroup.testcases.all())
+    print(testgroup)
+    print(testcases)
     context = {}
     if len(testcases) > 0:
-        context["testcases_list"] = testcases
+        context["testcase_list"] = testcases
+    print(context)
 
     return render(request, "list_testcases.html", context)
-
-
-def add_testcase_to_testgroup(request):
-    print(request.POST)
-    return HttpResponse()
