@@ -42,15 +42,15 @@
           <div hidden class="text-end" id="add-form-div-{{ testgroup.name }}">
             <form hx-post="{% url 'testcase-add' %}" 
                 hx-vals='{"testgroup": "{{ testgroup.name }}"}'
-                hx-target="#placeholder"
-                hx-swap="outerHTML"
+                hx-target="#td-coll-{{ testgroup.name }}"
+                hx-swap="innerHTML"
                 class="d-flex align-items-center">
               {% csrf_token %}
                 
               <div class="d-flex align-items-center justify-content-between mb-3">
                 <input 
                     type="text" 
-                    name="name" 
+                    name="testcase" 
                     id="input-{{ testgroup.name }}"
                     placeholder="Add testcase"
                     class="form-control me-2" 
@@ -85,28 +85,12 @@
 
       <!-- Collapsible row -->
       <tr class="collapse" id="collapse-{{ testgroup.name }}">
-        <td colspan="3" class="bg-light">
-          <div class="">
-            <b>Add test case to group</b>
-            <div class="d-flex align-items-left">
-              <input 
-                  type="text" 
-                  name="name" 
-                  class="form-control me-2" 
-                  placeholder="Test case name"
-                  style="max-width: 300px;">
-              
-              <button id="rename-submit" type="submit" class="btn btn-success btn-sm me-2">
-                <i class="bi bi-check"></i>
-              </button>
-              
-              <button 
-                  type="button"
-                  id ="aboart"
-                  class="btn btn-secondary btn-sm">
-                <i class="bi bi-x"></i>
-              </button>
-            </div>
+        <td colspan="3" class="bg-light" id="td-coll-{{ testgroup.name }}">
+          <div 
+            hx-get="list-testcases/{{ testgroup.name }}"
+            hx-trigger="load"
+            hx-swap="outerHTML">
+            <p>Loading content…</p>
           </div>
         </td>
       </tr>
