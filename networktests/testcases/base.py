@@ -166,7 +166,7 @@ def filter_out_skipped(test_methods, skipped, results, status_map):
     amount_skipped: int = 0
     # mark skipped tests immediately
     for name, method in test_methods:
-        if getattr(method, "_skip", False):
+        if getattr(method, "_skip", False) or getattr(method, "_depends_on", None) in skipped:
             amount_skipped += 1
             skipped.add(name)
             results[name] = {
@@ -175,16 +175,6 @@ def filter_out_skipped(test_methods, skipped, results, status_map):
                 "time": 0,
             }
             status_map[name] = "SKIPPED"
-            test_methods.remove((name, method))
-        elif getattr(method, "_depends_on", None) in skipped:
-            amount_skipped += 1
-            skipped.add(name)
-            results[name] = {
-                "status": "SKIPPED_DUE_TO_DEPENDENCY_SKIP",
-                "message": getattr(method, "_skip_reason", ""),
-                "time": 0,
-            }
-            status_map[name] = "SKIPPED_DUE_TO_DEPENDENCY_SKIP"
             test_methods.remove((name, method))
 
     if amount_skipped != 0:
@@ -434,7 +424,7 @@ class DiagNetTest:
             "result": "PASS"|"FAIL",
             "tests": {
                 test_method_name: {
-                    "status": "PASS"|"FAIL"|"SKIPPED"|"SKIPPED_DUE_TO_DEPENDENCY_FAIL"|"SKIPPED_DUE_TO_DEPENDENCY_SKIP",
+                    "status": "PASS"|"FAIL"|"SKIPPED",
                     "message": "",
                     "time": float (seconds)
                 },
@@ -507,14 +497,14 @@ class DiagNetTest:
             dep = getattr(method, "_depends_on", None)
             if dep and status_map.get(dep) in (
                 "FAIL",
-                "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
+                "SKIPPED",
             ):
                 results[test_name] = {
-                    "status": "SKIPPED_DUE_TO_DEPENDENCY_FAIL",
+                    "status": "SKIPPED",
                     "message": f"Skipped due to failed dependency: {dep}",
                     "time": 0,
                 }
-                status_map[test_name] = "SKIPPED_DUE_TO_DEPENDENCY_FAIL"
+                status_map[test_name] = "SKIPPED"
                 continue
 
             amount_of_repeat = getattr(method, "_repeat", 1)
@@ -608,8 +598,6 @@ class DiagNetTest:
             1
             for r in results.values()
             if r["status"].startswith("SKIPPED")
-            or r["status"].startswith("SKIPPED_DUE_TO_DEPENDENCY_FAIL")
-            or r["status"].startswith("SKIPPED_DUE_TO_DEPENDENCY_SKIP")
         )
 
         # run teardown
