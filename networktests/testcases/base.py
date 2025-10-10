@@ -202,13 +202,13 @@ class DiagNetTest:
     __PARAMETER_DELIMITER = ","
     """The Delimiter used to separate parameters"""
 
-    _required_params: str|List[str] = ""
+    _required_params: str|List[str] = []
     """ Saves the required parameters needed for this Test """
 
-    _optional_params: str|List[str] = ""
+    _optional_params: str|List[str] = []
     """ Saves the optional parameters needed for this Test """
 
-    _mutually_exclusive_parameters: List[List[str]] = ""
+    _mutually_exclusive_parameters: List[List[str]] = []
     """ Saves which pairs of parameters are mutually exclusive. """
 
     def _setup(self) -> None:
