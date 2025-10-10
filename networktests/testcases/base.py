@@ -10,7 +10,7 @@ Description: Parent-Class for defining Tests.
 __author__ = "Luka Pacar"
 __version__ = "1.2.4"
 
-from typing import List, Dict, Tuple
+from typing import List, Dict
 from collections import defaultdict, deque
 import time
 
@@ -199,13 +199,16 @@ class DiagNetTest:
     and defining test methods.
     """
 
-    _required_params: List[str] = []
+    __PARAMETER_DELIMITER = ","
+    """The Delimiter used to separate parameters"""
+
+    _required_params: str|List[str] = ""
     """ Saves the required parameters needed for this Test """
 
-    _optional_params: List[str] = []
+    _optional_params: str|List[str] = ""
     """ Saves the optional parameters needed for this Test """
 
-    _mutually_exclusive_parameters: List[Tuple[str, ...]] = []
+    _mutually_exclusive_parameters: List[List[str]] = ""
     """ Saves which pairs of parameters are mutually exclusive. """
 
     def _setup(self) -> None:
@@ -267,149 +270,6 @@ class DiagNetTest:
                 params[param.strip()] = "str"
 
         return params
-
-    def check_parameter_validity(self, **kwargs):
-        """
-        Validate provided parameters against the test's declared requirements.
-
-        Args:
-            **kwargs: Parsed parameters passed to the test run.
-
-        Returns:
-            None
-        """
-
-        #  --- 1. validate parameters ---
-
-        parsed_arguments: List[...] = list(kwargs.keys())
-
-        # --- 1.1 Strip datatype from parameters ---
-
-        def extract_multiple_choice(choice_list: str):
-            """
-            Extracts the values out of a string list. "[one,two,three]" -> [one,two,three]
-
-            Args:
-                choice_list: The parsed string list.
-
-            Returns:
-                A list representation of the parsed string list.
-            """
-            return choice_list[1:-1].split(",")
-
-        # required parameters
-        defined_required_arguments: List[...] = []
-        for e in self._required_params:
-            if ":" in e:
-                split_str = e.split(":")
-
-                base_name, datatype = split_str[0].strip(), split_str[1].strip()
-                if datatype.startswith("[") and datatype.endswith("]"):
-                    if base_name in kwargs and kwargs[
-                        base_name
-                    ] not in extract_multiple_choice(datatype):
-                        raise UnknownParameterException(
-                            f"Unknown value ({kwargs[base_name]}) parsed for parameter {base_name} - expected one of the following values: {datatype}"
-                        )
-                defined_required_arguments.append(base_name)
-            else:
-                defined_required_arguments.append(e)
-
-        # optional parameters
-        defined_optional_arguments: List[...] = []
-        for e in self._optional_params:
-            if ":" in e:
-                split_str = e.split(":")
-
-                base_name, datatype = split_str[0].strip(), split_str[1].strip()
-                if datatype.startswith("[") and datatype.endswith("]"):
-                    if base_name in kwargs and kwargs[e] not in extract_multiple_choice(
-                        datatype
-                    ):
-                        raise UnknownParameterException(
-                            f"Unknown value ({kwargs[base_name]}) parsed for parameter {base_name} - expected one of the following values: {datatype}"
-                        )
-                defined_optional_arguments.append(base_name)
-            else:
-                defined_optional_arguments.append(e)
-
-        # --- 1.2 Check mutually exclusive validity ---
-
-        mutually_ignored_arguments: List[...] = []
-
-        # check mutually exclusive parameters
-        for mutually_exclusive_pairs in self._mutually_exclusive_parameters:
-            if len(mutually_exclusive_pairs) < 2:
-                raise IllegalGroupFormingException(
-                    "Mutually Exclusive Group has to contain at least 2 elements."
-                )
-
-            # elements of the mutually exclusive pair have to exist as actual parameters.
-            for e in mutually_exclusive_pairs:
-                if (
-                    e not in defined_required_arguments
-                    and e not in defined_optional_arguments
-                ):
-                    raise ParameterMissingException(
-                        f'Element "{e}" in mutually exclusive group "{mutually_exclusive_pairs}" is not a defined parameter.'
-                    )
-
-            # members of a mutually exclusive group have to all be in either "required" or "optional". (mixing them would not make sense)
-            required_count = sum(
-                1 for e in mutually_exclusive_pairs if e in self._required_params
-            )
-            if required_count != 0 and required_count is not len(
-                mutually_exclusive_pairs
-            ):
-                raise IllegalGroupFormingException(
-                    f"Unable to mix required and optional parameters in the mutually exclusive group: {mutually_exclusive_pairs}"
-                )
-
-            # Count number of parsed elements.
-            parsed_elements = sum(
-                1 for e in mutually_exclusive_pairs if e in parsed_arguments
-            )
-
-            if required_count == 0:  # Optional parameter.
-                if parsed_elements > 1:
-                    raise MutuallyExclusiveGroupException(
-                        f"Unable to process 2 or more parsed parameters of the same mutually exclusive group: {mutually_exclusive_pairs}"
-                    )
-                # having 1 optional element or none is legal.
-            else:
-                if parsed_elements == 0:
-                    raise MutuallyExclusiveGroupException(
-                        f"At least 1 element of the required mutually exclusive group has to be parsed: {mutually_exclusive_pairs}"
-                    )
-                if parsed_elements > 1:
-                    raise MutuallyExclusiveGroupException(
-                        f"Unable to process 2 or more parsed parameters of the same mutually exclusive group: {mutually_exclusive_pairs}"
-                    )
-                # having 1 required element is legal.
-
-            # Remove processed mutually exclusive groups for further checks.
-            for e in mutually_exclusive_pairs:
-                if e not in parsed_arguments:
-                    mutually_ignored_arguments.append(e)
-
-        # missing parameters
-        missing = [
-            p
-            for p in defined_required_arguments
-            if p not in parsed_arguments and p not in mutually_ignored_arguments
-        ]
-        if missing:
-            raise ParameterMissingException(f"Missing required parameters: {missing}")
-
-        # unknown parameters
-        unknown = [
-            k
-            for k in parsed_arguments
-            if k not in defined_required_arguments
-            and k not in defined_optional_arguments
-        ]
-        if unknown:
-            raise UnknownParameterException(f"Unknown parameters passed: {unknown}")
 
     def run(self, test_method_prefix="test_", verbose=False, **kwargs) -> Dict:
         """
@@ -621,3 +481,160 @@ class DiagNetTest:
             "tests": results,
             "summary": (total, passed, failed, skipped),
         }
+
+    def get_parameters(self):
+        """
+        Extracts the required parameters, optional parameters, and mutually exclusive bindings
+        from a given parameter definition.
+
+        Returns:
+            tuple: A tuple containing three elements:
+                - required_params (dict): The required parameters' definitions.
+                - optional_params (dict): The optional parameters' definitions.
+                - mutually_exclusive_bindings (list): List of parameter sets that are mutually exclusive.
+        """
+
+        def split_ignore_brackets(s:str, delimiter:str):
+            """
+               Split a string using a delimiter that is ignored if it occurs in a bracket.
+
+               Args:
+                   s (str): Input string.
+                   delimiter (str): delimiter.
+
+               Returns:
+                   list[str]: Split segments.
+            """
+            result = []
+            current = []
+            stack = []  # Track opening brackets
+
+            brackets = {"[": "]", "{": "}", "(": ")"}
+
+            for c in s:
+                if c in brackets:  # Opening bracket
+                    stack.append(brackets[c])
+                    current.append(c)
+                elif stack and c == stack[-1]:  # Closing bracket
+                    stack.pop()
+                    current.append(c)
+                elif not stack and c == delimiter:  # Top-level comma
+                    result.append("".join(current).strip())
+                    current = []
+                else:
+                    current.append(c)
+
+            if current:
+                result.append("".join(current).strip())
+            return result
+
+        required_params: List[str] = []
+        optional_params: List[str] = []
+
+        # Splits Parameters
+        for definition, container in [(self._required_params, required_params),(self._optional_params, optional_params)]:
+            if definition:
+                for param in definition:
+                    param = param.replace("\n", "").replace("\t", "")
+                    for parameter in split_ignore_brackets(param, self.__PARAMETER_DELIMITER):
+                        container.append(parameter.partition(":")[0]) # cut off datatype and extra information
+
+        return required_params, optional_params, self._mutually_exclusive_parameters
+
+    def check_parameter_validity(self, **kwargs):
+        """
+        Validate provided parameters against the test's declared requirements.
+        Important: Does not check the correctness of datatypes.
+
+        Args:
+            **kwargs: Parsed parameters passed to the test run.
+
+        Returns:
+            None
+        """
+
+        #  --- 1. validate parameters ---
+
+        parsed_arguments: List[...] = list(kwargs.keys())
+
+        # --- 1.1 Extract parameters and strip datatype from parameters ---
+
+        required_params, optional_params, mutually_exclusive_groups = self.get_parameters()
+
+        # --- 1.2 Check mutually exclusive validity ---
+
+        mutually_ignored_arguments: List[...] = []
+
+        # check mutually exclusive parameters
+        for mutually_exclusive_pairs in mutually_exclusive_groups:
+            if len(mutually_exclusive_pairs) < 2:
+                raise IllegalGroupFormingException(
+                    "Mutually Exclusive Group has to contain at least 2 elements."
+                )
+
+            # elements of the mutually exclusive pair have to exist as actual parameters.
+            for e in mutually_exclusive_pairs:
+                if (
+                        e not in required_params
+                        and e not in optional_params
+                ):
+                    raise ParameterMissingException(
+                        f'Element "{e}" in mutually exclusive group "{mutually_exclusive_pairs}" is not a defined parameter.'
+                    )
+
+            # members of a mutually exclusive group have to all be in either "required" or "optional". (mixing them would not make sense)
+            required_count = sum(
+                1 for e in mutually_exclusive_pairs if e in required_params
+            )
+            if required_count != 0 and required_count is not len(
+                    mutually_exclusive_pairs
+            ):
+                raise IllegalGroupFormingException(
+                    f"Unable to mix required and optional parameters in the mutually exclusive group: {mutually_exclusive_pairs}"
+                )
+
+            # Count number of parsed elements.
+            parsed_elements = sum(
+                1 for e in mutually_exclusive_pairs if e in parsed_arguments
+            )
+
+            if required_count == 0:  # Optional parameter.
+                if parsed_elements > 1:
+                    raise MutuallyExclusiveGroupException(
+                        f"Unable to process 2 or more parsed parameters of the same mutually exclusive group: {mutually_exclusive_pairs}"
+                    )
+                # having 1 optional element or none is legal.
+            else:
+                if parsed_elements == 0:
+                    raise MutuallyExclusiveGroupException(
+                        f"At least 1 element of the required mutually exclusive group has to be parsed: {mutually_exclusive_pairs}"
+                    )
+                if parsed_elements > 1:
+                    raise MutuallyExclusiveGroupException(
+                        f"Unable to process 2 or more parsed parameters of the same mutually exclusive group: {mutually_exclusive_pairs}"
+                    )
+                # having 1 required element is legal.
+
+            # Remove processed mutually exclusive groups for further checks.
+            for e in mutually_exclusive_pairs:
+                if e not in parsed_arguments:
+                    mutually_ignored_arguments.append(e)
+
+        # missing parameters
+        missing = [
+            p
+            for p in required_params
+            if p not in parsed_arguments and p not in mutually_ignored_arguments
+        ]
+        if missing:
+            raise ParameterMissingException(f"Missing required parameters: {missing}")
+
+        # unknown parameters
+        unknown = [
+            k
+            for k in parsed_arguments
+            if k not in required_params
+               and k not in optional_params
+        ]
+        if unknown:
+            raise UnknownParameterException(f"Unknown parameters passed: {unknown}")
