@@ -7,7 +7,7 @@
   <table class="table table-striped">
       <thead>
       <tr>
-          <th>Name</th>
+          <th>Testcases</th>
       </tr>
       </thead>
       <tbody>
@@ -15,9 +15,9 @@
       {% for testcase in testcase_list %}
       <tr>
           <td>
-            <a href="detail/{{ testcase.name }}/"> {{ testcase.name }} </a>
+            <a href="detail/{{ testcase.label }}/"> {{ testcase.label }} </a>
           <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
-            <a hx-vals='{"name": "{{ testcase.name }}"}' hx-post="delete-testcase/" hx-target="#testcase-table" class="btn btn-sm btn-danger" title="Delete">
+            <a hx-vals='{"name": "{{ testcase.label }}"}' hx-post="delete-testcase/" hx-target="#testcase-table" class="btn btn-sm btn-danger" title="Delete">
                   <i class="bi bi-trash"></i>
               </a>
           </td>
