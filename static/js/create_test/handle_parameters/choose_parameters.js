@@ -10,56 +10,6 @@ let submitParametersButton = document.getElementById("submitParameters");
 
 let requiredStatus = new Map();
 
-/**
- * Creates a single input field (text input or select) for a parameter.
- *
- * @param {string} paramName The name of the parameter.
- * @param {string} datatype The datatype or options string.
- * @param {string} type Either required or optional.
- * @returns {HTMLElement} The created input/select element.
- */
-function createInputField(paramName, datatype, type) {
-    let input = null
-
-    if (datatype.includes("[")) {
-        // Multiple Choice
-        input = document.createElement("select");
-        input.className = "form-select mb-2";
-
-        const options = datatype
-            .substring(1, datatype.length - 1)
-            .split(",")
-            .map(opt => opt.trim());
-        options.unshift(""); // Add empty option (for deselecting)
-        options.forEach(opt => {
-            const option = document.createElement("option");
-            option.value = opt.toLowerCase();
-            option.textContent = opt;
-            input.appendChild(option);
-        });
-
-    } else {
-        input = document.createElement("input");
-        input.type = "text";
-        input.className = "form-control mb-2";
-
-        input.placeholder = paramName
-    }
-    input.name = paramName;
-    input.id = paramName;
-    input.dataset.datatype = datatype;
-    input.dataset.paramName = paramName;
-
-    input.dataset.type = type;
-    if (type === "required") {
-        requiredStatus.set(input, false);
-    }
-    datatypeStatus.set(input, true);
-
-    return input;
-}
-
-
 // Set-up parameter fields
 /**
  * "Enables" the given input field.
@@ -218,14 +168,14 @@ async function showParameters(testClass) {
 
     // Create inputs for required parameters
     for (const [param, datatype] of requiredParameters) {
-        const newInputField = createInputField(param, datatype, "required");
+        const newInputField = createParameterFields(param, datatype, "required");
         paramFields.set(param, newInputField);
         requiredContainer.appendChild(newInputField);
     }
 
     // Create inputs for required parameters
     for (const [param, datatype] of optionalParameters) {
-        const newInputField = createInputField(param, datatype, "optional");
+        const newInputField = createParameterFields(param, datatype, "optional");
         paramFields.set(param, newInputField);
         optionalContainer.appendChild(newInputField);
     }
