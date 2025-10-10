@@ -31,14 +31,40 @@
         </td>
 
         <td class="text-end">
-          <button 
-            data-bs-toggle="collapse"
-            data-bs-target="#collapse-{{ testgroup.name }}"
-            aria-expanded="false"
-            aria-controls="collapse-{{ testgroup.name }}"
+          <button id="show-add-form-{{ testgroup.name }}"
             class="btn btn-sm btn-outline-success">
             <i class="bi bi-plus"></i> Add Testcase
           </button>
+
+          <div hidden class="text-end" id="add-form-div-{{ testgroup.name }}">
+            <form hx-post="{% url 'testcase-add' %}" 
+                hx-target=""
+                hx-swap="outerHTML"
+                class="d-flex align-items-center">
+              {% csrf_token %}
+                
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <input 
+                    type="text" 
+                    name="name" 
+                    id="input-{{ testgroup.name }}"
+                    placeholder="Add testcase"
+                    class="form-control me-2" 
+                    style="max-width: 300px;">
+                
+                <button id="rename-submit" type="submit" class="btn btn-success btn-sm me-2">
+                  <i class="bi bi-check"></i>
+                </button>
+                
+                <button 
+                    type="button"
+                    id ="aboart-{{ testgroup.name }}"
+                    class="btn btn-secondary btn-sm">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </form>
+          </div>
         </td>
 
         <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
@@ -80,6 +106,30 @@
           </div>
         </td>
       </tr>
+
+      <script>
+        const showAddFrom{{ testgroup.name }} = document.getElementById("show-add-form-{{ testgroup.name }}");
+        const addForm{{ testgroup.name }} = document.getElementById("add-form-div-{{ testgroup.name }}");
+        const aboart{{ testgroup.name }} = document.getElementById("aboart-{{ testgroup.name }}");
+        const input{{ testgroup.name }} = document.getElementById("input-{{ testgroup.name }}");
+
+        showAddFrom{{ testgroup.name }}.addEventListener("click", function () {
+          showAddFrom{{ testgroup.name }}.classList.add("d-none");
+
+          addForm{{ testgroup.name }}.hidden = false;
+          addForm{{ testgroup.name }}.classList.add("d-inline-block");
+
+          input{{ testgroup.name }}.focus();
+        });
+
+        aboart{{ testgroup.name }}.addEventListener("click", function () {
+          showAddFrom{{ testgroup.name }}.classList.remove("d-none");
+
+          addForm{{ testgroup.name }}.hidden = true;
+          addForm{{ testgroup.name }}.classList.remove("d-inline-block");
+        });
+      </script>
+
       {% endfor %}
       {% else %}
       <tr>
@@ -89,3 +139,4 @@
       </tbody>
   </table>
 </div>
+
