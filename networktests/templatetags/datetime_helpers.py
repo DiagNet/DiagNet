@@ -14,5 +14,5 @@ def relative_or_absolute(value):
     now = timezone.now()
     delta = now - value
     if delta <= timedelta(days=7):
-        return timesince(value, now)
+        return f"{timesince(value, now)} ago"
     return value.strftime("%Y-%m-%d %H:%M")
