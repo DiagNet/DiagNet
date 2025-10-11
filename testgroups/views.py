@@ -1,9 +1,10 @@
 import re
 from django.db.utils import IntegrityError
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseBadRequest
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import TestGroup
 from networktests.models import TestCase
+from django.views.decorators.http import require_http_methods
 
 
 def testgroups_page(request):
@@ -128,6 +129,25 @@ def add_testcase_to_testgroup(request: HttpRequest):
     return list_testcases(request, testgroup_name)
 
 
+def remove_testcase_from_testgroup(request: HttpRequest):
+    if request.method != "POST":
+        return HttpResponseBadRequest()
+
+    testgroup_name = request.POST.get("testgroup")
+    testcase_name = request.POST.get("testcase")
+    if not testgroup_name or not testcase_name:
+        return HttpResponseBadRequest()
+
+    try:
+        testgroup = TestGroup.objects.get(name=testgroup_name)
+        testcase = TestCase.objects.get(label=testcase_name)
+    except (TestGroup.DoesNotExist, TestCase.DoesNotExist):
+        return HttpResponseBadRequest("Testcase or test group does not exist")
+
+    testgroup.testcases.remove(testcase)
+    return list_testcases(request, testgroup_name)
+
+
 def list_testcases(request, testgroup_name: str):
     testgroup: TestGroup
     try:
@@ -136,11 +156,17 @@ def list_testcases(request, testgroup_name: str):
         return HttpResponseBadRequest("This Test Group does not exist")
 
     testcases = list(testgroup.testcases.all())
-    print(testgroup)
-    print(testcases)
-    context = {}
+
+    context = {"testgroup_name": testgroup.name}
     if len(testcases) > 0:
         context["testcase_list"] = testcases
-    print(context)
 
-    return render(request, "list_testcases.html", context)
+    return render(request, "testcase_table_for_group.html", context)
+
+
+@require_http_methods(["GET"])
+def run_testcase(request, group, pk):
+    testcase = get_object_or_404(TestCase, pk=pk)
+    _ = testcase.run()
+
+    return list_testcases(request, group)
