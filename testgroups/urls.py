@@ -9,6 +9,11 @@ urlpatterns = [
     path(
         route="testcase-add/", view=views.add_testcase_to_testgroup, name="testcase-add"
     ),
+    path(
+        route="testcase-remove/",
+        view=views.remove_testcase_from_testgroup,
+        name="testcase-remove",
+    ),
     path("detail/<str:name>/", views.get_testgroup_detail, name="testgroup-detail"),
     path(
         "list-testcases/<str:testgroup_name>/",
@@ -16,4 +21,5 @@ urlpatterns = [
         name="testcase-list",
     ),
     path("rename/<str:name>/", views.rename_testgroup, name="rename-testgroup"),
+    path("run/<str:group>/<str:pk>", views.run_testcase, name="testgroup-testcase-run"),
 ]
