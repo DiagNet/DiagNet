@@ -279,4 +279,4 @@ def run_testcase(request, pk):
 def delete_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     testcase.delete()
-    return HttpResponse(status=204)
+    return HttpResponse(status=200)
