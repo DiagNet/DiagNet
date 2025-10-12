@@ -8,10 +8,16 @@ let allDevices = []
  * @async
  * @param {HTMLElement} field The input field to validate.
  * @param {string} datatype_as_string Expected datatype as a string.
- * @returns {Promise<boolean>} Resolves to true if the field's value matches the datatype, false otherwise.
+ * @returns {Promise<boolean|undefined>} Resolves to:
+ *   - true if the field's value matches the datatype,
+ *   - false if it does not match,
+ *   - undefined if the field is empty.
  */
 async function checkDatatype(field, datatype_as_string) {
     const value = field.value.trim();
+    if (value.length === 0) {
+        return undefined;
+    }
     if (allDevices.length === 0 && datatype_as_string.trim().toLowerCase() === "device") {
         allDevices = await fetchAllDevices();
     }
@@ -66,21 +72,23 @@ function wrongDatatype(field) {
 }
 
 /**
- * Handles a DOM field's value by checking its datatype and updating its visual state.
+ * Checks whether the value of a given input field matches the specified datatype.
  *
  * @async
- * @param {HTMLElement} field The input field or DOM element to check.
- * @param {string|null} datatype_as_string The expected datatype as a string. If null, treated as unknown.
+ * @param {ParameterField} field The input field to validate.
+ * @param {string} datatype_as_string Expected datatype as a string.
+ * @returns {Promise<string>} Resolves to true if the field's value matches the datatype, false otherwise.
  */
 async function handleCheckDataType(field, datatype_as_string) {
-    if (datatype_as_string == null) {
-        unknownDatatype(field);
+    let result = await checkDatatype(field.getField(), datatype_as_string);
+    if (result === undefined) {
+        field.unknownDatatype();
         return "unknown";
-    } else if (await checkDatatype(field, datatype_as_string)) {
-        correctDatatype(field);
+    } else if (result) {
+        field.correctDatatype();
         return "success";
     } else {
-        wrongDatatype(field);
+        field.wrongDatatype();
         return "fail";
     }
 }
