@@ -69,7 +69,7 @@ function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap) {
  */
 function loadParameterFieldsIntoDocument(parameters, container) {
     const fragment = document.createDocumentFragment();
-    parameters.forEach(param => fragment.append(param.get('DOM_INPUT_FIELD')));
+    parameters.forEach(param => fragment.append(param.get('DOM_INPUT_FIELD').getField()));
     container.appendChild(fragment);
 }
 
@@ -84,7 +84,9 @@ function loadParameterFieldsIntoDocument(parameters, container) {
 function createAndSaveParameterFields(requiredParams, optionalParams) {
     for (const [params, requirement] of [[requiredParams, "required"], [optionalParams, "optional"]]) {
         for (const [_, parameterInfo] of params) {
-            parameterInfo.set('DOM_INPUT_FIELD', createParameterFields(parameterInfo, showParameters));
+            let inputField = createParameterFields(parameterInfo, showParameters);
+            inputField.createField();
+            parameterInfo.set('DOM_INPUT_FIELD', inputField);
             parameterInfo.set('requirement', requirement);
         }
     }
@@ -113,7 +115,7 @@ function createMutuallyExclusiveHandler(parameters, mutually_exclusive_bindings,
     function togglePair(activated, allFields) {
         for (const value of allFields.values()) {
             if (value === activated) continue;
-            disableField(value);
+            value.disable();
         }
     }
 
@@ -124,7 +126,7 @@ function createMutuallyExclusiveHandler(parameters, mutually_exclusive_bindings,
      */
     function enableAllFields(allFields) {
         for (const value of allFields.values()) {
-            enableField(value);
+            value.enable();
         }
     }
 
@@ -153,10 +155,10 @@ function createMutuallyExclusiveHandler(parameters, mutually_exclusive_bindings,
         currentlyBlockedMap.set(param, false);
 
         parameters.get(param).set('mutually_exclusive_handler', () => {
-            if (fieldIsEmpty(field)) {
+            if (field.isEmpty()) {
                 enableAllFields(fields);
                 fieldNames.forEach(fd => currentlyBlockedMap.set(fd, false));
-            } else if (fieldChangedFromEmptyToValue(field)) {
+            } else if (field.changedFromEmptyToValue()) {
                 togglePair(field, fields);
                 fieldNames.forEach(fd => currentlyBlockedMap.set(fd, true));
                 currentlyBlockedMap.set(param, false);
@@ -177,7 +179,7 @@ function createMutuallyExclusiveHandler(parameters, mutually_exclusive_bindings,
  */
 function createDatatypeHandler(parameters, validInputMap) {
     for (const [parameter_name, parameterInfo] of parameters) {
-        const field = parameterInfo.get('DOM_INPUT_FIELD');
+        const field = parameterInfo.get('DOM_INPUT_FIELD').getField();
         const requirement = parameterInfo.get('requirement');
         validInputMap.set(parameter_name, requirement === "optional");
 
@@ -212,7 +214,7 @@ function createInputListeners(parameters) {
             .filter(fn => typeof fn === 'function');
 
         if (handlers.length !== 0) {
-            executeOnInputChange(field, async () => {
+            field.onChange(async () => {
                 for (const handler of handlers) {
                     await handler();
                 }
