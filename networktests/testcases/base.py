@@ -187,7 +187,7 @@ def filter_out_skipped(test_methods, skipped, results, status_map):
 
     return results, status_map
 
-def get_parameter_names(required_params_input: list[str], optional_params_input: list[str]):
+def get_parameter_names(required_params_input: list[dict], optional_params_input: list[dict]):
     """
     Extracts the required parameters, optional parameters, and mutually exclusive bindings
     from a given parameter definition.
@@ -195,8 +195,6 @@ def get_parameter_names(required_params_input: list[str], optional_params_input:
     Args:
         required_params_input (list): list of required parameters
         optional_params_input (list): list of optional parameters
-        delimiter_between_parameters (str): delimiter used to separate parameters
-        exclude_datatypes (bool): if True, the datatype information is removed in the output (default=True)
 
     Returns:
         tuple: A tuple containing three elements:
@@ -210,7 +208,7 @@ def get_parameter_names(required_params_input: list[str], optional_params_input:
     # Splits Parameters
     for definition, container in [(required_params_input, required_params),(optional_params_input, optional_params)]:
         for param in definition:
-            container.append(param.partition(":")[0])
+            container.append(param['name'])
 
     return required_params, optional_params
 
@@ -250,52 +248,6 @@ class DiagNetTest:
         This method functions as a teardown space, allowing datastructures, network connections, file interactions ... to be handled!
         """
         pass
-
-    def get_required_params(self) -> Dict[str, str]:
-        """
-        Returns a dictionary of required parameters with their types.
-
-        Returns:
-            dict: A dictionary where keys are parameter names and values are their datatypes as strings.
-        """
-        params = {}
-        for param in self._required_params:
-            if ":" in param:
-                name, type_ = param.split(":", 1)
-                type_ = type_.strip()
-                if "|" in type_:
-                    type_ = type_.split("|")
-                else:
-                    type_ = [type_]
-
-                params[name.strip()] = type_
-            else:
-                params[param.strip()] = "str"
-
-        return params
-
-    def get_optional_params(self) -> Dict[str, str]:
-        """
-        Returns a dictionary of optional parameter that are not necessary to be parsed when running this test.
-
-        Returns:
-            dict: A dictionary where keys are parameter names and values are their datatypes as strings.
-        """
-        params = {}
-        for param in self._optional_params:
-            if ":" in param:
-                name, type_ = param.split(":", 1)
-                type_ = type_.strip()
-                if "|" in type_:
-                    type_ = type_.split("|")
-                else:
-                    type_ = [type_]
-
-                params[name.strip()] = type_
-            else:
-                params[param.strip()] = "str"
-
-        return params
 
     def run(self, test_method_prefix="test_", verbose=False, **kwargs) -> Dict:
         """
