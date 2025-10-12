@@ -79,9 +79,12 @@ function wrongDatatype(field) {
 async function handleCheckDataType(field, datatype_as_string) {
     if (datatype_as_string == null) {
         unknownDatatype(field);
+        return "unknown";
     } else if (await checkDatatype(field, datatype_as_string)) {
         correctDatatype(field);
+        return "success";
     } else {
         wrongDatatype(field);
+        return "fail";
     }
 }
