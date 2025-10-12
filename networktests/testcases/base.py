@@ -15,6 +15,9 @@ from collections import defaultdict, deque
 import time
 
 
+PARAMETER_DELIMITER = ","
+"""The Delimiter used to separate parameters"""
+
 # Exceptions
 class DependencyException(Exception):
     """Exception raised when a declared dependency test method is not found."""
@@ -184,6 +187,32 @@ def filter_out_skipped(test_methods, skipped, results, status_map):
 
     return results, status_map
 
+def get_parameter_names(required_params_input: list[str], optional_params_input: list[str]):
+    """
+    Extracts the required parameters, optional parameters, and mutually exclusive bindings
+    from a given parameter definition.
+
+    Args:
+        required_params_input (list): list of required parameters
+        optional_params_input (list): list of optional parameters
+        delimiter_between_parameters (str): delimiter used to separate parameters
+        exclude_datatypes (bool): if True, the datatype information is removed in the output (default=True)
+
+    Returns:
+        tuple: A tuple containing three elements:
+            - required_params (dict): The required parameters' definitions.
+            - optional_params (dict): The optional parameters' definitions.
+    """
+
+    required_params: List[str] = []
+    optional_params: List[str] = []
+
+    # Splits Parameters
+    for definition, container in [(required_params_input, required_params),(optional_params_input, optional_params)]:
+        for param in definition:
+            container.append(param.partition(":")[0])
+
+    return required_params, optional_params
 
 class DiagNetTest:
     """
@@ -198,9 +227,6 @@ class DiagNetTest:
     Intended to be subclassed to implement specific tests by overriding setup, teardown,
     and defining test methods.
     """
-
-    __PARAMETER_DELIMITER = ","
-    """The Delimiter used to separate parameters"""
 
     _required_params: str|List[str] = []
     """ Saves the required parameters needed for this Test """
@@ -482,65 +508,6 @@ class DiagNetTest:
             "summary": (total, passed, failed, skipped),
         }
 
-    def get_parameters(self):
-        """
-        Extracts the required parameters, optional parameters, and mutually exclusive bindings
-        from a given parameter definition.
-
-        Returns:
-            tuple: A tuple containing three elements:
-                - required_params (dict): The required parameters' definitions.
-                - optional_params (dict): The optional parameters' definitions.
-                - mutually_exclusive_bindings (list): List of parameter sets that are mutually exclusive.
-        """
-
-        def split_ignore_brackets(s:str, delimiter:str):
-            """
-               Split a string using a delimiter that is ignored if it occurs in a bracket.
-
-               Args:
-                   s (str): Input string.
-                   delimiter (str): delimiter.
-
-               Returns:
-                   list[str]: Split segments.
-            """
-            result = []
-            current = []
-            stack = []  # Track opening brackets
-
-            brackets = {"[": "]", "{": "}", "(": ")"}
-
-            for c in s:
-                if c in brackets:  # Opening bracket
-                    stack.append(brackets[c])
-                    current.append(c)
-                elif stack and c == stack[-1]:  # Closing bracket
-                    stack.pop()
-                    current.append(c)
-                elif not stack and c == delimiter:  # Top-level comma
-                    result.append("".join(current).strip())
-                    current = []
-                else:
-                    current.append(c)
-
-            if current:
-                result.append("".join(current).strip())
-            return result
-
-        required_params: List[str] = []
-        optional_params: List[str] = []
-
-        # Splits Parameters
-        for definition, container in [(self._required_params, required_params),(self._optional_params, optional_params)]:
-            if definition:
-                for param in definition:
-                    param = param.replace("\n", "").replace("\t", "")
-                    for parameter in split_ignore_brackets(param, self.__PARAMETER_DELIMITER):
-                        container.append(parameter.partition(":")[0]) # cut off datatype and extra information
-
-        return required_params, optional_params, self._mutually_exclusive_parameters
-
     def check_parameter_validity(self, **kwargs):
         """
         Validate provided parameters against the test's declared requirements.
@@ -559,7 +526,8 @@ class DiagNetTest:
 
         # --- 1.1 Extract parameters and strip datatype from parameters ---
 
-        required_params, optional_params, mutually_exclusive_groups = self.get_parameters()
+        required_params, optional_params = get_parameter_names(self._required_params, self._optional_params)
+        mutually_exclusive_groups = self._mutually_exclusive_parameters
 
         # --- 1.2 Check mutually exclusive validity ---
 
