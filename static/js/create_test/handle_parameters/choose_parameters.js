@@ -254,6 +254,11 @@ function showParameters(requiredParams, optionalParams, mutually_exclusive_bindi
     loadParameterFieldsIntoDocument(allParameters, container);
 
     checkSubmitValidity(validInputMap, currentlyBlockedMap);
+
+    for (const parameterInfo of allParameters.values()) {
+        parameterInfo.get('mutually_exclusive_handler')?.();
+        parameterInfo.get('datatype_handler')?.();
+    }
 }
 
 
