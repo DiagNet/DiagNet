@@ -179,7 +179,7 @@ function createMutuallyExclusiveHandler(parameters, mutually_exclusive_bindings,
  */
 function createDatatypeHandler(parameters, validInputMap) {
     for (const [parameter_name, parameterInfo] of parameters) {
-        const field = parameterInfo.get('DOM_INPUT_FIELD').getField();
+        const field = parameterInfo.get('DOM_INPUT_FIELD');
         const requirement = parameterInfo.get('requirement');
         validInputMap.set(parameter_name, requirement === "optional");
 
@@ -189,7 +189,7 @@ function createDatatypeHandler(parameters, validInputMap) {
         };
 
         parameterInfo.set('datatype_handler', async () => {
-            const result = await handleCheckDataType(field, parameterInfo.get('type'));
+            const result = await field.checkDatatype();
 
             validInputMap.set(parameter_name, validateResultBasedOnRequirement[requirement](result))
         });

@@ -14,8 +14,9 @@ class ParameterField {
     }
 
     getField() {
-        return this.field
+        return this.field;
     }
+
     /**
      * Create the DOM input field.
      * Must be implemented by subclasses.
@@ -67,6 +68,34 @@ class ParameterField {
         if (this.field) {
             this.field.addEventListener('input', callback);
         }
+    }
+
+    /**
+     * Resets the input field's border to the default style.
+     */
+    unknownDatatype() {
+        this.field.style.border = "";
+    }
+
+    /**
+     * Marks the input field as valid by setting its border to green.
+     */
+    correctDatatype() {
+        this.field.style.border = "2px solid green";
+    }
+
+    /**
+     * Marks the input field as invalid by setting its border to red.
+     */
+    wrongDatatype() {
+        this.field.style.border = "2px solid red";
+    }
+
+    /**
+     * Checks whether the current field's value matches its expected datatype.
+     */
+    async checkDatatype() {
+        return handleCheckDataType(this, this.parameter.get('type'));
     }
 }
 
@@ -130,6 +159,84 @@ class ChoiceField extends ParameterField {
     }
 }
 
+// TODO How does the ListField interact with allowing submission? in general whole list is work in progress
+/**
+ * List input field.
+ * Can handle multiple values separated by newlines.
+ */
+class ListField extends ParameterField {
+
+    /**
+     * @param {Map<string, any>} parameter - Parameter metadata
+     * @param {string} showParameters - The method to create new input fields
+     */
+    constructor(parameter, showParameters) {
+        super(parameter);
+        if (showParameters === undefined || showParameters === null) {
+            throw new Error("ListField requires a valid method reference to showParameters");
+        }
+        this.showParameters = showParameters;
+    }
+
+    createField() {
+        this.container = document.createElement("div");
+        this.container.className = "list-field-container";
+
+        let required_params = this.parameter.get('required');
+        let optional_params = this.parameter.get('optional');
+        let mutually_exclusive_bindings = this.parameter.get('mutually_exclusive');
+
+        showParameters(
+            new Map(Array.from(required_params.values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))])),
+            new Map(Array.from(optional_params.values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))])),
+            mutually_exclusive_bindings,
+            this.container
+        );
+
+        return this.container;
+    }
+
+    getField() {
+        return this.container;
+    }
+
+    /** Returns the values as an array of strings (splitting by newlines). */
+    getValue() {
+        if (!this.field) return [];
+        return this.field.value
+            .split("\n")
+            .map(item => item.trim())
+            .filter(item => item.length > 0);
+    }
+
+    /** Checks if the field is empty. */
+    isEmpty() {
+        return this.getValue().length === 0;
+    }
+
+    /** Checks if the field just changed from empty to a value. */
+    changedFromEmptyToValue() {
+        return this.getValue().length === 1;
+    }
+
+    /**
+     * Attach a handler to execute on input change.
+     * Fires on 'input' event for textarea.
+     */
+    onChange(callback) {
+        if (this.field) {
+            this.field.addEventListener('input', callback);
+        }
+    }
+
+    /**
+     * Checks whether the current field's value matches its expected datatype.
+     */
+    async checkDatatype() {
+        return "success";
+    }
+}
+
 /**
  * Enables the form's submit button.
  */
@@ -152,11 +259,12 @@ function disableSubmit() {
  * @returns {Object} The parameter field object corresponding to the given type.
  */
 function createParameterFields(parameter, showParameters) {
+    console.log(parameter.get('type'));
     switch (parameter.get('type')) {
         case "choice":
             return new ChoiceField(parameter);
         case "list":
-            break;
+            return new ListField(parameter, showParameters);
         default:
             return new SingleLineInputField(parameter);
     }
