@@ -108,6 +108,26 @@ class ChoiceField extends ParameterField {
 
         return this.field;
     }
+
+    /** Checks if the field is empty. */
+    isEmpty() {
+        return this.field ? this.field.value.length === 0 : true;
+    }
+
+    /** Checks if the field just changed from empty to a value. */
+    changedFromEmptyToValue() {
+        return this.field ? this.field.value.length >= 1 : true;
+    }
+
+    /**
+     * Attach a handler to execute on input change.
+     * @param {function} callback
+     */
+    onChange(callback) {
+        if (this.field) {
+            this.field.addEventListener('change', callback);
+        }
+    }
 }
 
 /**
