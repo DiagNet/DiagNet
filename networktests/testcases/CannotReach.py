@@ -3,8 +3,31 @@ from genie.testbed import load
 
 
 class CannotReach(DiagNetTest):
-    _required_params = ["device:device", "ping_host:IPAddress"]
-    _optional_params = ["device2", "hugo"]
+    _required_params = [
+        {
+            "name": "device",
+            "type": "device",
+            "description": "Primary device",
+        },
+        {
+            "name": "ping_host",
+            "type": "IPAddress",
+            "description": "IP address to ping",
+        }
+    ]
+
+    _optional_params = [
+        {
+            "name": "device2",
+            "type": "device",
+            "description": "Secondary device (optional)"
+        },
+        {
+            "name": "hugo",
+            "type": "string",
+            "description": "Optional parameter named hugo"
+        }
+    ]
     _mutually_exclusive_parameters = [("device", "ping_host")]
 
     def test_reachability(self) -> bool:
