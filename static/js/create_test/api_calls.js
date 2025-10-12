@@ -17,8 +17,8 @@ async function fetchTestParameters(testClass) {
         const data = await res.json();
 
         return {
-            requiredParams: data.required || [],
-            optionalParams: data.optional || [],
+            requiredParams: data.required,
+            optionalParams: data.optional,
             mul: data.mul_exclusive || []
         };
     } catch (err) {

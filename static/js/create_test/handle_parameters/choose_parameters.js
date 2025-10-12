@@ -1,47 +1,100 @@
 /* Handles Parameters */
 
-let previousTestClass = "";
-let settingUp = false;
-
 const paramTab = document.getElementById('parameters-tab');
-let requiredContainer = document.getElementById("requiredParamsContainer");
-let optionalContainer = document.getElementById("optionalParamsContainer");
+const parameterContainer = document.getElementById("parameterContainer");
 let submitParametersButton = document.getElementById("submitParameters");
 
-let requiredStatus = new Map();
-
-// Set-up parameter fields
 /**
- * "Enables" the given input field.
+ * Checks if all parameters are valid and updates the submit button state.
  *
- * @param {HTMLElement} field The field to enable.
+ * A parameter is considered valid if it is either valid in `validInputMap`
+ * or currently blocked in `currentlyBlockedMap`.
+ *
+ * @param {Map<string, boolean>} validInputMap - Tracks each parameter's validity.
+ * @param {Map<string, boolean>} currentlyBlockedMap - Tracks which parameters are currently blocked/disabled.
  */
-function enableField(field) {
-    field.disabled = false;
-    field.readOnly = false;
+function checkSubmitValidity(validInputMap, currentlyBlockedMap) {
+    /**
+     * Checks if all keys in mapA are valid based on values in mapA or mapB.
+     *
+     * A key is considered valid if its value is `true` in either mapA or mapB.
+     *
+     * @param {Map<string, boolean>} mapA - Primary validation map.
+     * @param {Map<string, boolean>} mapB - Secondary fallback validation map.
+     * @returns {boolean} - True if all keys pass validation, otherwise false.
+     */
+    function isEveryKeyValidOR(mapA, mapB) {
+        for (const [key, valueA] of mapA) {
+            const valueB = mapB.get(key) || false;
+            if (!valueA && !valueB) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    if (isEveryKeyValidOR(validInputMap, currentlyBlockedMap)) {
+        enableSubmit();
+    } else {
+        disableSubmit();
+    }
+}
+
+function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap) {
+    for (const [_, parameterInfo] of parameters) {
+        parameterInfo.set('valid_submit_handler', () => {
+            checkSubmitValidity(validInputMap, currentlyBlockedMap);
+        });
+    }
 }
 
 /**
- * "Disables" the given input field.
+ * Appends parameter input fields to a DOM container.
  *
- * @param {HTMLElement} field The field to disable.
+ * Iterates over each parameter in the map and adds its 'DOM_INPUT_FIELD' element
+ * to the specified container.
+ *
+ * @param {Map<string, Map<string, any>>} parameters - Map of parameters, each containing
+ *        a 'DOM_INPUT_FIELD' HTMLElement.
+ * @param {HTMLElement} container - The DOM element to append parameter fields into.
  */
-function disableField(field) {
-    field.disabled = true;
-    field.readOnly = true;
+function loadParameterFieldsIntoDocument(parameters, container) {
+    const fragment = document.createDocumentFragment();
+    parameters.forEach(param => fragment.append(param.get('DOM_INPUT_FIELD')));
+    container.appendChild(fragment);
 }
 
+/**
+ * Creates DOM input fields for parameters and stores them in each parameter's map.
+ *
+ * Assigns each parameter a `DOM_INPUT_FIELD` and its `requirement` status ("required" or "optional").
+ *
+ * @param {Map<string, Map<string, any>>} requiredParams - Map of required parameters.
+ * @param {Map<string, Map<string, any>>} optionalParams - Map of optional parameters.
+ */
+function createAndSaveParameterFields(requiredParams, optionalParams) {
+    for (const [params, requirement] of [[requiredParams, "required"], [optionalParams, "optional"]]) {
+        for (const [_, parameterInfo] of params) {
+            parameterInfo.set('DOM_INPUT_FIELD', createParameterFields(parameterInfo));
+            parameterInfo.set('requirement', requirement);
+        }
+    }
+}
 
 /**
- * Sets up mutually exclusive behavior for parameter input fields.
+ * Sets up mutually exclusive behavior for form parameters.
  *
- * @async
- * @param {Map<string, HTMLElement>} paramFields Map of parameter names to their input elements.
- * @param {Array<Array<string>>} mutuallyExclusiveGroups Array of mutually exclusive parameter groups.
- * @param {Map<string, string>} paramDatatypes Map of parameter names to datatypes.
+ * For each parameter in a mutually exclusive group, it attaches a handler
+ * that disables all other fields in the group when the parameter is filled,
+ * and re-enables them when the field is empty.
+ *
+ * @param {Map<string, Map<string, any>>} parameters - Map of parameters.
+ * @param {Array<Array<string>>} mutually_exclusive_bindings - List of parameter groups
+ *        where each group is an array of mutually exclusive parameter names.
+ * @param {Map<string, boolean>} currentlyBlockedMap - Tracks which parameters are currently blocked/disabled.
  */
-async function createMutuallyExclusiveDatatypeBindings(paramFields, mutuallyExclusiveGroups, paramDatatypes) {
 
+function createMutuallyExclusiveHandler(parameters, mutually_exclusive_bindings, currentlyBlockedMap) {
     /**
      * Activates the given field and disables all other fields in the group.
      *
@@ -66,75 +119,94 @@ async function createMutuallyExclusiveDatatypeBindings(paramFields, mutuallyExcl
         }
     }
 
-    let calculateMutNeighbors = new Map()
-    mutuallyExclusiveGroups.forEach(pair => {
-        const allFields = pair.map(v => paramFields.get(v));
+    // Calculate all mutually exclusive neighbors
+    let allMutuallyExclusiveParameters = new Set();
+    let calculateMutNeighbors = new Map();
+    mutually_exclusive_bindings.forEach(pair => {
+        for (const param of pair) {
+            allMutuallyExclusiveParameters.add(param);
 
-        for (const field of allFields) {
-            if (!calculateMutNeighbors.has(field)) {
-                calculateMutNeighbors.set(field, new Set(allFields));
+            if (!calculateMutNeighbors.has(param)) {
+                calculateMutNeighbors.set(param, new Set(pair));
             } else {
-                const s = calculateMutNeighbors.get(field);
-                allFields.forEach(f => s.add(f));
+                const s = calculateMutNeighbors.get(param);
+                pair.forEach(f => s.add(f));
             }
         }
     });
 
-    // Datatype and group handling for mutually exclusive group fields.
-    for (const [field, allFieldsSet] of calculateMutNeighbors.entries()) {
-        if (field.tagName.toLowerCase() === "select") {
-            field.addEventListener("change", async () => {
-                const allFields = [...allFieldsSet];
-                if (field.value.length === 0) {
-                    enableAllFields(allFields);
-                    await handleCheckDataType(field, null);
-                } else {
-                    togglePair(field, allFields);
-                    await handleCheckDataType(field, paramDatatypes.get(field.id));
-                }
-                checkRequiredParameters(allFields);
-                checkSubmitLegality();
-            });
-        } else {
-            field.addEventListener("input", async () => {
-                const allFields = [...allFieldsSet];
-                if (field.value.length === 0) {
-                    enableAllFields(allFields);
-                    await handleCheckDataType(field, null);
-                } else if (field.value.length === 1) { // Could be improved, length from 2 to 1 is a redundant operation here, but this is simple
-                    togglePair(field, allFields);
-                    await handleCheckDataType(field, paramDatatypes.get(field.id));
-                } else {
-                    await handleCheckDataType(field, paramDatatypes.get(field.id));
-                }
-                checkRequiredParameters(allFields);
-                checkSubmitLegality();
-            });
-        }
-    }
+    for (const param of allMutuallyExclusiveParameters) {
+        const field = parameters.get(param).get('DOM_INPUT_FIELD');
 
-    // Datatype handling for non mutually exclusive group fields.
-    for (const [param, field] of paramFields.entries()) {
-        if (calculateMutNeighbors.has(field)) continue; // Mutually Exclusive candidate
-        if (field.tagName.toLowerCase() === "select") {
-            field.addEventListener("change", async () => {
-                if (field.value.length === 0) {
-                    await handleCheckDataType(field, null);
-                } else {
-                    await handleCheckDataType(field, paramDatatypes.get(param));
+        const fieldNames = calculateMutNeighbors.get(param);
+        const fields = Array.from(fieldNames, neighbor => parameters.get(neighbor).get('DOM_INPUT_FIELD'));
+
+        currentlyBlockedMap.set(param, false);
+
+        parameters.get(param).set('mutually_exclusive_handler', () => {
+            if (fieldIsEmpty(field)) {
+                enableAllFields(fields);
+                fieldNames.forEach(fd => currentlyBlockedMap.set(fd, false));
+            } else if (fieldChangedFromEmptyToValue(field)) {
+                togglePair(field, fields);
+                fieldNames.forEach(fd => currentlyBlockedMap.set(fd, true));
+                currentlyBlockedMap.set(param, false);
+            }
+        });
+    }
+}
+
+/**
+ * Attaches a datatype validation handler to each parameter.
+ *
+ * For each parameter, sets a `datatype_handler` function that validates
+ * the parameter's value against its specified `type` when invoked.
+ *
+ * @param {Map<string, Map<string, any>>} parameters - Map of parameters, each containing
+ *        at least 'DOM_INPUT_FIELD' and 'type' entries.
+ * @param {Map<string, boolean>} validInputMap - Stores each parameter's current validity.
+ */
+function createDatatypeHandler(parameters, validInputMap) {
+    for (const [parameter_name, parameterInfo] of parameters) {
+        const field = parameterInfo.get('DOM_INPUT_FIELD');
+        const requirement = parameterInfo.get('requirement');
+        validInputMap.set(parameter_name, requirement === "optional");
+
+        const validateResultBasedOnRequirement = {
+            required: result => result === "success",
+            optional: result => result === "success" || result === "unknown"
+        };
+
+        parameterInfo.set('datatype_handler', async () => {
+            const result = await handleCheckDataType(field, parameterInfo.get('type'));
+
+            validInputMap.set(parameter_name, validateResultBasedOnRequirement[requirement](result))
+        });
+    }
+}
+
+/**
+ * Attaches input change listeners to parameter fields if needed.
+ *
+ * For each parameter, collects any defined handlers (`mutually_exclusive_handler`,
+ * `datatype_handler`, etc.) and executes them whenever the field value changes.
+ *
+ * @param {Map<string, Map<string, any>>} parameters - Map of parameters, each containing
+ *        at least 'DOM_INPUT_FIELD' and optional handler functions.
+ */
+function createInputListeners(parameters) {
+    for (const [_, parameterInfo] of parameters) {
+        const field = parameterInfo.get('DOM_INPUT_FIELD');
+        const handlerNames = ['mutually_exclusive_handler', 'datatype_handler', 'valid_submit_handler'];
+        const handlers = handlerNames
+            .map(name => parameterInfo.get(name))
+            .filter(fn => typeof fn === 'function');
+
+        if (handlers.length !== 0) {
+            executeOnInputChange(field, async () => {
+                for (const handler of handlers) {
+                    await handler();
                 }
-                checkRequiredParameters([field]);
-                checkSubmitLegality();
-            });
-        } else {
-            field.addEventListener("input", async () => {
-                if (field.value.length === 0) {
-                    await handleCheckDataType(field, null);
-                } else {
-                    await handleCheckDataType(field, paramDatatypes.get(param));
-                }
-                checkRequiredParameters([field]);
-                checkSubmitLegality();
             });
         }
     }
@@ -143,92 +215,39 @@ async function createMutuallyExclusiveDatatypeBindings(paramFields, mutuallyExcl
 /**
  * Dynamically creates input fields for all required and optional parameters of a test class.
  *
- * @async
- * @param {string} testClass The name of the test class to generate inputs for.
+ * @param {Map<string, Map<string, any>>} requiredParams List of required parameters
+ * @param {Map<string, Map<string, any>>} optionalParams List of optional parameters
+ * @param {Array<Array<string>>} mutually_exclusive_bindings List of mutually exclusive bindings
  */
-async function showParameters(testClass) {
-    const testParameters = await fetchTestParameters(testClass);
+function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings) {
 
-    // Clear previous inputs
-    requiredContainer.innerHTML = "";
-    optionalContainer.innerHTML = "";
+    /**
+     * Marks if a parameter's field currently has a valid input.
+     * @type {Map<any, any>}
+     */
+    let validInputMap = new Map();
 
-    const requiredParameters = new Map(testParameters.requiredParams.map(item => {
-        const [part1, part2] = item.split(":");
-        return [part1, part2];
-    }));
+    /**
+     * Marks if a parameter's field is currently blocked (unable to change value)
+     */
+    let currentlyBlockedMap = new Map();
 
-    const optionalParameters = new Map(testParameters.optionalParams.map(item => {
-        const [part1, part2] = item.split(":");
-        return [part1, part2];
-    }));
+    const allParameters = new Map([...requiredParams, ...optionalParams]);
 
-    // stores what input field corresponds to what param for mutually exclusive bindings.
-    let paramFields = new Map();
+    createAndSaveParameterFields(requiredParams, optionalParams);
+    createMutuallyExclusiveHandler(allParameters, mutually_exclusive_bindings, currentlyBlockedMap);
+    createDatatypeHandler(allParameters, validInputMap);
+    createSubmitHandler(allParameters, validInputMap, currentlyBlockedMap);
+    createInputListeners(allParameters);
+    loadParameterFieldsIntoDocument(allParameters, parameterContainer);
 
-    // Create inputs for required parameters
-    for (const [param, datatype] of requiredParameters) {
-        const newInputField = createParameterFields(param, datatype, "required");
-        paramFields.set(param, newInputField);
-        requiredContainer.appendChild(newInputField);
-    }
-
-    // Create inputs for required parameters
-    for (const [param, datatype] of optionalParameters) {
-        const newInputField = createParameterFields(param, datatype, "optional");
-        paramFields.set(param, newInputField);
-        optionalContainer.appendChild(newInputField);
-    }
-
-    await createMutuallyExclusiveDatatypeBindings(paramFields, testParameters.mul, new Map([...requiredParameters, ...optionalParameters]));
+    checkSubmitValidity(validInputMap, currentlyBlockedMap);
 }
 
-// Check if required parameters are parsed
-/**
- * Checks the required input fields to determine if they meet the expected conditions.
- * Updates a global `requiredStatus` map with a boolean indicating legality for each field.
- *
- * @param {HTMLElement[]} fields - Array of input elements to check. The first element's dataset.type
- *                                 must be "required" for the check to proceed.
- */
-function checkRequiredParameters(fields) {
-    if (fields[0].dataset.type !== "required") return;
-
-    let parsedParameters = Array.from(fields).filter(input => input.value.length !== 0).length;
-
-    let legal = parsedParameters === 1;
-    fields.forEach(input => requiredStatus.set(input, legal));
-}
-
-/**
- * Enables the form's submit button.
- */
-function enableSubmit() {
-    submitParametersButton.disabled = false;
-}
-
-/**
- * Disables the form's submit button.
- */
-function disableSubmit() {
-    submitParametersButton.disabled = true;
-}
-
-/**
- * Checks if all required and datatype fields are valid and
- * enables or disables the submit button accordingly.
- */
-function checkSubmitLegality() {
-    if (Array.from(requiredStatus.values()).every(value => value === true) &&
-        Array.from(datatypeStatus.values()).every(value => value === true
-        )) {
-        enableSubmit();
-    } else {
-        disableSubmit();
-    }
-}
 
 // Initialization
+let previousTestClass = ""; // Store last TestClass to avoid recreating same parameter-fields
+let settingUp = false; // Locks up TestClass selection while fields are being created
 /**
  * "Selects" the given test class for further handling.
  *
@@ -236,11 +255,11 @@ function checkSubmitLegality() {
  * @param {HTMLElement} popup The popup.
  */
 async function selectTestClass(testClass, popup) {
-    if (settingUp) return;
-    popup.removeEventListener("keydown", onPopUpClickHandler);
+    if (settingUp) return; // Lock method from being used at the same time
     settingUp = true;
-    requiredStatus.clear();
-    datatypeStatus.clear();
+
+    popup.removeEventListener("keydown", onPopUpClickHandler); // remove focus from search Element in template tab
+
     if (previousTestClass === testClass) { // Already loaded
         paramTab.disabled = false;
         paramTab.click();
@@ -250,28 +269,27 @@ async function selectTestClass(testClass, popup) {
 
     previousTestClass = testClass;
 
-    while (requiredContainer.firstChild) {
-        requiredContainer.removeChild(requiredContainer.firstChild);
-    }
-    while (optionalContainer.firstChild) {
-        optionalContainer.removeChild(optionalContainer.firstChild);
-    }
+    parameterContainer.innerHTML = ""; // Remove all previous parameter fields
 
+    // Activate navigation towards parameter tab
     paramTab.classList.remove('disabled');
     paramTab.disabled = false;
     paramTab.click();
 
-    _ = await showParameters(testClass);
-    checkSubmitLegality();
+    // Fetch needed parameters
+    let parameters = await fetchTestParameters(testClass);
+    showParameters(
+        new Map(Array.from(parameters.requiredParams.values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))])),
+        new Map(Array.from(parameters.optionalParams.values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))])),
+        parameters.mul);
+
     settingUp = false;
 }
 
 /**
  * Automatically sets focus to the search input when the popup is clicked.
  * Used in EventListeners between the Test-Class and Parameter tab.
- *
- * @param {Event} e event Object
  */
-function onPopUpClickHandler(e) {
+function onPopUpClickHandler(_) {
     searchInput.focus()
 }
