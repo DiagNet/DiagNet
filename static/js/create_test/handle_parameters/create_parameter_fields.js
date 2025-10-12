@@ -1,3 +1,5 @@
+const submitParametersButton = document.getElementById("submitParameters");
+
 function fieldIsEmpty(field) {
     return field.value.length === 0;
 }
@@ -52,30 +54,22 @@ function disableField(field) {
 /**
  * Creates a parameter field based on the specified type.
  *
- * @param {"list"|"singleChoice"|"multiChoice"} type - The type of parameter field to create.
+ * @param {Map<string, Map<string, any>>} parameter - The parameter to handle
+ * @param {function} showParameters Used to create more input fields when a list object is parsed.
  * @returns {Object} The parameter field object corresponding to the given type.
  */
-function createParameterFields(parameter) {
-    let input = null
+function createParameterFields(parameter, showParameters) {
+
     let paramName = parameter.get('name');
     let datatype = parameter.get('type');
     let type = parameter.get('requirement');
+
+
 
     input = document.createElement("input");
     input.type = "text";
     input.className = "form-control mb-2";
     input.placeholder = paramName
-
-    input.name = paramName;
-    input.id = paramName;
-    input.dataset.datatype = datatype;
-    input.dataset.paramName = paramName;
-
-    input.dataset.type = type;
-    if (type === "required") {
-        requiredStatus.set(input, false);
-    }
-    datatypeStatus.set(input, true);
 
     return input;
 }
