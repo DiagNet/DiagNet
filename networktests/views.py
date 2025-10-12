@@ -14,6 +14,8 @@ from devices.models import Device
 
 from .models import TestCase, TestDevice, TestParameter
 
+from networktests.testcases.base import get_parameter_names
+
 package = "networktests.testcases"
 
 
@@ -163,27 +165,27 @@ def get_parameters_of_specific_testcase(request):
             - optional (list[str]): List of optional parameters, with type appended if missing.
             - mul_exclusive (list[str]): List of mutually exclusive parameters defined in the class.
     """
-    test_name = request.GET.get("test_class", "")
-    cls = get_class_reference_for_test_class_string(test_name)
+    try:
+        test_name = request.GET.get("test_class", "")
+        cls = get_class_reference_for_test_class_string(test_name)
 
-    required_params = cls._required_params
-    optional_params = cls._optional_params
-
-    for i, param in enumerate(required_params):
-        if ":" not in param:
-            required_params[i] = param + ":str"
-
-    for i, param in enumerate(optional_params):
-        if ":" not in param:
-            optional_params[i] = param + ":str"
-
-    return JsonResponse(
-        {
-            "required": required_params,
-            "optional": optional_params,
-            "mul_exclusive": cls._mutually_exclusive_parameters,
-        }
-    )
+        return JsonResponse(
+            {
+                "result": "SUCCESS",
+                "required": cls._required_params,
+                "optional": cls._optional_params,
+                "mul_exclusive": cls._mutually_exclusive_parameters,
+            }
+        )
+    except Exception:
+        return JsonResponse(
+            {
+                "result": "UNKNOWN",
+                "required": [],
+                "optional": [],
+                "mul_exclusive": []
+            }
+        )
 
 
 def get_all_available_testcases(request):
