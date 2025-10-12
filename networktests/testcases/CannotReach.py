@@ -13,6 +13,12 @@ class CannotReach(DiagNetTest):
             "name": "ping_host",
             "type": "IPAddress",
             "description": "IP address to ping",
+        },
+        {
+            "name": "address-type",
+            "type": "choice",
+            "choices": ["IPv4", "IPv6"],
+            "description": "Choose IPv4 or IPv6",
         }
     ]
 
@@ -28,7 +34,7 @@ class CannotReach(DiagNetTest):
             "description": "Optional parameter named hugo"
         }
     ]
-    _mutually_exclusive_parameters = [("device", "ping_host")]
+    _mutually_exclusive_parameters = [("device", "ping_host", "address-type")]
 
     def test_reachability(self) -> bool:
         response: dict = self.device.parse(f"ping {self.ping_host}")
