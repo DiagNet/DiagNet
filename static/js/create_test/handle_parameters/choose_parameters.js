@@ -2,7 +2,6 @@
 
 const paramTab = document.getElementById('parameters-tab');
 const parameterContainer = document.getElementById("parameterContainer");
-let submitParametersButton = document.getElementById("submitParameters");
 
 /**
  * Checks if all parameters are valid and updates the submit button state.
@@ -40,6 +39,16 @@ function checkSubmitValidity(validInputMap, currentlyBlockedMap) {
     }
 }
 
+/**
+ * Attaches a submit validation handler to each parameter.
+ *
+ * Each parameter will trigger a check on the overall form validity
+ * whenever its state changes, enabling or disabling the submit button accordingly.
+ *
+ * @param {Map<string, Map<string, any>>} parameters - Map of parameters to attach the handler to.
+ * @param {Map<string, boolean>} validInputMap - Tracks current validity of each parameter.
+ * @param {Map<string, boolean>} currentlyBlockedMap - Tracks which parameters are currently blocked/disabled.
+ */
 function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap) {
     for (const [_, parameterInfo] of parameters) {
         parameterInfo.set('valid_submit_handler', () => {
@@ -75,7 +84,7 @@ function loadParameterFieldsIntoDocument(parameters, container) {
 function createAndSaveParameterFields(requiredParams, optionalParams) {
     for (const [params, requirement] of [[requiredParams, "required"], [optionalParams, "optional"]]) {
         for (const [_, parameterInfo] of params) {
-            parameterInfo.set('DOM_INPUT_FIELD', createParameterFields(parameterInfo));
+            parameterInfo.set('DOM_INPUT_FIELD', createParameterFields(parameterInfo, showParameters));
             parameterInfo.set('requirement', requirement);
         }
     }
@@ -218,8 +227,9 @@ function createInputListeners(parameters) {
  * @param {Map<string, Map<string, any>>} requiredParams List of required parameters
  * @param {Map<string, Map<string, any>>} optionalParams List of optional parameters
  * @param {Array<Array<string>>} mutually_exclusive_bindings List of mutually exclusive bindings
+ * @param {HTMLElement} container in which to store the created input fields
  */
-function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings) {
+function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings, container) {
 
     /**
      * Marks if a parameter's field currently has a valid input.
@@ -239,7 +249,7 @@ function showParameters(requiredParams, optionalParams, mutually_exclusive_bindi
     createDatatypeHandler(allParameters, validInputMap);
     createSubmitHandler(allParameters, validInputMap, currentlyBlockedMap);
     createInputListeners(allParameters);
-    loadParameterFieldsIntoDocument(allParameters, parameterContainer);
+    loadParameterFieldsIntoDocument(allParameters, container);
 
     checkSubmitValidity(validInputMap, currentlyBlockedMap);
 }
@@ -281,7 +291,8 @@ async function selectTestClass(testClass, popup) {
     showParameters(
         new Map(Array.from(parameters.requiredParams.values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))])),
         new Map(Array.from(parameters.optionalParams.values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))])),
-        parameters.mul);
+        parameters.mul,
+        parameterContainer);
 
     settingUp = false;
 }

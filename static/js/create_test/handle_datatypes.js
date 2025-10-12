@@ -1,7 +1,6 @@
 /* Handles Datatype-Checks */
 
 let allDevices = []
-let datatypeStatus = new Map();
 
 /**
  * Checks whether the value of a given input field matches the specified datatype.
@@ -46,7 +45,6 @@ async function checkDatatype(field, datatype_as_string) {
  */
 function unknownDatatype(field) {
     field.style.border = "";
-    datatypeStatus.set(field, true);
 }
 
 /**
@@ -56,7 +54,6 @@ function unknownDatatype(field) {
  */
 function correctDatatype(field) {
     field.style.border = "2px solid green";
-    datatypeStatus.set(field, true);
 }
 
 /**
@@ -66,7 +63,6 @@ function correctDatatype(field) {
  */
 function wrongDatatype(field) {
     field.style.border = "2px solid red";
-    datatypeStatus.set(field, false);
 }
 
 /**
