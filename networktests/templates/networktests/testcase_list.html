@@ -1,12 +1,75 @@
-{% extends "base.html" %}
-
-{% block title %}Network Tests - DiagNet{% endblock %}
-
-{% block content %}
-<h1>Network Tests</h1>
-<a class="btn btn-primary mb-3" href="" data-bs-toggle="modal" data-bs-target="#largeModal">
-	<i class="bi bi-database-add"></i> Add Test Case
-</a>
-{% include "networktests/partials/create_popup/create_test_popup.html" %}
-{% include "networktests/partials/testcase_table.html" with testcase_list=testcase_list %}
-{% endblock %}
+{% load datetime_helpers %}
+<div class="table-responsive">
+	<table class="table table-hover">
+		<thead>
+			<tr>
+				<th></th>
+				<th>Name</th>
+				<th>Test Case</th>
+				<th>Last Run</th>
+				<th>Status</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% if testcase_list %}
+			{% for testcase in testcase_list %}
+			<tr id="testcase-{{ testcase.id }}">
+				<td>
+					<a href="{% url 'tests-run' testcase.id %}" class="btn btn-sm btn-primary" title="Run test case">
+						<i class="bi bi-play-fill"></i>
+					</a>
+				</td>
+				<td>
+					<button type="button" class="btn btn-link" data-bs-toggle="modal"
+						data-bs-target="#testcaseDetailModal-{{ testcase.id }}">{{ testcase.label }}</button>
+					<div class="modal fade" id="testcaseDetailModal-{{ testcase.id }}" tabindex="-1"
+						aria-labelledby="testcaseDetailModalLabel-{{ testcase.id }}">
+						<div class="modal-dialog modal-lg">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h1 class="modal-title fs-5" id="testcaseDetailModalLabel-{{ testcase.id }}">
+										Details: {{testcase.label}}</h1>
+									<button type="button" class="btn-close" data-bs-dismiss="modal"
+										aria-label="Close"></button>
+								</div>
+								<div class="modal-body">
+									{% include "networktests/partials/testcase_details.html" with testcase=testcase %}
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-danger"
+										hx-delete="{% url 'testcase_delete' testcase.id %}"
+										hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+										hx-confirm="Are you sure you want to delete this test case?"
+										hx-target="#testcase-{{ testcase.id }}" hx-swap="outerHTML"
+										data-bs-dismiss="modal">
+										<i class="bi bi-trash"></i> Delete</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</td>
+				<td>{{testcase.test_module}}</td>
+				<td title="{{ testcase.results.last.finished_at|date:'Y-m-d H:i' }}">
+					{{ testcase.results.last.finished_at|relative_or_absolute }}
+				</td>
+				<td>
+					{% if testcase.results.last %}
+					{% if testcase.expected_result == testcase.results.last.result %}
+					<span class="badge rounded-pill bg-success">Pass</span>
+					{% else %}
+					<span class="badge rounded-pill bg-danger">Fail</span>
+					{% endif %}
+					{% else %}
+					<span class="badge rounded-pill bg-secondary">Unknown</span>
+					{% endif %}
+				</td>
+			</tr>
+			{% endfor %}
+			{% else %}
+			<tr>
+				<td colspan="5">No Test Cases yet.</td>
+			</tr>
+			{% endif %}
+		</tbody>
+	</table>
+</div>

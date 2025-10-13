@@ -8,5 +8,6 @@
         <option value="FAIL">FAIL</option>
     </select>
 
-    <button id="createTest" class="btn btn-primary mt-3" data-bs-dismiss="modal">Create Test</button>
+    <button id="createTest" class="btn btn-primary mt-3" data-bs-dismiss="modal" hx-trigger="click"
+        hx-on:click="htmx.trigger('#networktests-table', 'refresh')">Create Test</button>
 </div>

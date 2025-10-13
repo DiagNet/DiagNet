@@ -17,6 +17,10 @@ from .models import TestCase, TestDevice, TestParameter
 package = "networktests.testcases"
 
 
+def index(request):
+    return render(request, "networktests/index.html")
+
+
 def get_all_testcases(request):
     """
     Fetches all possible testcases, their parameters including datatypes.
@@ -272,7 +276,7 @@ def run_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     _ = testcase.run()
 
-    return redirect("networktests-list")
+    return redirect("networktests-page")
 
 
 @require_http_methods(["DELETE"])
