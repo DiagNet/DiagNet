@@ -1,48 +1,72 @@
 const submitParametersButton = document.getElementById("submitParameters");
 
-/** Abstract base class for parameter input fields. */
+/**
+ * Abstract base class representing a parameter input field.
+ */
 class ParameterField {
     /**
-     * @param {Map<string, any>} parameter - Parameter map containing metadata like name, type, choices, etc.
+     * @param {Map<string, any>} parameter - Metadata map for the parameter.
+     * @throws {Error} If instantiated directly (abstract class).
      */
     constructor(parameter) {
         if (new.target === ParameterField) {
             throw new Error("Cannot instantiate abstract class ParameterField directly");
         }
         this.parameter = parameter;
-        this.field = null; // Will hold the DOM element
+        this.field = null;
     }
 
+    /**
+     * Returns the DOM element representing this input field.
+     * @returns {HTMLElement|null} The input field DOM element.
+     */
     getField() {
         return this.field;
     }
 
     /**
-     * Create the DOM input field.
+     * Abstract method to create the DOM input element.
      * Must be implemented by subclasses.
+     * @throws {Error} If not implemented in subclass.
      */
     createField() {
         throw new Error("createField() must be implemented in subclass");
     }
 
-    /** Returns the current value of the input field. */
+    /**
+     * Returns the current value of the input field.
+     * @returns {string|null|Array<any>} Current input value, or null if field does not exist.
+     */
     getValue() {
-        if (!this.field) return null;
-        return this.field.value;
+        return this.field ? this.field.value : null;
     }
 
+    /**
+     * Clears the input field's value.
+     */
+    clearValue() {
+        if (this.field) this.field.value = "";
+    }
 
-    /** Checks if the field is empty. */
+    /**
+     * Checks whether the input field is empty.
+     * @returns {boolean} True if empty or field not created, false otherwise.
+     */
     isEmpty() {
         return this.field ? this.field.value.length === 0 : true;
     }
 
-    /** Checks if the field just changed from empty to a value. */
+    /**
+     * Checks if the field's value just changed from empty to a value.
+     * @returns {boolean} True if value length is 1 or field not created.
+     */
     changedFromEmptyToValue() {
         return this.field ? this.field.value.length === 1 : true;
     }
 
-    /** Enables the input field. */
+    /**
+     * Enables the input field for user interaction.
+     */
     enable() {
         if (this.field) {
             this.field.disabled = false;
@@ -51,7 +75,7 @@ class ParameterField {
     }
 
     /**
-     * Disables the input field.
+     * Disables the input field, preventing user interaction.
      */
     disable() {
         if (this.field) {
@@ -61,66 +85,64 @@ class ParameterField {
     }
 
     /**
-     * Attach a handler to execute on input change.
-     * @param {function} callback
+     * Attaches a callback to execute whenever the input value changes.
+     * @param {function} callback - Function to run on input event.
      */
     onChange(callback) {
-        if (this.field) {
-            this.field.addEventListener('input', callback);
-        }
+        if (this.field) this.field.addEventListener('input', callback);
     }
 
     /**
-     * Resets the input field's border to the default style.
+     * Resets the input field's border to its default style.
      */
     unknownDatatype() {
-        this.field.style.border = "";
+        if (this.field) this.field.style.border = "";
     }
 
     /**
      * Marks the input field as valid by setting its border to green.
      */
     correctDatatype() {
-        this.field.style.border = "2px solid green";
+        if (this.field) this.field.style.border = "2px solid green";
     }
 
     /**
      * Marks the input field as invalid by setting its border to red.
      */
     wrongDatatype() {
-        this.field.style.border = "2px solid red";
+        if (this.field) this.field.style.border = "2px solid red";
     }
 
     /**
-     * Checks whether the current field's value matches its expected datatype.
+     * Checks if the current field's value matches the expected datatype.
+     * @returns {Promise<boolean>} Result of the datatype validation.
      */
     async checkDatatype() {
         return handleCheckDataType(this, this.parameter.get('type'));
     }
 }
 
-/**
- * Single-line text input.
- */
 class SingleLineInputField extends ParameterField {
     createField() {
         this.container = document.createElement("div");
+        this.container.className = "SingleLineInputContainer";
+        this.container.style.padding = "5px 3px";
+        this.container.style.margin = "10px 10px 10px 0px";
 
-        // create label
         let label = document.createElement("label");
         label.textContent = this.parameter.get('name');
         label.className = "form-label";
+        label.style.fontSize = "15px";
 
         this.field = document.createElement("input");
         this.field.type = "text";
         this.field.className = "form-control mb-2";
         this.field.placeholder = this.parameter.get('name');
 
-        // append label and input to container
         this.container.appendChild(label);
         this.container.appendChild(this.field);
 
-        return null;
+        return this.container;
     }
 
     getField() {
@@ -128,98 +150,108 @@ class SingleLineInputField extends ParameterField {
     }
 }
 
-/**
- * Choice (select) input.
- */
 class ChoiceField extends ParameterField {
     createField() {
+        this.container = document.createElement("div");
+        this.container.className = "SingleLineInputContainer";
+        this.container.style.padding = "5px 3px";
+        this.container.style.margin = "10px 10px 10px 0px";
+
+        let label = document.createElement("label");
+        label.textContent = this.parameter.get('name');
+        label.className = "form-label";
+        label.style.fontSize = "15px";
+
         this.field = document.createElement("select");
         this.field.className = "form-select mb-2";
 
         const options = this.parameter.get('choices') || [];
         const defaultChoice = this.parameter.get('default_choice');
-
         if (defaultChoice === undefined) options.unshift("");
 
         options.forEach(opt => {
             const optionEl = document.createElement("option");
             optionEl.value = opt.toLowerCase();
             optionEl.textContent = opt;
-
             if (opt === defaultChoice) optionEl.selected = true;
-
             this.field.appendChild(optionEl);
         });
 
-        return this.field;
+        this.container.appendChild(label);
+        this.container.appendChild(this.field);
+        return this.container;
     }
 
-    /** Checks if the field is empty. */
+    clearValue() {} // do nothing
+
+    getField() {
+        return this.container;
+    }
+
     isEmpty() {
         return this.field ? this.field.value.length === 0 : true;
     }
 
-    /** Checks if the field just changed from empty to a value. */
     changedFromEmptyToValue() {
         return this.field ? this.field.value.length >= 1 : true;
     }
 
-    /**
-     * Attach a handler to execute on input change.
-     * @param {function} callback
-     */
     onChange(callback) {
-        if (this.field) {
-            this.field.addEventListener('change', callback);
-        }
+        if (this.field) this.field.addEventListener('change', callback);
     }
 }
 
-// TODO How does the ListField interact with allowing submission? in general whole list is work in progress
-/**
- * List input field.
- * Can handle multiple values separated by newlines.
- */
+// TODO it list is required it can still be submitted if it is empty
 class ListField extends ParameterField {
-
     /**
-     * @param {Map<string, any>} parameter - Parameter metadata
-     * @param {string} showParameters - The method to create new input fields
+     * @param {Map<string, any>} parameter - Metadata for the list.
+     * @param {function} showParameters - Callback to create child input fields.
      */
     constructor(parameter, showParameters) {
         super(parameter);
-        if (showParameters === undefined || showParameters === null) {
-            throw new Error("ListField requires a valid method reference to showParameters");
-        }
+        if (!showParameters) throw new Error("ListField requires showParameters");
         this.showParameters = showParameters;
+        this.children = new Set();
+        this.addToList = null;
     }
 
     createField() {
-        // container configuration
         this.container = document.createElement("div");
         this.container.className = "list-field-container";
+        this.container.style.width = "100%";
 
-        // allow width to grow with content
-        this.container.style.display = "inline-block"; // or "block" if you want full width
-        this.container.style.whiteSpace = "nowrap";     // prevents line breaks cutting children
-        this.container.style.width = "auto";           // width adapts to content
+        const topRow = document.createElement("div");
+        topRow.style.display = "flex";
+        topRow.style.alignItems = "center";
+        topRow.style.gap = "1rem";
 
-        // List Label
         const label = document.createElement('label');
         label.id = "list-label";
         label.innerHTML = this.parameter.get('name') + " List-View";
         label.className = "form-label";
-        this.container.appendChild(label);
+        topRow.appendChild(label);
 
-        // Submit Button
         const addToList = document.createElement("button");
+        addToList.textContent = "Add to List";
+        addToList.style.padding = "6px 12px";
+        addToList.style.cursor = "pointer";
+        topRow.appendChild(addToList);
 
-        // Create Child Fields
-        let requiredParams = new Map(Array.from(this.parameter.get('required').values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))]));
-        let optionalParams = new Map(Array.from(this.parameter.get('optional').values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))]));
-        let allParameters = new Map([...requiredParams, ...optionalParams]);
+        const labelNumberOfListItems = document.createElement('label');
+        labelNumberOfListItems.id = "list-label";
+        labelNumberOfListItems.innerHTML = "0";
+        labelNumberOfListItems.className = "form-label";
+        topRow.appendChild(labelNumberOfListItems);
+        this.labelNumberOfListItems = labelNumberOfListItems;
 
-        let mutually_exclusive_bindings = this.parameter.get('mutually_exclusive');
+        this.container.appendChild(topRow);
+
+        const requiredParams = new Map(Array.from(this.parameter.get('required').values(),
+            innerMap => [innerMap["name"], new Map(Object.entries(innerMap))]));
+        const optionalParams = new Map(Array.from(this.parameter.get('optional').values(),
+            innerMap => [innerMap["name"], new Map(Object.entries(innerMap))]));
+        const allParameters = new Map([...requiredParams, ...optionalParams]);
+        const mutually_exclusive_bindings = this.parameter.get('mutually_exclusive');
 
         this.showParameters(
             requiredParams,
@@ -230,100 +262,85 @@ class ListField extends ParameterField {
             addToList
         );
 
-        /*
-
-        let nested_index = Number(this.parameter.get('nested_index') ?? 0); // Counts how much lists are above this one
-
-        this.container.style.marginLeft = `${nested_index * 1}rem`;
-        this.container.style.backgroundColor = "blue";
-
-        nested_index++;
+        let nested_index = Number(this.parameter.get('nested_index') ?? 0) + 1;
         for (const value of allParameters.values()) {
             value.set('nested_index', nested_index);
-            value.get('DOM_INPUT_FIELD').getField().style.marginLeft = `${nested_index * 1}rem`;
+            const field = value.get('DOM_INPUT_FIELD');
+            this.children.add(field);
+            field.getField().style.marginLeft = `${nested_index}rem`;
         }
-         */
 
+        addToList.addEventListener("click", () => this.add());
 
-        // Add to List Button
-        addToList.textContent = "Click me";
-
-        // Optional: add styling
-        addToList.style.padding = "6px 12px";
-        addToList.style.cursor = "pointer";
-
-        addToList.addEventListener("click", () => {
-
-        });
-        this.container.appendChild(addToList);
-        // Container for listing current items
-
+        this.addToList = addToList;
+        this.allParameters = allParameters;
+        this.addOutput = [];
 
         return this.container;
+    }
+
+    getValue() {
+        return this.addOutput;
+    }
+
+    /**
+     * Retrieves current values from all child fields.
+     * @returns {Array} Values of all child input fields.
+     */
+    receiveValuesFromChildren() {
+        let output = [];
+        for (const value of this.allParameters.values()) {
+            output.push(value.get('DOM_INPUT_FIELD').getValue());
+        }
+        return output;
+    }
+
+    /**
+     * Adds current child values to the output array and updates count.
+     */
+    add() {
+        this.labelNumberOfListItems.innerHTML = (Number(this.labelNumberOfListItems.innerHTML) + 1) + "";
+        this.addOutput.push(this.receiveValuesFromChildren());
+        this.clearValue();
+    }
+
+    /**
+     * Clears all child fields and disables the add button.
+     */
+    clearValue() {
+        this.children.forEach(c => c.clearValue());
+        disableSubmit(this.addToList);
     }
 
     getField() {
         return this.container;
     }
 
-    /** Returns the values as an array of strings (splitting by newlines). */
-    getValue() {
-        if (!this.field) return [];
-        return this.field.value
-            .split("\n")
-            .map(item => item.trim())
-            .filter(item => item.length > 0);
-    }
-
-    /** Checks if the field is empty. */
     isEmpty() {
         return this.getValue().length === 0;
     }
 
-    /** Checks if the field just changed from empty to a value. */
     changedFromEmptyToValue() {
         return this.getValue().length === 1;
     }
 
-    /**
-     * Attach a handler to execute on input change.
-     * Fires on 'input' event for textarea.
-     */
     onChange(callback) {
-        if (this.field) {
-            this.field.addEventListener('input', callback);
-        }
+        if (this.field) this.field.addEventListener('input', callback);
     }
 
-    /**
-     * Checks whether the current field's value matches its expected datatype.
-     */
     async checkDatatype() {
         return "success";
     }
 }
 
-/**
- * Enables the form's submit button.
- */
 function enableSubmit(button) {
     button.disabled = false;
 }
 
-/**
- * Disables the form's submit button.
- */
 function disableSubmit(button) {
     button.disabled = true;
 }
 
-/**
- * Creates a parameter field based on the specified type.
- *
- * @param {Map<string, Map<string, any>>} parameter - The parameter to handle
- * @param {function} showParameters Used to create more input fields when a list object is parsed.
- * @returns {Object} The parameter field object corresponding to the given type.
- */
 function createParameterFields(parameter, showParameters) {
     switch (parameter.get('type')) {
         case "choice":

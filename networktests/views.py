@@ -115,6 +115,8 @@ def create_test(request):
     label = data.get("label", {})
     expected_result = data.get("expected_result", {})
 
+    # TODO implement storing Test Lists into Database
+
     # Check if parsed parameters are valid
     class_reference = get_class_reference_for_test_class_string(test_class)
     parseable_parameters = {**required_params, **optional_params}

@@ -4,6 +4,10 @@ const paramTab = document.getElementById('parameters-tab');
 const requiredContainer = document.getElementById("requiredContainer");
 const optionalContainer = document.getElementById("optionalContainer");
 
+
+function convertObjectMapIntoRegularMap(objectMap) {
+    return new Map(Object.entries(objectMap));
+}
 /**
  * Checks if all parameters are valid and updates the submit button state.
  *
@@ -310,13 +314,19 @@ async function selectTestClass(testClass, popup) {
 
     // Fetch needed parameters
     let parameters = await fetchTestParameters(testClass);
+
+    let requiredMap = new Map(Array.from(parameters.requiredParams.values(), innerMap => [innerMap["name"], convertObjectMapIntoRegularMap(innerMap)]));
+    let optionalMap = new Map(Array.from(parameters.optionalParams.values(), innerMap => [innerMap["name"], convertObjectMapIntoRegularMap(innerMap)]));
+
     showParameters(
-        new Map(Array.from(parameters.requiredParams.values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))])),
-        new Map(Array.from(parameters.optionalParams.values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))])),
+        requiredMap,
+        optionalMap,
         parameters.mul,
         requiredContainer,
         optionalContainer,
         submitParametersButton);
+
+    submitParametersButton.addEventListener("click", () => {selectParameters(requiredMap, optionalMap)});
 
     settingUp = false;
 }

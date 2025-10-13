@@ -3,7 +3,8 @@
     border: 1px solid #ccc;
     display: flex;
     flex-direction: column;
-    overflow-y: scroll;
+    flex: 3;
+    overflow-y: hidden; /* prevent double scroll */
 }
 
   /* Tab buttons container */
@@ -39,4 +40,9 @@
 
   .tab-content > div.active {
     display: block; /* show active tab */
+  }
+
+  .SingleLineInputContainer {
+      background-color: #E3E4F4;
+      border-radius: 10px;
   }
