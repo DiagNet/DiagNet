@@ -1,0 +1,42 @@
+#parameterContainer {
+    width: 100%;
+    border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+}
+
+  /* Tab buttons container */
+  .tab-buttons {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .tab-buttons button {
+    padding: 8px 16px;
+    border: none;
+    background-color: #f1f1f1;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .tab-buttons button.active {
+    background-color: #fff;
+    border-bottom: 2px solid blue;
+    font-weight: bold;
+  }
+
+  /* Tab content */
+  .tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+  }
+
+  .tab-content > div {
+    display: none; /* hide all tabs by default */
+  }
+
+  .tab-content > div.active {
+    display: block; /* show active tab */
+  }

@@ -104,11 +104,27 @@ class ParameterField {
  */
 class SingleLineInputField extends ParameterField {
     createField() {
+        this.container = document.createElement("div");
+
+        // create label
+        let label = document.createElement("label");
+        label.textContent = this.parameter.get('name');
+        label.className = "form-label";
+
         this.field = document.createElement("input");
         this.field.type = "text";
         this.field.className = "form-control mb-2";
         this.field.placeholder = this.parameter.get('name');
-        return this.field;
+
+        // append label and input to container
+        this.container.appendChild(label);
+        this.container.appendChild(this.field);
+
+        return null;
+    }
+
+    getField() {
+        return this.container;
     }
 }
 
@@ -179,19 +195,69 @@ class ListField extends ParameterField {
     }
 
     createField() {
+        // container configuration
         this.container = document.createElement("div");
         this.container.className = "list-field-container";
 
-        let required_params = this.parameter.get('required');
-        let optional_params = this.parameter.get('optional');
+        // allow width to grow with content
+        this.container.style.display = "inline-block"; // or "block" if you want full width
+        this.container.style.whiteSpace = "nowrap";     // prevents line breaks cutting children
+        this.container.style.width = "auto";           // width adapts to content
+
+        // List Label
+        const label = document.createElement('label');
+        label.id = "list-label";
+        label.innerHTML = this.parameter.get('name') + " List-View";
+        label.className = "form-label";
+        this.container.appendChild(label);
+
+        // Submit Button
+        const addToList = document.createElement("button");
+
+        // Create Child Fields
+        let requiredParams = new Map(Array.from(this.parameter.get('required').values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))]));
+        let optionalParams = new Map(Array.from(this.parameter.get('optional').values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))]));
+        let allParameters = new Map([...requiredParams, ...optionalParams]);
+
         let mutually_exclusive_bindings = this.parameter.get('mutually_exclusive');
 
-        showParameters(
-            new Map(Array.from(required_params.values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))])),
-            new Map(Array.from(optional_params.values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))])),
+        this.showParameters(
+            requiredParams,
+            optionalParams,
             mutually_exclusive_bindings,
-            this.container
+            this.container,
+            this.container,
+            addToList
         );
+
+        /*
+
+        let nested_index = Number(this.parameter.get('nested_index') ?? 0); // Counts how much lists are above this one
+
+        this.container.style.marginLeft = `${nested_index * 1}rem`;
+        this.container.style.backgroundColor = "blue";
+
+        nested_index++;
+        for (const value of allParameters.values()) {
+            value.set('nested_index', nested_index);
+            value.get('DOM_INPUT_FIELD').getField().style.marginLeft = `${nested_index * 1}rem`;
+        }
+         */
+
+
+        // Add to List Button
+        addToList.textContent = "Click me";
+
+        // Optional: add styling
+        addToList.style.padding = "6px 12px";
+        addToList.style.cursor = "pointer";
+
+        addToList.addEventListener("click", () => {
+
+        });
+        this.container.appendChild(addToList);
+        // Container for listing current items
+
 
         return this.container;
     }
@@ -240,15 +306,15 @@ class ListField extends ParameterField {
 /**
  * Enables the form's submit button.
  */
-function enableSubmit() {
-    submitParametersButton.disabled = false;
+function enableSubmit(button) {
+    button.disabled = false;
 }
 
 /**
  * Disables the form's submit button.
  */
-function disableSubmit() {
-    submitParametersButton.disabled = true;
+function disableSubmit(button) {
+    button.disabled = true;
 }
 
 /**
@@ -259,7 +325,6 @@ function disableSubmit() {
  * @returns {Object} The parameter field object corresponding to the given type.
  */
 function createParameterFields(parameter, showParameters) {
-    console.log(parameter.get('type'));
     switch (parameter.get('type')) {
         case "choice":
             return new ChoiceField(parameter);

@@ -6,7 +6,7 @@ let allDevices = []
  * Checks whether the value of a given input field matches the specified datatype.
  *
  * @async
- * @param {HTMLElement} field The input field to validate.
+ * @param {ParameterField} field The input field to validate.
  * @param {string} datatype_as_string Expected datatype as a string.
  * @returns {Promise<boolean|undefined>} Resolves to:
  *   - true if the field's value matches the datatype,
@@ -14,7 +14,7 @@ let allDevices = []
  *   - undefined if the field is empty.
  */
 async function checkDatatype(field, datatype_as_string) {
-    const value = field.value.trim();
+    const value = field.getValue().trim();
     if (value.length === 0) {
         return undefined;
     }
@@ -45,33 +45,6 @@ async function checkDatatype(field, datatype_as_string) {
 }
 
 /**
- * Marks an input field as having an unknown datatype.
- *
- * @param {HTMLElement} field The input field to update.
- */
-function unknownDatatype(field) {
-    field.style.border = "";
-}
-
-/**
- * Marks an input field as having a correct datatype.
- *
- * @param {HTMLElement} field The input field to update.
- */
-function correctDatatype(field) {
-    field.style.border = "2px solid green";
-}
-
-/**
- * Marks an input field as having an incorrect datatype by setting a red border.
- *
- * @param {HTMLElement} field The input field to update.
- */
-function wrongDatatype(field) {
-    field.style.border = "2px solid red";
-}
-
-/**
  * Checks whether the value of a given input field matches the specified datatype.
  *
  * @async
@@ -80,7 +53,7 @@ function wrongDatatype(field) {
  * @returns {Promise<string>} Resolves to true if the field's value matches the datatype, false otherwise.
  */
 async function handleCheckDataType(field, datatype_as_string) {
-    let result = await checkDatatype(field.getField(), datatype_as_string);
+    let result = await checkDatatype(field, datatype_as_string);
     if (result === undefined) {
         field.unknownDatatype();
         return "unknown";
