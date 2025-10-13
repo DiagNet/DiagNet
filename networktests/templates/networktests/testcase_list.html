@@ -39,8 +39,8 @@
 									<button type="button" class="btn btn-danger"
 										hx-delete="{% url 'testcase_delete' testcase.id %}"
 										hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-										hx-confirm="Are you sure you want to delete this test case?"
-										hx-target="#testcase-{{ testcase.id }}" hx-swap="outerHTML"
+										hx-confirm="Are you sure you want to delete this test case?" hx-trigger="click"
+										hx-on:click="htmx.trigger('#networktests-table', 'refresh')"
 										data-bs-dismiss="modal">
 										<i class="bi bi-trash"></i> Delete</button>
 								</div>

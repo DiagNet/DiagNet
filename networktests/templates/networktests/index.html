@@ -8,7 +8,7 @@
 	<i class="bi bi-database-add"></i> Add Test Case
 </a>
 
-<div hx-get="{% url 'networktests-table' %}" hx-trigger="load, refresh from:body" hx-swap="innerHTML"
+<div hx-get="{% url 'networktests-table' %}" hx-trigger="load, refresh from:body delay:1s" hx-swap="innerHTML"
 	id="networktests-table">
 	<div class="text-center">
 		<div class="spinner-border" role="status">
