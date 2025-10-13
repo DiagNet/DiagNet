@@ -1,7 +1,8 @@
 /* Handles Parameters */
 
 const paramTab = document.getElementById('parameters-tab');
-const parameterContainer = document.getElementById("parameterContainer");
+const requiredContainer = document.getElementById("requiredContainer");
+const optionalContainer = document.getElementById("optionalContainer");
 
 /**
  * Checks if all parameters are valid and updates the submit button state.
@@ -11,8 +12,9 @@ const parameterContainer = document.getElementById("parameterContainer");
  *
  * @param {Map<string, boolean>} validInputMap - Tracks each parameter's validity.
  * @param {Map<string, boolean>} currentlyBlockedMap - Tracks which parameters are currently blocked/disabled.
+ * @param {HTMLElement} submitButton that "finishes" the parameter selection
  */
-function checkSubmitValidity(validInputMap, currentlyBlockedMap) {
+function checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton) {
     /**
      * Checks if all keys in mapA are valid based on values in mapA or mapB.
      *
@@ -33,9 +35,9 @@ function checkSubmitValidity(validInputMap, currentlyBlockedMap) {
     }
 
     if (isEveryKeyValidOR(validInputMap, currentlyBlockedMap)) {
-        enableSubmit();
+        enableSubmit(submitButton);
     } else {
-        disableSubmit();
+        disableSubmit(submitButton);
     }
 }
 
@@ -48,11 +50,12 @@ function checkSubmitValidity(validInputMap, currentlyBlockedMap) {
  * @param {Map<string, Map<string, any>>} parameters - Map of parameters to attach the handler to.
  * @param {Map<string, boolean>} validInputMap - Tracks current validity of each parameter.
  * @param {Map<string, boolean>} currentlyBlockedMap - Tracks which parameters are currently blocked/disabled.
+ * @param {HTMLElement} submitButton that "finishes" the parameter selection
  */
-function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap) {
+function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, submitButton) {
     for (const [_, parameterInfo] of parameters) {
         parameterInfo.set('valid_submit_handler', () => {
-            checkSubmitValidity(validInputMap, currentlyBlockedMap);
+            checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton);
         });
     }
 }
@@ -65,12 +68,20 @@ function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap) {
  *
  * @param {Map<string, Map<string, any>>} parameters - Map of parameters, each containing
  *        a 'DOM_INPUT_FIELD' HTMLElement.
- * @param {HTMLElement} container - The DOM element to append parameter fields into.
+ * @param {HTMLElement} requiredContainer - The DOM element to append required parameter fields into.
+ * @param {HTMLElement} optionalContainer - The DOM element to append optional parameter fields into.
  */
-function loadParameterFieldsIntoDocument(parameters, container) {
-    const fragment = document.createDocumentFragment();
-    parameters.forEach(param => fragment.append(param.get('DOM_INPUT_FIELD').getField()));
-    container.appendChild(fragment);
+function loadParameterFieldsIntoDocument(parameters, requiredContainer, optionalContainer) {
+    const fragmentRequired = document.createDocumentFragment();
+    const fragmentOptional = document.createDocumentFragment();
+
+    parameters.forEach(param => {
+        const field = param.get('DOM_INPUT_FIELD').getField();
+        (param.get('requirement') === "required" ? fragmentRequired : fragmentOptional).appendChild(field);
+    });
+
+    requiredContainer.appendChild(fragmentRequired);
+    optionalContainer.appendChild(fragmentOptional);
 }
 
 /**
@@ -229,9 +240,11 @@ function createInputListeners(parameters) {
  * @param {Map<string, Map<string, any>>} requiredParams List of required parameters
  * @param {Map<string, Map<string, any>>} optionalParams List of optional parameters
  * @param {Array<Array<string>>} mutually_exclusive_bindings List of mutually exclusive bindings
- * @param {HTMLElement} container in which to store the created input fields
+ * @param {HTMLElement} requiredContainer - The DOM element to append required parameter fields into.
+ * @param {HTMLElement} optionalContainer - The DOM element to append optional parameter fields into.
+ * @param {HTMLElement} submitButton button that "finishes" the parameter selection
  */
-function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings, container) {
+function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings, requiredContainer, optionalContainer, submitButton) {
 
     /**
      * Marks if a parameter's field currently has a valid input.
@@ -249,11 +262,11 @@ function showParameters(requiredParams, optionalParams, mutually_exclusive_bindi
     createAndSaveParameterFields(requiredParams, optionalParams);
     createMutuallyExclusiveHandler(allParameters, mutually_exclusive_bindings, currentlyBlockedMap);
     createDatatypeHandler(allParameters, validInputMap);
-    createSubmitHandler(allParameters, validInputMap, currentlyBlockedMap);
+    createSubmitHandler(allParameters, validInputMap, currentlyBlockedMap, submitButton);
     createInputListeners(allParameters);
-    loadParameterFieldsIntoDocument(allParameters, container);
+    loadParameterFieldsIntoDocument(allParameters, requiredContainer, optionalContainer);
 
-    checkSubmitValidity(validInputMap, currentlyBlockedMap);
+    checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton);
 
     for (const parameterInfo of allParameters.values()) {
         parameterInfo.get('mutually_exclusive_handler')?.();
@@ -286,7 +299,9 @@ async function selectTestClass(testClass, popup) {
 
     previousTestClass = testClass;
 
-    parameterContainer.innerHTML = ""; // Remove all previous parameter fields
+    // Remove all previous parameter fields
+    requiredContainer.innerHTML = "";
+    optionalContainer.innerHTML = "";
 
     // Activate navigation towards parameter tab
     paramTab.classList.remove('disabled');
@@ -299,7 +314,9 @@ async function selectTestClass(testClass, popup) {
         new Map(Array.from(parameters.requiredParams.values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))])),
         new Map(Array.from(parameters.optionalParams.values(), innerMap => [innerMap["name"], new Map(Object.entries(innerMap))])),
         parameters.mul,
-        parameterContainer);
+        requiredContainer,
+        optionalContainer,
+        submitParametersButton);
 
     settingUp = false;
 }
