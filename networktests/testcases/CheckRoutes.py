@@ -2,6 +2,12 @@ from networktests.testcases.base import DiagNetTest
 
 
 class CheckRoutes(DiagNetTest):
+    _optional_params = [
+        {
+            "name": "optional_ip",
+            "type": "IPv4"
+        },
+    ]
     _required_params = [
         {
             "name": "type",
@@ -32,10 +38,34 @@ class CheckRoutes(DiagNetTest):
                     ],
                     "default_choice": "ANY",
                     "description": "The origin or protocol through which a route was learned"
+                },
+                {
+                        "name": "routes2",
+                        "type": "list",
+                        "description": "The routes to check",
+                        "required": [
+                            {
+                                "name": "destination_prefix2",
+                                "type": "CIDR-value(type)",
+                                "description": "The destination network in CIDR notation"
+                            },
+                            {
+                                "name": "route_source2",
+                                "type": "choice",
+                                "choices": [
+                                    "ANY","CONNECTED (C)"
+                                ],
+                                "default_choice": "ANY",
+                                "description": "The origin or protocol through which a route was learned"
+                            }
+                        ],
+                        "optional": [],
+                        "mutually_exclusive": [],
+                        "constraints": ["min_length=1", "unique=true"]
                 }
             ],
             "optional": [],
-            "mutually_exclusive": [("destination_prefix", "route_source")],
+            "mutually_exclusive": [],
             "constraints": ["min_length=1", "unique=true"]
         }
     ]
