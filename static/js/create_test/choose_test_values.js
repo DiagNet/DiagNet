@@ -38,8 +38,8 @@ async function selectParameters(selectedRequiredParams, selectedOptionalParamete
     const allParameters = new Map([...selectedRequiredParams, ...selectedOptionalParameters]);
 
     setupParams = true;
-    const requiredParams = readInputs(selectedRequiredParams.values());
-    const optionalParams = readInputs(selectedOptionalParameters.values())
+    const requiredParams = readInputs(Array.from(selectedRequiredParams.values()));
+    const optionalParams = readInputs(Array.from(selectedOptionalParameters.values()));
 
     const allDeviceParameters = [...requiredParams.device_parameters, ...optionalParams.device_parameters];
 
@@ -87,32 +87,31 @@ function readInputs(parameter_values) {
     const values = {};
     const device_parameters = [];
 
-    function toMap(value) {
-        if (value instanceof Map) return value;
-        if (typeof value === 'object' && value !== null) {
-            return new Map(Object.entries(value));
-        }
-        throw new Error('Expected Map or plain Object');
+    function getValues(map) {
+        if (map instanceof Map) return Array.from(map.values());
+        return Object.values(map);
     }
 
-    for (const params of toMap(parameter_values)) {
+    function toMap(input) {
+        if (input instanceof Map) return input;
+        if (input && input.constructor === Object) {
+            return new Map(Object.entries(input));
+        }
+        throw new TypeError("Expected Map or plain Object");
+    }
+
+    for (const parameter of getValues(parameter_values)) {
+        let params = toMap(parameter);
         let field = params.get('DOM_INPUT_FIELD');
         if (!field.isEmpty()) {
             let name = params.get('name');
             let value = field.getValue();
             let type = params.get('type');
 
-            if (type === "list") {
-                const allParameters = [
-                    ...(params.get('required') || []),
-                    ...(params.get('optional') || [])
-                ];
-                let list_output = readInputs(allParameters);
-                values[name] = list_output.values;
-                device_parameters.push(list_output.device_parameters);
-            } else {
-                values[name] = value;
-            }
+            console.log("ADDING OUTPUT FROM PARAM");
+            console.log(field);
+            console.log(value);
+            values[name] = value;
 
             if (type.trim().toLowerCase() === "device") {
                 device_parameters.push(name);
