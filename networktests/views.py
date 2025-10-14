@@ -31,9 +31,9 @@ def get_all_testcases(request):
     package = "networktests.testcases"
     for resource in importlib.resources.files(package).iterdir():
         if (
-            resource.suffix == ".py"
-            and resource.is_file()
-            and resource.name not in ["__init__.py", "base.py"]
+                resource.suffix == ".py"
+                and resource.is_file()
+                and resource.name not in ["__init__.py", "base.py"]
         ):
             class_name = resource.stem
             module_name = f"{package}.{class_name}"
@@ -80,6 +80,44 @@ def get_class_reference_for_test_class_string(test_class):
     return cls
 
 
+def store_test_parameter(parent, parameter, value, device_params):
+    """
+    Stores test parameters into the database.
+    Also covers recursive parameter referencing
+
+    Args:
+        parent: The Parent Table of the given parameters, either a test case or another parameter
+        parameters: parameters stored in lists.
+        device_params: The parameters that have a device as value
+
+    Returns:
+        JsonResponse: Returned only when a mistake happens, otherwise nothing is returned.
+    """
+    try:
+        if parameter in device_params:
+            new_param = TestDevice()
+            new_param.device = Device.objects.get(name=value)
+        else:
+            new_param = TestParameter()
+            if isinstance(value, list):
+                new_param.value = "list"
+                for child_parameters in value:
+                    store_test_parameter(new_param, )
+
+            else:
+                new_param.value = value
+
+        new_param.name = parameter
+        if type(parent) == TestCase:
+            new_param.test_case = parent
+        elif type(parent) == TestParameter:
+            new_param.parent_test_parameter = parent
+
+        new_param.save()
+    except Exception as e:
+        return JsonResponse({"status": "fail", "message": str(e)}, status=500)
+
+
 def create_test(request):
     """
     Handle POST requests to create a new test case with its parameters.
@@ -121,6 +159,10 @@ def create_test(request):
     class_reference = get_class_reference_for_test_class_string(test_class)
     parseable_parameters = {**required_params, **optional_params}
 
+    print("i came")
+    print(required_params)
+
+    return;
     try:
         class_reference().check_parameter_validity(**parseable_parameters)
     except Exception as e:
@@ -201,9 +243,9 @@ def get_all_available_testcases(request):
     package = "networktests.testcases"
     for resource in importlib.resources.files(package).iterdir():
         if (
-            resource.suffix == ".py"
-            and resource.is_file()
-            and resource.name not in ["__init__.py", "base.py"]
+                resource.suffix == ".py"
+                and resource.is_file()
+                and resource.name not in ["__init__.py", "base.py"]
         ):
             class_name = resource.stem
             testcases.append(class_name)
