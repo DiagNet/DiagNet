@@ -60,6 +60,25 @@ async function fetchAllDevices() {
     }
 }
 
+function mapToObj(input) {
+    if (input instanceof Map) {
+        const obj = {};
+        for (const [k, v] of input) {
+            obj[k] = mapToObj(v); // recursive
+        }
+        return obj;
+    } else if (Array.isArray(input)) {
+        return input.map(mapToObj);
+    } else if (input && input.constructor === Object) {
+        const obj = {};
+        for (const key in input) {
+            obj[key] = mapToObj(input[key]);
+        }
+        return obj;
+    }
+    return input;
+}
+
 /**
  * Sends a test creation request to the backend API.
  *
@@ -88,7 +107,7 @@ async function createTest(testClass, requiredParams, optionalParams, deviceParam
                 "Content-Type": "application/json",
                 "X-CSRFToken": csrfToken
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(mapToObj(payload))
         });
 
         const result = await response.json();

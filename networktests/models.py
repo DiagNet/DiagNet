@@ -49,11 +49,22 @@ class TestCase(models.Model):
 class TestParameter(models.Model):
     name = models.TextField()
     test_case = models.ForeignKey(
-        TestCase, related_name="parameters", on_delete=models.CASCADE
+        TestCase,
+        related_name="parameters",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
     )
-    value = models.TextField(blank=True, null=True)
+    value = models.TextField(
+        blank=True,
+        null=True,
+    )
     parent_test_parameter = models.ForeignKey(
-        'TestParameter', related_name="parent_parameter", on_delete=models.CASCADE
+        'TestParameter',
+        related_name="parent_parameter",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
     )
 
     def __str__(self):

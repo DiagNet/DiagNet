@@ -186,7 +186,8 @@ class ChoiceField extends ParameterField {
         return this.container;
     }
 
-    clearValue() {} // do nothing
+    clearValue() {
+    } // do nothing
 
     getField() {
         return this.container;
@@ -203,6 +204,14 @@ class ChoiceField extends ParameterField {
     onChange(callback) {
         if (this.field) this.field.addEventListener('change', callback);
     }
+}
+
+function mapToObject(map) {
+    const obj = {};
+    for (const [key, value] of map) {
+        obj[key] = value;
+    }
+    return obj;
 }
 
 // TODO it list is required it can still be submitted if it is empty
@@ -284,8 +293,14 @@ class ListField extends ParameterField {
         return this.container;
     }
 
+
     getValue() {
-        return this.addOutput;
+        let addOutputAsObject = []
+        for (const item of this.addOutput) {
+            addOutputAsObject.push(mapToObject(item));
+        }
+
+        return addOutputAsObject;
     }
 
     /**
@@ -293,9 +308,9 @@ class ListField extends ParameterField {
      * @returns {Array} Values of all child input fields.
      */
     receiveValuesFromChildren() {
-        let output = [];
+        let output = new Map();
         for (const value of this.allParameters.values()) {
-            output.push(value.get('DOM_INPUT_FIELD').getValue());
+            output.set(value.get('name'), value.get('DOM_INPUT_FIELD').getValue());
         }
         return output;
     }
@@ -308,6 +323,10 @@ class ListField extends ParameterField {
         this.addOutput.push(this.receiveValuesFromChildren());
         this.clearValue();
         this.onInternalChange();
+    }
+
+    getChildren() {
+        return this.children;
     }
 
     /**
@@ -323,7 +342,6 @@ class ListField extends ParameterField {
     }
 
     isEmpty() {
-        console.log("list is empty?");
         return this.getValue().length === 0;
     }
 
@@ -340,13 +358,10 @@ class ListField extends ParameterField {
     }
 
     async checkDatatype() {
-        console.log(this.parameter.get('name'));
 
         if (this.isEmpty()) {
-            console.log("fail");
             return "fail";
         } else {
-            console.log("success");
             return "success";
         }
     }

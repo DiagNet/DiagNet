@@ -97,9 +97,12 @@ def store_test_parameter(parent, parameter, value, device_params):
             new_param = TestParameter()
             if isinstance(value, list):
                 new_param.value = "list"
+                new_param.save()
                 for child_parameters in value:
-                    store_test_parameter(new_param, )
-
+                    for param, value in child_parameters.items():
+                        out = store_test_parameter(new_param, param, value, device_params)
+                        if out:
+                            return out
             else:
                 new_param.value = value
 
@@ -142,6 +145,8 @@ def create_test(request):
     except json.JSONDecodeError:
         return JsonResponse({"status": "fail", "message": "Invalid JSON"}, status=400)
 
+    print(data)
+
     test_class: str = data.get("test_class")
     required_params = data.get("required_parameters", {})
     optional_params = data.get("optional_parameters", {})
@@ -155,10 +160,6 @@ def create_test(request):
     class_reference = get_class_reference_for_test_class_string(test_class)
     parseable_parameters = {**required_params, **optional_params}
 
-    print("i came")
-    print(required_params)
-
-    return;
     try:
         class_reference().check_parameter_validity(**parseable_parameters)
     except Exception as e:
@@ -174,19 +175,9 @@ def create_test(request):
         return JsonResponse({"status": "fail", "message": str(e)}, status=500)
 
     for param, value in {**required_params, **optional_params}.items():
-        try:
-            if param in device_params:
-                new_param = TestDevice()
-                new_param.device = Device.objects.get(name=value)
-            else:
-                new_param = TestParameter()
-                new_param.value = value
-
-            new_param.name = param
-            new_param.test_case = new_test
-            new_param.save()
-        except Exception as e:
-            return JsonResponse({"status": "fail", "message": str(e)}, status=500)
+        out = store_test_parameter(new_test, param, value, device_params)
+        if out:
+            return out;
 
     return JsonResponse({"status": "success"}, status=201)
 
