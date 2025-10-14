@@ -1,3 +1,5 @@
+from django.http.response import HttpResponseBadRequest
+import yaml
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
@@ -87,17 +89,32 @@ def get_all_devices(request):
 
 
 def handle_uploaded_file(f):
-    for l in f:
-        print(l)
+    device_list_yaml: dict = yaml.safe_load(f)
+    for name, params in device_list_yaml.items():
+        try:
+            device = Device(
+                name=name,
+                protocol=params["protocol"],
+                ip_address=params["ip_address"],
+                port=params["port"],
+                device_type=params["device_type"],
+                username=params["username"],
+                password=params["password"],
+            )
+            device.save()
+        except Exception:
+            return False
+
+        return True
 
 
-def import_devices_from_csv(request):
+def import_devices_from_yaml(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            print("here")
-            handle_uploaded_file(request.FILES["file"])
-            return HttpResponseRedirect("/success/url/")
+            if not handle_uploaded_file(request.FILES["file"]):
+                return HttpResponseBadRequest
+            return HttpResponseRedirect("/devices/")
     else:
         form = UploadFileForm()
     return render(request, "upload.html", {"form": form})
