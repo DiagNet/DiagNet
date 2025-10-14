@@ -38,8 +38,8 @@ async function selectParameters(selectedRequiredParams, selectedOptionalParamete
     const allParameters = new Map([...selectedRequiredParams, ...selectedOptionalParameters]);
 
     setupParams = true;
-    const requiredParams = readInputs(selectedRequiredParams);
-    const optionalParams = readInputs(selectedOptionalParameters)
+    const requiredParams = readInputs(selectedRequiredParams.values());
+    const optionalParams = readInputs(selectedOptionalParameters.values())
 
     const allDeviceParameters = [...requiredParams.device_parameters, ...optionalParams.device_parameters];
 
@@ -83,25 +83,43 @@ function checkTestValueInputs() {
  * @param parameters - oh nooooo
  * @returns {{values: Object, device_parameters: string[]}} Map of input names to values and list of device values.
  */
-function readInputs(parameters) {
+function readInputs(parameter_values) {
     const values = {};
     const device_parameters = [];
 
-    console.log(parameters);
-    for (const params of parameters.values()) {
+    function toMap(value) {
+        if (value instanceof Map) return value;
+        if (typeof value === 'object' && value !== null) {
+            return new Map(Object.entries(value));
+        }
+        throw new Error('Expected Map or plain Object');
+    }
+
+    for (const params of toMap(parameter_values)) {
         let field = params.get('DOM_INPUT_FIELD');
         if (!field.isEmpty()) {
             let name = params.get('name');
             let value = field.getValue();
             let type = params.get('type');
 
-            values[name] = value;
+            if (type === "list") {
+                const allParameters = [
+                    ...(params.get('required') || []),
+                    ...(params.get('optional') || [])
+                ];
+                let list_output = readInputs(allParameters);
+                values[name] = list_output.values;
+                device_parameters.push(list_output.device_parameters);
+            } else {
+                values[name] = value;
+            }
 
             if (type.trim().toLowerCase() === "device") {
                 device_parameters.push(name);
             }
         }
     }
+
     return {values, device_parameters};
 }
 

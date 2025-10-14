@@ -89,6 +89,10 @@ class ParameterField {
      * @param {function} callback - Function to run on input event.
      */
     onChange(callback) {
+        let list_parent = this.parameter.get('parent_list');
+        if (list_parent) {
+            list_parent.onInternalChange();
+        }
         if (this.field) this.field.addEventListener('input', callback);
     }
 
@@ -264,6 +268,7 @@ class ListField extends ParameterField {
 
         let nested_index = Number(this.parameter.get('nested_index') ?? 0) + 1;
         for (const value of allParameters.values()) {
+            value.set('parent_list', this);
             value.set('nested_index', nested_index);
             const field = value.get('DOM_INPUT_FIELD');
             this.children.add(field);
@@ -302,6 +307,7 @@ class ListField extends ParameterField {
         this.labelNumberOfListItems.innerHTML = (Number(this.labelNumberOfListItems.innerHTML) + 1) + "";
         this.addOutput.push(this.receiveValuesFromChildren());
         this.clearValue();
+        this.onInternalChange();
     }
 
     /**
@@ -317,6 +323,7 @@ class ListField extends ParameterField {
     }
 
     isEmpty() {
+        console.log("list is empty?");
         return this.getValue().length === 0;
     }
 
@@ -324,12 +331,24 @@ class ListField extends ParameterField {
         return this.getValue().length === 1;
     }
 
+    onInternalChange() {
+        this.callback();
+    }
+
     onChange(callback) {
-        if (this.field) this.field.addEventListener('input', callback);
+        this.callback = callback;
     }
 
     async checkDatatype() {
-        return "success";
+        console.log(this.parameter.get('name'));
+
+        if (this.isEmpty()) {
+            console.log("fail");
+            return "fail";
+        } else {
+            console.log("success");
+            return "success";
+        }
     }
 }
 

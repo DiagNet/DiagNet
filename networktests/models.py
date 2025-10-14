@@ -48,12 +48,13 @@ class TestCase(models.Model):
 
 class TestParameter(models.Model):
     name = models.TextField()
-    # All Parameters accessible using test_case.parameters.all()
-    # When the parent TestCase is deleted the Parameter is deleted as well.
     test_case = models.ForeignKey(
         TestCase, related_name="parameters", on_delete=models.CASCADE
     )
     value = models.TextField(blank=True, null=True)
+    parent_test_parameter = models.ForeignKey(
+        'TestParameter', related_name="parent_parameter", on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return f"{self.name}: {self.value}"
@@ -61,8 +62,6 @@ class TestParameter(models.Model):
 
 class TestDevice(models.Model):
     name = models.TextField()
-    # All Parameters accessible using test_case.parameters.all()
-    # When the parent TestCase is deleted the Parameter is deleted as well.
     test_case = models.ForeignKey(
         TestCase, related_name="devices", on_delete=models.CASCADE
     )
@@ -76,8 +75,6 @@ class TestDevice(models.Model):
 
 class TestResult(models.Model):
     attempt_id = models.IntegerField(null=True, blank=True)
-    # All Parameters accessible using test_case.results.all()
-    # When the parent TestCase is deleted the Parameter is deleted as well.
     test_case = models.ForeignKey(
         TestCase, related_name="results", on_delete=models.CASCADE
     )
