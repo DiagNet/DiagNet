@@ -119,12 +119,13 @@ class ParameterField {
 
     /**
      * Checks if the current field's value matches the expected datatype.
-     * @returns {Promise<boolean>} Result of the datatype validation.
+     * @returns {Promise<string>} Result of the datatype validation.
      */
     async checkDatatype() {
         return handleCheckDataType(this, this.parameter['type']);
     }
 }
+
 
 class SingleLineInputField extends ParameterField {
     createField() {
@@ -214,7 +215,6 @@ function mapToObject(map) {
     return obj;
 }
 
-// TODO it list is required it can still be submitted if it is empty
 class ListField extends ParameterField {
     /**
      * @param {Map<string, any>} parameter - Metadata for the list.
@@ -277,7 +277,7 @@ class ListField extends ParameterField {
         for (const value of allParameters.values()) {
             value['parent_list'] = this;
             value['nested_index'] = nested_index;
-            const field = value['ParameterField'];
+            const field = value['parameter_info'];
             this.children.add(field);
             field.getField().style.marginLeft = `${nested_index}rem`;
         }
@@ -308,7 +308,7 @@ class ListField extends ParameterField {
     receiveValuesFromChildren() {
         let output = new Map();
         for (const value of this.allParameters) {
-            output.set(value['name'], value['ParameterField'].getValue());
+            output.set(value['name'], value['parameter_info'].getValue());
         }
         return output;
     }
@@ -363,14 +363,6 @@ class ListField extends ParameterField {
             return "success";
         }
     }
-}
-
-function enableSubmit(button) {
-    button.disabled = false;
-}
-
-function disableSubmit(button) {
-    button.disabled = true;
 }
 
 function createParameterFields(parameter, showParameters) {

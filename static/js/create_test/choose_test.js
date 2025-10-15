@@ -37,7 +37,8 @@ function showInfoForTestClass(testCase, data) {
     }
 
     docClickHandler = async () => {
-        await selectTestClass(testCase, popupWindow);
+        popupWindow.removeEventListener("keydown", onPopUpClickHandler); // remove focus from search Element in template tab
+        await selectTestClass(testCase);
     };
 
     docWindow.addEventListener("click", docClickHandler);
@@ -196,7 +197,8 @@ async function handleKeyboardNavigation(e) {
         case "Enter":
             e.preventDefault();
             if (currentIndex >= 0 && currentIndex < items.length) {
-                await selectTestClass(items[currentIndex].dataset.name, popupWindow);
+                popupWindow.removeEventListener("keydown", onPopUpClickHandler); // remove focus from search Element in template tab
+                await selectTestClass(items[currentIndex].dataset.name);
             }
             break;
 
@@ -208,6 +210,14 @@ async function handleKeyboardNavigation(e) {
     if (currentIndex !== -1) {
         fetchTestClassInfoDebounced(items[currentIndex].dataset.name)
     }
+}
+
+/**
+ * Automatically sets focus to the search input when the popup is clicked.
+ * Used in EventListeners between the Test-Class and Parameter tab.
+ */
+function onPopUpClickHandler(_) {
+    searchInput.focus()
 }
 
 // Input
