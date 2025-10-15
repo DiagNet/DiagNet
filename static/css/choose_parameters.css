@@ -1,5 +1,3 @@
-/* === ParameterContainer Tabs Styling === */
-
 .tab-btn {
     background-color: #f8f9fa;
     color: #495057;
@@ -45,4 +43,46 @@
 
 .param-tab-pane::-webkit-scrollbar-track {
     background-color: transparent;
+}
+
+
+/* Template CSS - Single Line Input */
+.hover-effect {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.hover-effect:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.param-input {
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.param-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 5px rgba(13, 110, 253, 0.3);
+}
+
+/* Template CSS - Multiple Choice Input */
+
+.choice-container {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.choice-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.choice-select {
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.choice-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 5px rgba(13,110,253,0.3);
 }

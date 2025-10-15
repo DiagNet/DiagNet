@@ -207,8 +207,8 @@ function createDatatypeHandler(parameters, validInputMap) {
         }
 
         const validateResultBasedOnRequirement = {
-            required: result => result === "success",
-            optional: result => result === "success" || result === "unknown"
+            required: result => result === DATATYPE_RESULT.SUCCESS,
+            optional: result => result === DATATYPE_RESULT.SUCCESS || result === DATATYPE_RESULT.UNKNOWN
         };
 
         parameterInfo['datatype_handler'] = async () => {
@@ -268,6 +268,7 @@ function showParameters(requiredParams, optionalParams, mutually_exclusive_bindi
     let currentlyBlockedMap = {};
 
     const allParameters = [...requiredParams, ...optionalParams];
+
 
     createAndSaveParameterFields(requiredParams, optionalParams);
     createMutuallyExclusiveHandler(allParameters, mutually_exclusive_bindings, currentlyBlockedMap);
