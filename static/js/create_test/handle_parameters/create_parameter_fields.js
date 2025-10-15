@@ -1,3 +1,7 @@
+const singleLineInputTemplate = document.getElementById('parameterInputTemplate');
+const choiceInputTemplate = document.getElementById('choiceInputTemplate');
+const listInputTemplate = document.getElementById('listInputTemplate');
+
 /**
  * Abstract base class representing a parameter input field.
  */
@@ -89,7 +93,10 @@ class ParameterField {
     onChange(callback) {
         let list_parent = this.parameter['parent_list'];
         if (list_parent) {
-            list_parent.onInternalChange();
+            if (this.field) this.field.addEventListener('input', () => {
+                callback();
+                list_parent.onInternalChange()
+            });
         }
         if (this.field) this.field.addEventListener('input', callback);
     }
@@ -127,23 +134,11 @@ class ParameterField {
 
 class SingleLineInputField extends ParameterField {
     createField() {
-        this.container = document.createElement("div");
-        this.container.className = "SingleLineInputContainer";
-        this.container.style.padding = "5px 3px";
-        this.container.style.margin = "10px 10px 10px 0px";
+        this.container = singleLineInputTemplate.content.cloneNode(true).querySelector('div');
+        this.field = this.container.querySelector('.param-input');
 
-        let label = document.createElement("label");
-        label.textContent = this.parameter['name'];
-        label.className = "form-label";
-        label.style.fontSize = "15px";
-
-        this.field = document.createElement("input");
-        this.field.type = "text";
-        this.field.className = "form-control mb-2";
+        this.container.querySelector('.param-label').textContent = this.parameter['name'];
         this.field.placeholder = this.parameter['name'];
-
-        this.container.appendChild(label);
-        this.container.appendChild(this.field);
 
         return this.container;
     }
@@ -155,37 +150,30 @@ class SingleLineInputField extends ParameterField {
 
 class ChoiceField extends ParameterField {
     createField() {
-        this.container = document.createElement("div");
-        this.container.className = "SingleLineInputContainer";
-        this.container.style.padding = "5px 3px";
-        this.container.style.margin = "10px 10px 10px 0px";
+        this.container = choiceInputTemplate.content.cloneNode(true).querySelector('div');
+        this.field = this.container.querySelector('.choice-select');
 
-        let label = document.createElement("label");
-        label.textContent = this.parameter['name'];
-        label.className = "form-label";
-        label.style.fontSize = "15px";
-
-        this.field = document.createElement("select");
-        this.field.className = "form-select mb-2";
+        this.label = this.container.querySelector('.choice-label');
+        this.label.textContent = this.parameter['name'];
 
         const options = this.parameter['choices'] || [];
         const defaultChoice = this.parameter['default_choice'];
         if (defaultChoice === undefined) options.unshift("");
 
         options.forEach(opt => {
-            const optionEl = document.createElement("option");
-            optionEl.value = opt.toLowerCase();
-            optionEl.textContent = opt;
-            if (opt === defaultChoice) optionEl.selected = true;
-            this.field.appendChild(optionEl);
+            const option = document.createElement("option");
+            option.value = opt.toLowerCase();
+            option.textContent = opt;
+            if (opt === defaultChoice) option.selected = true;
+            this.field.appendChild(option);
         });
 
-        this.container.appendChild(label);
-        this.container.appendChild(this.field);
         return this.container;
     }
 
-    clearValue() { /* do nothing */ }
+    clearValue() {
+        /* do nothing */
+    }
 
     getField() {
         return this.container;
@@ -202,63 +190,50 @@ class ChoiceField extends ParameterField {
     onChange(callback) {
         if (this.field) this.field.addEventListener('change', callback);
     }
-}
 
-function mapToObject(map) {
-    const obj = {};
-    for (const [key, value] of map) {
-        obj[key] = value;
+    /**
+     * Checks if the current field's value matches the expected datatype.
+     * @returns {Promise<string>} Result of the datatype validation.
+     */
+    async checkDatatype() {
+        if (this.getValue().length === 0) {
+            this.unknownDatatype();
+            return DATATYPE_RESULT.UNKNOWN;
+        } else {
+            this.correctDatatype();
+            return DATATYPE_RESULT.SUCCESS;
+        }
     }
-    return obj;
+
 }
 
 class ListField extends ParameterField {
     /**
      * @param {Map<string, any>} parameter - Metadata for the list.
-     * @param {function} showParameters - Callback to create child input fields.
      */
     constructor(parameter) {
         super(parameter);
-        if (!showParameters) throw new Error("ListField requires showParameters");
         this.children = new Set();
-        this.addToList = null;
     }
 
     createField() {
-        this.container = document.createElement("div");
-        this.container.className = "list-field-container";
-        this.container.style.width = "100%";
+        this.addOutput = [];
 
-        const topRow = document.createElement("div");
-        topRow.style.display = "flex";
-        topRow.style.alignItems = "center";
-        topRow.style.gap = "1rem";
+        this.container = listInputTemplate.content.cloneNode(true).querySelector('div');
 
-        const label = document.createElement('label');
-        label.id = "list-label";
-        label.innerHTML = this.parameter['name'] + " List-View";
-        label.className = "form-label";
-        topRow.appendChild(label);
+        this.label = this.container.querySelector('.list-label');
+        this.label.textContent = this.parameter['name'] + " List-View";
 
-        const addToList = document.createElement("button");
-        addToList.textContent = "Add to List";
-        addToList.style.padding = "6px 12px";
-        addToList.style.cursor = "pointer";
-        topRow.appendChild(addToList);
+        this.countBadge = this.container.querySelector('.list-count');
+        this.addButton = this.container.querySelector('.add-to-list-btn');
 
-        const labelNumberOfListItems = document.createElement('label');
-        labelNumberOfListItems.id = "list-label";
-        labelNumberOfListItems.innerHTML = "0";
-        labelNumberOfListItems.className = "form-label";
-        topRow.appendChild(labelNumberOfListItems);
-        this.labelNumberOfListItems = labelNumberOfListItems;
-
-        this.container.appendChild(topRow);
-
-        const requiredParams = this.parameter['required'];
-        const optionalParams = this.parameter['optional'];
-        const allParameters = [...requiredParams, ...optionalParams];
+        const requiredParams = this.parameter['required'] || [];
+        const optionalParams = this.parameter['optional'] || [];
+        this.allParameters = [...requiredParams, ...optionalParams];
         const mutually_exclusive_bindings = this.parameter['mutually_exclusive'];
+
+
+        this.allParameters.forEach(value => value['parent_list'] = this);
 
         showParameters(
             requiredParams,
@@ -266,34 +241,31 @@ class ListField extends ParameterField {
             mutually_exclusive_bindings,
             this.container,
             this.container,
-            addToList
+            this.addButton
         );
 
         let nested_index = Number(this.parameter['nested_index'] ?? 0) + 1;
-        for (const value of allParameters.values()) {
-            value['parent_list'] = this;
+        for (const value of this.allParameters) {
             value['nested_index'] = nested_index;
+
             const field = value['parameter_info'];
             this.children.add(field);
+
             field.getField().style.marginLeft = `${nested_index}rem`;
         }
 
-        addToList.addEventListener("click", () => this.add());
-
-        this.addToList = addToList;
-        this.allParameters = allParameters;
-        this.addOutput = [];
+        this.addButton.addEventListener("click", () => this.add());
 
         return this.container;
     }
 
 
+    /** Collects the Values of child elements and returns them. */
     getValue() {
         let addOutputAsObject = []
         for (const item of this.addOutput) {
             addOutputAsObject.push(item);
         }
-
         return addOutputAsObject;
     }
 
@@ -304,31 +276,27 @@ class ListField extends ParameterField {
     receiveValuesFromChildren() {
         let output = {};
         for (const value of this.allParameters) {
-            output[value['name']] =  value['parameter_info'].getValue();
+            output[value['name']] = value['parameter_info'].getValue();
         }
         return output;
     }
 
-    /**
-     * Adds current child values to the output array and updates count.
-     */
+    /** Adds current child values to the output array and updates count. */
     add() {
-        this.labelNumberOfListItems.innerHTML = (Number(this.labelNumberOfListItems.innerHTML) + 1) + "";
+        this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) + 1) + "";
         this.addOutput.push(this.receiveValuesFromChildren());
         this.clearValue();
-        this.onInternalChange();
+        this.callback();
     }
 
     getChildren() {
         return this.children;
     }
 
-    /**
-     * Clears all child fields and disables the add button.
-     */
+    /** Clears all child fields and disables the add button. */
     clearValue() {
         this.children.forEach(c => c.clearValue());
-        disableSubmit(this.addToList);
+        disableSubmit(this.addButton);
     }
 
     getField() {
@@ -344,7 +312,7 @@ class ListField extends ParameterField {
     }
 
     onInternalChange() {
-        this.callback();
+        // do nothing
     }
 
     onChange(callback) {
@@ -365,13 +333,25 @@ class ListField extends ParameterField {
 
     async checkDatatype() {
         if (this.isEmpty()) {
-            return "unknown";
+            this.unknownDatatype();
+            return DATATYPE_RESULT.UNKNOWN;
         } else {
-            return "success";
+            this.correctDatatype();
+            return DATATYPE_RESULT.SUCCESS;
         }
     }
 }
 
+/**
+ * Creates a Parameter Field according to its type.
+ * There are 3 options:
+ * 1. Single Input Fields (default)
+ * 2. Multiple Choice (type === "choice")
+ * 3. List Views (type === "list")
+ *
+ * @param parameter
+ * @returns {ParameterField}
+ */
 function createParameterFields(parameter) {
     switch (parameter['type']) {
         case "choice":

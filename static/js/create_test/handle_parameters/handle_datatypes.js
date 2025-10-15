@@ -49,6 +49,16 @@ async function checkDatatype(field, datatype_as_string) {
 }
 
 /**
+ * Simulates an Enum. Displays Datatype-checking-results.
+ * @type {{UNKNOWN: string, SUCCESS: string, FAIL: string}}
+ */
+const DATATYPE_RESULT = {
+    UNKNOWN: "unknown",
+    SUCCESS: "success",
+    FAIL: "fail"
+};
+
+/**
  * Checks whether the value of a given input field matches the specified datatype.
  *
  * @async
@@ -60,12 +70,12 @@ async function handleCheckDataType(field, datatype_as_string) {
     let result = await checkDatatype(field, datatype_as_string);
     if (result === undefined) {
         field.unknownDatatype();
-        return "unknown";
+        return DATATYPE_RESULT.UNKNOWN;
     } else if (result) {
         field.correctDatatype();
-        return "success";
+        return DATATYPE_RESULT.SUCCESS;
     } else {
         field.wrongDatatype();
-        return "fail";
+        return DATATYPE_RESULT.FAIL;
     }
 }

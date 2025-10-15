@@ -8,17 +8,24 @@ class CheckRoutes(DiagNetTest):
             "type": "IPv4"
         },
     ]
+
+    _mutually_exclusive_parameters = [
+        ("target", "target_ip")
+    ]
     _required_params = [
         {
             "name": "type",
             "type": "choice",
             "choices": ["IPv4", "IPv6"],
-            "default_choice": "IPv4",
             "description": "Selects if IPv4 or IPv6 Routes are checked"
         },
         {
             "name": "target",
             "type": "device"
+        },
+        {
+            "name": "target_ip",
+            "type": "IPv4"
         },
         {
             "name": "routes",
@@ -57,6 +64,30 @@ class CheckRoutes(DiagNetTest):
                                 ],
                                 "default_choice": "ANY",
                                 "description": "The origin or protocol through which a route was learned"
+                            },
+                            {
+                                "name": "routes3",
+                                "type": "list",
+                                "description": "The routes to check",
+                                "required": [
+                                    {
+                                        "name": "destination_prefix3",
+                                        "type": "CIDR-value(type)",
+                                        "description": "The destination network in CIDR notation"
+                                    },
+                                    {
+                                        "name": "route_source3",
+                                        "type": "choice",
+                                        "choices": [
+                                            "ANY","CONNECTED (C)"
+                                        ],
+                                        "default_choice": "ANY",
+                                        "description": "The origin or protocol through which a route was learned"
+                                    }
+                                ],
+                                "optional": [],
+                                "mutually_exclusive": [],
+                                "constraints": ["min_length=1", "unique=true"]
                             }
                         ],
                         "optional": [],
