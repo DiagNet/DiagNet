@@ -4,11 +4,6 @@ const paramTab = document.getElementById('parameters-tab');
 const requiredContainer = document.getElementById("requiredContainer");
 const optionalContainer = document.getElementById("optionalContainer");
 
-
-function convertObjectMapIntoRegularMap(objectMap) {
-    return new Map(Object.entries(objectMap));
-}
-
 /**
  * Checks if all parameters are valid and updates the submit button state.
  *
@@ -17,35 +12,15 @@ function convertObjectMapIntoRegularMap(objectMap) {
  *
  * @param {Map<string, boolean>} validInputMap - Tracks each parameter's validity.
  * @param {Map<string, boolean>} currentlyBlockedMap - Tracks which parameters are currently blocked/disabled.
- * @param {HTMLElement} submitButton that "finishes" the parameter selection
+ * @param {HTMLElement} submitButton that "finishes" the parameter selection.
  */
 function checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton) {
-    /**
-     * Checks if all keys in mapA are valid based on values in mapA or mapB.
-     *
-     * A key is considered valid if its value is `true` in either mapA or mapB.
-     *
-     * @param {Map<string, boolean>} mapA - Primary validation map.
-     * @param {Map<string, boolean>} mapB - Secondary fallback validation map.
-     * @returns {boolean} - True if all keys pass validation, otherwise false.
-     */
-    function isEveryKeyValidOR(objA, objB) {
-        for (const key in objA) {
-            const valueA = objA[key];
-            const valueB = objB[key] || false;
-            if (!valueA && !valueB) return false;
-        }
-        return true;
+    for (const key in validInputMap) {
+        const valueA = validInputMap[key];
+        const valueB = currentlyBlockedMap[key] || false;
+        if (!valueA && !valueB) disableSubmit(submitButton);
     }
-
-    console.log("looking for submit:");
-    console.log(validInputMap, currentlyBlockedMap);
-    console.log(isEveryKeyValidOR(validInputMap, currentlyBlockedMap));
-    if (isEveryKeyValidOR(validInputMap, currentlyBlockedMap)) {
-        enableSubmit(submitButton);
-    } else {
-        disableSubmit(submitButton);
-    }
+    enableSubmit(submitButton);
 }
 
 /**
