@@ -8,6 +8,7 @@ const optionalContainer = document.getElementById("optionalContainer");
 function convertObjectMapIntoRegularMap(objectMap) {
     return new Map(Object.entries(objectMap));
 }
+
 /**
  * Checks if all parameters are valid and updates the submit button state.
  *
@@ -28,16 +29,18 @@ function checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton) {
      * @param {Map<string, boolean>} mapB - Secondary fallback validation map.
      * @returns {boolean} - True if all keys pass validation, otherwise false.
      */
-    function isEveryKeyValidOR(mapA, mapB) {
-        for (const [key, valueA] of mapA) {
-            const valueB = mapB.get(key) || false;
-            if (!valueA && !valueB) {
-                return false;
-            }
+    function isEveryKeyValidOR(objA, objB) {
+        for (const key in objA) {
+            const valueA = objA[key];
+            const valueB = objB[key] || false;
+            if (!valueA && !valueB) return false;
         }
         return true;
     }
 
+    console.log("looking for submit:");
+    console.log(validInputMap, currentlyBlockedMap);
+    console.log(isEveryKeyValidOR(validInputMap, currentlyBlockedMap));
     if (isEveryKeyValidOR(validInputMap, currentlyBlockedMap)) {
         enableSubmit(submitButton);
     } else {
@@ -57,10 +60,10 @@ function checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton) {
  * @param {HTMLElement} submitButton that "finishes" the parameter selection
  */
 function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, submitButton) {
-    for (const [_, parameterInfo] of parameters) {
-        parameterInfo.set('valid_submit_handler', () => {
+    for (const parameterInfo of parameters) {
+        parameterInfo['valid_submit_handler'] = () => {
             checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton);
-        });
+        };
     }
 }
 
@@ -80,8 +83,8 @@ function loadParameterFieldsIntoDocument(parameters, requiredContainer, optional
     const fragmentOptional = document.createDocumentFragment();
 
     parameters.forEach(param => {
-        const field = param.get('DOM_INPUT_FIELD').getField();
-        (param.get('requirement') === "required" ? fragmentRequired : fragmentOptional).appendChild(field);
+        const field = param['ParameterField'].getField();
+        (param['requirement'] === "required" ? fragmentRequired : fragmentOptional).appendChild(field);
     });
 
     requiredContainer.appendChild(fragmentRequired);
@@ -98,11 +101,11 @@ function loadParameterFieldsIntoDocument(parameters, requiredContainer, optional
  */
 function createAndSaveParameterFields(requiredParams, optionalParams) {
     for (const [params, requirement] of [[requiredParams, "required"], [optionalParams, "optional"]]) {
-        for (const [_, parameterInfo] of params) {
+        for (const parameterInfo of params) {
             let inputField = createParameterFields(parameterInfo, showParameters);
             inputField.createField();
-            parameterInfo.set('DOM_INPUT_FIELD', inputField);
-            parameterInfo.set('requirement', requirement);
+            parameterInfo['ParameterField'] = inputField;
+            parameterInfo['requirement'] = requirement;
         }
     }
 }
@@ -147,38 +150,57 @@ function createMutuallyExclusiveHandler(parameters, mutually_exclusive_bindings,
 
     // Calculate all mutually exclusive neighbors
     let allMutuallyExclusiveParameters = new Set();
-    let calculateMutNeighbors = new Map();
+    let calculateMutNeighbors = {};
     mutually_exclusive_bindings.forEach(pair => {
         for (const param of pair) {
             allMutuallyExclusiveParameters.add(param);
 
-            if (!calculateMutNeighbors.has(param)) {
-                calculateMutNeighbors.set(param, new Set(pair));
+            if (!(param in calculateMutNeighbors)) {
+                calculateMutNeighbors[param] = new Set(pair);
             } else {
-                const s = calculateMutNeighbors.get(param);
+                const s = calculateMutNeighbors[param];
                 pair.forEach(f => s.add(f));
             }
         }
     });
 
+    /**
+     * Searches for a ParameterField that has the given names
+     * @param allParameterFields All ParameterFields to check
+     * @param searchNames Names to search for
+     * @returns {undefined|*} {name, ParameterField}
+     */
+    function getParameterFieldForNames(allParameterFields, searchNames) {
+        const output = {};
+        for (const param of allParameterFields) {
+            const paramName = param['name'];
+            if (searchNames.includes(paramName)) {
+                output[paramName] = param;
+            }
+        }
+        return output;
+    }
+
     for (const param of allMutuallyExclusiveParameters) {
-        const field = parameters.get(param).get('DOM_INPUT_FIELD');
+        const fieldNames = calculateMutNeighbors[param];
+        fieldNames.add(param);
+        const parameterNamesToParameterFields = getParameterFieldForNames(parameters, fieldNames)
 
-        const fieldNames = calculateMutNeighbors.get(param);
-        const fields = Array.from(fieldNames, neighbor => parameters.get(neighbor).get('DOM_INPUT_FIELD'));
+        const field = parameterNamesToParameterFields[param]['ParameterField'];
+        const fields = Array.from(fieldNames, neighbor => parameterNamesToParameterFields[neighbor]['ParameterField']);
 
-        currentlyBlockedMap.set(param, false);
+        currentlyBlockedMap[param] = false;
 
-        parameters.get(param).set('mutually_exclusive_handler', () => {
+        parameterNamesToParameterFields[param]['mutually_exclusive_handler'] = () => {
             if (field.isEmpty()) {
                 enableAllFields(fields);
-                fieldNames.forEach(fd => currentlyBlockedMap.set(fd, false));
+                fieldNames.forEach(fd => currentlyBlockedMap[fd] = false);
             } else if (field.changedFromEmptyToValue()) {
                 togglePair(field, fields);
-                fieldNames.forEach(fd => currentlyBlockedMap.set(fd, true));
-                currentlyBlockedMap.set(param, false);
+                fieldNames.forEach(fd => currentlyBlockedMap[fd] = true);
+                currentlyBlockedMap[param] = false;
             }
-        });
+        };
     }
 }
 
@@ -193,21 +215,23 @@ function createMutuallyExclusiveHandler(parameters, mutually_exclusive_bindings,
  * @param {Map<string, boolean>} validInputMap - Stores each parameter's current validity.
  */
 function createDatatypeHandler(parameters, validInputMap) {
-    for (const [parameter_name, parameterInfo] of parameters) {
-        const field = parameterInfo.get('DOM_INPUT_FIELD');
-        const requirement = parameterInfo.get('requirement');
-        validInputMap.set(parameter_name, requirement === "optional");
+    for (const parameterInfo of parameters) {
+        const parameterName = parameterInfo['name'];
+        const field = parameterInfo['ParameterField'];
+        const requirement = parameterInfo['requirement'];
+        validInputMap[parameterName] = requirement === "optional";
 
         const validateResultBasedOnRequirement = {
             required: result => result === "success",
             optional: result => result === "success" || result === "unknown"
         };
 
-        parameterInfo.set('datatype_handler', async () => {
+        parameterInfo['datatype_handler'] = async () => {
             const result = await field.checkDatatype();
-
-            validInputMap.set(parameter_name, validateResultBasedOnRequirement[requirement](result))
-        });
+            console.log("DATATYPE VALID INPUT");
+            console.log(validInputMap);
+            validInputMap[parameterName] = validateResultBasedOnRequirement[requirement](result);
+        };
     }
 }
 
@@ -221,11 +245,11 @@ function createDatatypeHandler(parameters, validInputMap) {
  *        at least 'DOM_INPUT_FIELD' and optional handler functions.
  */
 function createInputListeners(parameters) {
-    for (const [_, parameterInfo] of parameters) {
-        const field = parameterInfo.get('DOM_INPUT_FIELD');
+    for (const parameterInfo of parameters) {
+        const field = parameterInfo['ParameterField'];
         const handlerNames = ['mutually_exclusive_handler', 'datatype_handler', 'valid_submit_handler'];
         const handlers = handlerNames
-            .map(name => parameterInfo.get(name))
+            .map(name => parameterInfo[name])
             .filter(fn => typeof fn === 'function');
 
         if (handlers.length !== 0) {
@@ -261,7 +285,7 @@ function showParameters(requiredParams, optionalParams, mutually_exclusive_bindi
      */
     let currentlyBlockedMap = new Map();
 
-    const allParameters = new Map([...requiredParams, ...optionalParams]);
+    const allParameters = [...requiredParams, ...optionalParams];
 
     createAndSaveParameterFields(requiredParams, optionalParams);
     createMutuallyExclusiveHandler(allParameters, mutually_exclusive_bindings, currentlyBlockedMap);
@@ -273,8 +297,8 @@ function showParameters(requiredParams, optionalParams, mutually_exclusive_bindi
     checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton);
 
     for (const parameterInfo of allParameters.values()) {
-        parameterInfo.get('mutually_exclusive_handler')?.();
-        parameterInfo.get('datatype_handler')?.();
+        parameterInfo['mutually_exclusive_handler']?.();
+        parameterInfo['datatype_handler']?.();
     }
 }
 
@@ -315,18 +339,19 @@ async function selectTestClass(testClass, popup) {
     // Fetch needed parameters
     let parameters = await fetchTestParameters(testClass);
 
-    let requiredMap = new Map(Array.from(parameters.requiredParams.values(), innerMap => [innerMap["name"], convertObjectMapIntoRegularMap(innerMap)]));
-    let optionalMap = new Map(Array.from(parameters.optionalParams.values(), innerMap => [innerMap["name"], convertObjectMapIntoRegularMap(innerMap)]));
-
+    let requiredParameters = parameters.requiredParams;
+    let optionalParameters = parameters.optionalParams;
     showParameters(
-        requiredMap,
-        optionalMap,
+        requiredParameters,
+        optionalParameters,
         parameters.mul,
         requiredContainer,
         optionalContainer,
         submitParametersButton);
 
-    submitParametersButton.addEventListener("click", () => {selectParameters(requiredMap, optionalMap)});
+    submitParametersButton.addEventListener("click", () => {
+        selectParameters(requiredParameters, optionalParameters)
+    });
 
     settingUp = false;
 }
