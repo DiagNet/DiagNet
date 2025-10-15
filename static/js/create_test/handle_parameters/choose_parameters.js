@@ -3,6 +3,7 @@
 const paramTab = document.getElementById('parameters-tab');
 const requiredContainer = document.getElementById("requiredContainer");
 const optionalContainer = document.getElementById("optionalContainer");
+const submitParametersButton = document.getElementById("submitParameters");
 
 /**
  * Checks if all parameters are valid and updates the submit button state.
@@ -74,7 +75,7 @@ function loadParameterFieldsIntoDocument(parameters, requiredContainer, optional
 function createAndSaveParameterFields(requiredParams, optionalParams) {
     for (const [params, requirement] of [[requiredParams, "required"], [optionalParams, "optional"]]) {
         for (const parameterInfo of params) {
-            let inputField = createParameterFields(parameterInfo, showParameters);
+            let inputField = createParameterFields(parameterInfo);
             inputField.createField();
             parameterInfo['parameter_info'] = inputField;
             parameterInfo['requirement'] = requirement;
