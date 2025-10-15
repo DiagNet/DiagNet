@@ -89,7 +89,7 @@ class ParameterField {
      * @param {function} callback - Function to run on input event.
      */
     onChange(callback) {
-        let list_parent = this.parameter.get('parent_list');
+        let list_parent = this.parameter['parent_list'];
         if (list_parent) {
             list_parent.onInternalChange();
         }
@@ -122,7 +122,7 @@ class ParameterField {
      * @returns {Promise<boolean>} Result of the datatype validation.
      */
     async checkDatatype() {
-        return handleCheckDataType(this, this.parameter.get('type'));
+        return handleCheckDataType(this, this.parameter['type']);
     }
 }
 
@@ -134,14 +134,14 @@ class SingleLineInputField extends ParameterField {
         this.container.style.margin = "10px 10px 10px 0px";
 
         let label = document.createElement("label");
-        label.textContent = this.parameter.get('name');
+        label.textContent = this.parameter['name'];
         label.className = "form-label";
         label.style.fontSize = "15px";
 
         this.field = document.createElement("input");
         this.field.type = "text";
         this.field.className = "form-control mb-2";
-        this.field.placeholder = this.parameter.get('name');
+        this.field.placeholder = this.parameter['name'];
 
         this.container.appendChild(label);
         this.container.appendChild(this.field);
@@ -162,15 +162,15 @@ class ChoiceField extends ParameterField {
         this.container.style.margin = "10px 10px 10px 0px";
 
         let label = document.createElement("label");
-        label.textContent = this.parameter.get('name');
+        label.textContent = this.parameter['name'];
         label.className = "form-label";
         label.style.fontSize = "15px";
 
         this.field = document.createElement("select");
         this.field.className = "form-select mb-2";
 
-        const options = this.parameter.get('choices') || [];
-        const defaultChoice = this.parameter.get('default_choice');
+        const options = this.parameter['choices'] || [];
+        const defaultChoice = this.parameter['default_choice'];
         if (defaultChoice === undefined) options.unshift("");
 
         options.forEach(opt => {
@@ -240,7 +240,7 @@ class ListField extends ParameterField {
 
         const label = document.createElement('label');
         label.id = "list-label";
-        label.innerHTML = this.parameter.get('name') + " List-View";
+        label.innerHTML = this.parameter['name'] + " List-View";
         label.className = "form-label";
         topRow.appendChild(label);
 
@@ -259,12 +259,10 @@ class ListField extends ParameterField {
 
         this.container.appendChild(topRow);
 
-        const requiredParams = new Map(Array.from(this.parameter.get('required').values(),
-            innerMap => [innerMap["name"], new Map(Object.entries(innerMap))]));
-        const optionalParams = new Map(Array.from(this.parameter.get('optional').values(),
-            innerMap => [innerMap["name"], new Map(Object.entries(innerMap))]));
-        const allParameters = new Map([...requiredParams, ...optionalParams]);
-        const mutually_exclusive_bindings = this.parameter.get('mutually_exclusive');
+        const requiredParams = this.parameter['required'];
+        const optionalParams = this.parameter['optional'];
+        const allParameters = [...requiredParams, ...optionalParams];
+        const mutually_exclusive_bindings = this.parameter['mutually_exclusive'];
 
         this.showParameters(
             requiredParams,
@@ -275,11 +273,11 @@ class ListField extends ParameterField {
             addToList
         );
 
-        let nested_index = Number(this.parameter.get('nested_index') ?? 0) + 1;
+        let nested_index = Number(this.parameter['nested_index'] ?? 0) + 1;
         for (const value of allParameters.values()) {
-            value.set('parent_list', this);
-            value.set('nested_index', nested_index);
-            const field = value.get('DOM_INPUT_FIELD');
+            value['parent_list'] = this;
+            value['nested_index'] = nested_index;
+            const field = value['ParameterField'];
             this.children.add(field);
             field.getField().style.marginLeft = `${nested_index}rem`;
         }
@@ -309,8 +307,8 @@ class ListField extends ParameterField {
      */
     receiveValuesFromChildren() {
         let output = new Map();
-        for (const value of this.allParameters.values()) {
-            output.set(value.get('name'), value.get('DOM_INPUT_FIELD').getValue());
+        for (const value of this.allParameters) {
+            output.set(value['name'], value['ParameterField'].getValue());
         }
         return output;
     }
@@ -376,7 +374,7 @@ function disableSubmit(button) {
 }
 
 function createParameterFields(parameter, showParameters) {
-    switch (parameter.get('type')) {
+    switch (parameter['type']) {
         case "choice":
             return new ChoiceField(parameter);
         case "list":

@@ -38,8 +38,8 @@ async function selectParameters(selectedRequiredParams, selectedOptionalParamete
     const allParameters = new Map([...selectedRequiredParams, ...selectedOptionalParameters]);
 
     setupParams = true;
-    const requiredParams = readInputs(Array.from(selectedRequiredParams.values()));
-    const optionalParams = readInputs(Array.from(selectedOptionalParameters.values()));
+    const requiredParams = readInputs(selectedRequiredParams);
+    const optionalParams = readInputs(selectedOptionalParameters);
 
     const allDeviceParameters = [...requiredParams.device_parameters, ...optionalParams.device_parameters];
 
@@ -87,26 +87,12 @@ function readInputs(parameter_values) {
     const values = {};
     const device_parameters = [];
 
-    function getValues(map) {
-        if (map instanceof Map) return Array.from(map.values());
-        return Object.values(map);
-    }
-
-    function toMap(input) {
-        if (input instanceof Map) return input;
-        if (input && input.constructor === Object) {
-            return new Map(Object.entries(input));
-        }
-        throw new TypeError("Expected Map or plain Object");
-    }
-
-    for (const parameter of getValues(parameter_values)) {
-        let params = toMap(parameter);
-        let field = params.get('DOM_INPUT_FIELD');
+    for (const params of parameter_values) {
+        let field = params['ParameterField'];
         if (!field.isEmpty()) {
-            let name = params.get('name');
+            let name = params['name'];
             let value = field.getValue();
-            let type = params.get('type');
+            let type = params['type'];
 
             console.log("ADDING OUTPUT FROM PARAM");
             console.log(field);
