@@ -5,26 +5,21 @@ const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').va
  *
  * @async
  * @param {string} testClass The name of the test class to fetch parameters for.
- * @returns {Promise<{requiredParams: string[], optionalParams: string[], mul: string[] | null}>}
+ * @returns {Promise<{requiredParams: Array<Object.<string, any>>, optionalParams: Array<Object.<string, any>>, mul: Array<Array<string>>}>}
  *   Resolves to an object containing arrays of required and optional parameters,
- *   and mutually exclusive parameter groups (`mul`). Returns empty arrays and null on error or if no testClass is provided.
+ *   and mutually exclusive parameter groups (`mul`).
  */
 async function fetchTestParameters(testClass) {
     if (!testClass) return {requiredParams: [], optionalParams: [], mul: null};
 
-    try {
-        const res = await fetch(`/networktests/api/search/test/parameters?test_class=${encodeURIComponent(testClass)}`);
-        const data = await res.json();
+    const res = await fetch(`/networktests/api/search/test/parameters?test_class=${encodeURIComponent(testClass)}`);
+    const data = await res.json();
 
-        return {
-            requiredParams: data.required,
-            optionalParams: data.optional,
-            mul: data.mul_exclusive || []
-        };
-    } catch (err) {
-        console.error("Search API error:", err);
-        return {requiredParams: [], optionalParams: [], mul: null};
-    }
+    return {
+        requiredParams: data.required,
+        optionalParams: data.optional,
+        mul: data.mul_exclusive || []
+    };
 }
 
 /**
