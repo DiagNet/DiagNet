@@ -80,7 +80,7 @@ function checkTestValueInputs() {
 /**
  * Read non-empty inputs from a container and collect device-type inputs separately.
  *
- * @param parameters - oh nooooo
+ * @param parameter_values - oh nooooo
  * @returns {{values: Object, device_parameters: string[]}} Map of input names to values and list of device values.
  */
 function readInputs(parameter_values) {
@@ -88,7 +88,7 @@ function readInputs(parameter_values) {
     const device_parameters = [];
 
     for (const params of parameter_values) {
-        let field = params['ParameterField'];
+        let field = params['parameter_info'];
         if (!field.isEmpty()) {
             let name = params['name'];
             let value = field.getValue();

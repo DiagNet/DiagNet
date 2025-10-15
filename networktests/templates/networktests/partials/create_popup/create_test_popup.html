@@ -21,13 +21,12 @@
         border: none !important;
     }
 
-    .tab-pane {
+    /* NEW - use a class for outer sliding tabs */
+    .outer-slide-pane {
         flex: 0 0 100%;
-        /* each tab takes full width */
         display: flex;
         flex-direction: column;
         height: 100%;
-        /* fill container height */
         overflow: hidden;
     }
 
@@ -65,13 +64,13 @@
 
 <div class="modal-body p-0" style="overflow:hidden;">
     <div id="popupTabsContent" class="d-flex transition-transform">
-        <div id="template-site" class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
+        <div id="template-site" class="tab-pane outer-slide-pane" style="flex-shrink:0; width:100%; padding:1rem;">
             {% include "networktests/partials/create_popup/popup/choose_test.html" %}
         </div>
-        <div class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
+        <div class="tab-pane outer-slide-pane" style="flex-shrink:0; width:100%; padding:1rem;">
             {% include "networktests/partials/create_popup/popup/choose_parameters.html" %}
         </div>
-        <div class="tab-pane" style="flex-shrink:0; width:100%; padding:1rem;">
+        <div class="tab-pane outer-slide-pane" style="flex-shrink:0; width:100%; padding:1rem;">
             {% include "networktests/partials/create_popup/popup/choose_test_values.html" %}
         </div>
     </div>
@@ -93,10 +92,10 @@
 
 </script>
 
-<script src="{% static 'js/create_test/handle_parameters/handle_parameter_tabs.js' %}"></script>
 <script src="{% static 'js/create_test/api_calls.js' %}"></script>
 <script src="{% static 'js/create_test/choose_test.js' %}"></script>
-<script src="{% static 'js/create_test/handle_datatypes.js' %}"></script>
+<script src="{% static 'js/create_test/handle_parameters/handle_parameter_tabs.js' %}"></script>
+<script src="{% static 'js/create_test/handle_parameters/handle_datatypes.js' %}"></script>
 <script src="{% static 'js/create_test/handle_parameters/create_parameter_fields.js' %}"></script>
 <script src="{% static 'js/create_test/handle_parameters/choose_parameters.js' %}"></script>
 <script src="{% static 'js/create_test/choose_test_values.js' %}"></script>

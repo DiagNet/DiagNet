@@ -1,48 +1,48 @@
-#parameterContainer {
-    width: 100%;
-    border: 1px solid #ccc;
-    display: flex;
-    flex-direction: column;
-    flex: 3;
-    overflow-y: hidden; /* prevent double scroll */
+/* === ParameterContainer Tabs Styling === */
+
+.tab-btn {
+    background-color: #f8f9fa;
+    color: #495057;
+    border: none;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
 }
 
-  /* Tab buttons container */
-  .tab-buttons {
+.tab-btn.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.tab-btn:not(.active):hover {
+    background-color: #e2e6ea;
+    color: #0d6efd;
+}
+
+.tab-content {
     display: flex;
-    border-bottom: 1px solid #ccc;
-  }
-
-  .tab-buttons button {
-    padding: 8px 16px;
-    border: none;
-    background-color: #f1f1f1;
-    cursor: pointer;
-    outline: none;
-  }
-
-  .tab-buttons button.active {
-    background-color: #fff;
-    border-bottom: 2px solid blue;
-    font-weight: bold;
-  }
-
-  /* Tab content */
-  .tab-content {
+    flex-direction: column;
     flex: 1;
+    overflow: hidden;
+}
+
+.param-tab-pane {
+    display: block;
+    flex: 1 1 auto;
     overflow-y: auto;
-    padding: 10px;
-  }
+    height: auto;
+    padding-right: 0.5rem;
+}
 
-  .tab-content > div {
-    display: none; /* hide all tabs by default */
-  }
+.param-tab-pane::-webkit-scrollbar {
+    width: 8px;
+}
 
-  .tab-content > div.active {
-    display: block; /* show active tab */
-  }
+.param-tab-pane::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
 
-  .SingleLineInputContainer {
-      background-color: #E3E4F4;
-      border-radius: 10px;
-  }
+.param-tab-pane::-webkit-scrollbar-track {
+    background-color: transparent;
+}

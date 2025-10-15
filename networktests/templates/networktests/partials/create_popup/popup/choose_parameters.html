@@ -1,31 +1,41 @@
 <div class="modal-body d-flex flex-column p-2" style="height: 100%;">
 
+    <div class="d-flex gap-3 flex-grow-1" style="overflow: hidden;">
 
-    <div style="display: flex; gap: 1rem; height: 100vh; overflow-y: scroll;">
-        <!-- Left: parameter container -->
-        <div id="parameterContainer"
-             style="flex: 3; display: flex; flex-direction: column; border: 1px solid #ccc; padding: 1rem;">
-            <div class="tab-buttons">
-                <button class="tab-btn active" data-tab="requiredContainer">Required</button>
-                <button class="tab-btn" data-tab="optionalContainer">Optional</button>
+        <div id="parameterContainer" class="d-flex flex-row flex-grow-1 bg-light border rounded shadow-sm p-3"
+             style="height: 100%;">
+
+            <div class="d-flex flex-column flex-grow-1 me-2 overflow-hidden">
+
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link tab-btn active" data-tab="requiredContainer" type="button">Required
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link tab-btn" data-tab="optionalContainer" type="button">Optional</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content flex-grow-1 overflow-auto">
+                    <div class="tab-pane param-tab-pane fade show active" id="requiredContainer">
+                    </div>
+                    <div class="tab-pane param-tab-pane fade" id="optionalContainer">
+                    </div>
+                </div>
             </div>
 
-            <div class="tab-content" style="flex: 1; overflow-y: auto;">
-                <div id="requiredContainer" class="active">
-                </div>
-                <div id="optionalContainer">
-                </div>
+            <div id="parameterText" class="border-start bg-light p-2 d-flex flex-column"
+                 style="width: 30%; overflow-y: auto;">
+                <p>Text container goes here</p>
             </div>
+
         </div>
 
-        <!-- Right: text container -->
-        <div id="textContainer" style="flex: 1; height: 100%; border: 1px solid #ccc; padding: 1rem;">
-            <p>Text goes here</p>
-        </div>
+
     </div>
 
-    <!-- Submit button below -->
-    <button id="submitParameters" class="btn btn-primary mt-3">Submit</button>
+    <!-- Sticky Submit Button -->
+    <button id="submitParameters" class="btn btn-primary mt-3 w-100">Submit</button>
 
 </div>
-
