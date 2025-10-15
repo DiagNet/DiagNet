@@ -1,5 +1,3 @@
-const submitParametersButton = document.getElementById("submitParameters");
-
 /**
  * Abstract base class representing a parameter input field.
  */
@@ -187,8 +185,7 @@ class ChoiceField extends ParameterField {
         return this.container;
     }
 
-    clearValue() {
-    } // do nothing
+    clearValue() { /* do nothing */ }
 
     getField() {
         return this.container;
@@ -220,10 +217,9 @@ class ListField extends ParameterField {
      * @param {Map<string, any>} parameter - Metadata for the list.
      * @param {function} showParameters - Callback to create child input fields.
      */
-    constructor(parameter, showParameters) {
+    constructor(parameter) {
         super(parameter);
         if (!showParameters) throw new Error("ListField requires showParameters");
-        this.showParameters = showParameters;
         this.children = new Set();
         this.addToList = null;
     }
@@ -264,7 +260,7 @@ class ListField extends ParameterField {
         const allParameters = [...requiredParams, ...optionalParams];
         const mutually_exclusive_bindings = this.parameter['mutually_exclusive'];
 
-        this.showParameters(
+        showParameters(
             requiredParams,
             optionalParams,
             mutually_exclusive_bindings,
@@ -295,7 +291,7 @@ class ListField extends ParameterField {
     getValue() {
         let addOutputAsObject = []
         for (const item of this.addOutput) {
-            addOutputAsObject.push(mapToObject(item));
+            addOutputAsObject.push(item);
         }
 
         return addOutputAsObject;
@@ -306,9 +302,9 @@ class ListField extends ParameterField {
      * @returns {Array} Values of all child input fields.
      */
     receiveValuesFromChildren() {
-        let output = new Map();
+        let output = {};
         for (const value of this.allParameters) {
-            output.set(value['name'], value['parameter_info'].getValue());
+            output[value['name']] =  value['parameter_info'].getValue();
         }
         return output;
     }
@@ -355,22 +351,33 @@ class ListField extends ParameterField {
         this.callback = callback;
     }
 
-    async checkDatatype() {
+    unknownDatatype() {
+        // do nothing
+    }
 
+    correctDatatype() {
+        // do nothing
+    }
+
+    wrongDatatype() {
+        // do nothing
+    }
+
+    async checkDatatype() {
         if (this.isEmpty()) {
-            return "fail";
+            return "unknown";
         } else {
             return "success";
         }
     }
 }
 
-function createParameterFields(parameter, showParameters) {
+function createParameterFields(parameter) {
     switch (parameter['type']) {
         case "choice":
             return new ChoiceField(parameter);
         case "list":
-            return new ListField(parameter, showParameters);
+            return new ListField(parameter);
         default:
             return new SingleLineInputField(parameter);
     }

@@ -102,7 +102,7 @@ async function createTest(testClass, requiredParams, optionalParams, deviceParam
                 "Content-Type": "application/json",
                 "X-CSRFToken": csrfToken
             },
-            body: JSON.stringify(mapToObj(payload))
+            body: JSON.stringify(payload)
         });
 
         const result = await response.json();
