@@ -170,3 +170,12 @@ def run_testcase(request, group, pk):
     _ = testcase.run()
 
     return list_testcases(request, group)
+
+
+@require_http_methods(["GET"])
+def get_testcase_search_popup(request, testgroup_name):
+    testgroup = get_object_or_404(TestGroup, name=testgroup_name)
+    testcases = TestCase.objects.all()
+    context = {"testcases": testcases}
+
+    return render(request, "testcase_search_popup.html", context)
