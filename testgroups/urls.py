@@ -22,4 +22,9 @@ urlpatterns = [
     ),
     path("rename/<str:name>/", views.rename_testgroup, name="rename-testgroup"),
     path("run/<str:group>/<str:pk>", views.run_testcase, name="testgroup-testcase-run"),
+    path(
+        "popup/<str:testgroup_name>",
+        views.get_testcase_search_popup,
+        name="testcase-search-popup",
+    ),
 ]

@@ -34,41 +34,12 @@
         </td>
 
         <td class="text-end">
-          <button id="show-add-form-{{ testgroup.name }}"
+          <button hx-get="popup/{{ testgroup.name }}"
+            hx-target="#modal-container"
+            hx-swap="innerHTML"
             class="btn btn-sm btn-outline-success">
             <i class="bi bi-plus"></i> Add Testcase
           </button>
-
-          <div hidden class="text-end" id="add-form-div-{{ testgroup.name }}">
-            <form hx-post="{% url 'testcase-add' %}" 
-                hx-vals='{"testgroup": "{{ testgroup.name }}"}'
-                hx-target="#td-coll-{{ testgroup.name }}"
-                hx-swap="innerHTML"
-                class="d-flex align-items-center">
-              {% csrf_token %}
-                
-              <div class="d-flex align-items-center justify-content-between mb-3">
-                <input 
-                    type="text" 
-                    name="testcase" 
-                    id="input-{{ testgroup.name }}"
-                    placeholder="Add testcase"
-                    class="form-control me-2" 
-                    style="max-width: 300px;">
-                
-                <button id="submit-{{ testgroup.name }}" type="submit" class="btn btn-success btn-sm me-2">
-                  <i class="bi bi-check"></i>
-                </button>
-                
-                <button 
-                    type="button"
-                    id ="aboart-{{ testgroup.name }}"
-                    class="btn btn-secondary btn-sm">
-                  <i class="bi bi-x"></i>
-                </button>
-              </div>
-            </form>
-          </div>
         </td>
 
         <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
@@ -95,39 +66,17 @@
         </td>
       </tr>
 
-      <script>
-        (() => {
-        const showAddFrom{{ testgroup.name }} = document.getElementById("show-add-form-{{ testgroup.name }}");
-        const addForm{{ testgroup.name }} = document.getElementById("add-form-div-{{ testgroup.name }}");
-        const aboart{{ testgroup.name }} = document.getElementById("aboart-{{ testgroup.name }}");
-        const submit{{ testgroup.name }} = document.getElementById("submit-{{ testgroup.name }}");
-        const input{{ testgroup.name }} = document.getElementById("input-{{ testgroup.name }}");
+      {% endfor %}
+      {% else %}
+      <tr>
+          <td colspan="100%">No Test Groups yet.</td>
+      </tr>
+      {% endif %}
+      </tbody>
+  </table>
+</div>
 
-        showAddFrom{{ testgroup.name }}.addEventListener("click", function () {
-          showAddFrom{{ testgroup.name }}.classList.add("d-none");
-
-          input{{ testgroup.name }}.value = "";
-
-          addForm{{ testgroup.name }}.hidden = false;
-          addForm{{ testgroup.name }}.classList.add("d-inline-block");
-
-          input{{ testgroup.name }}.focus();
-        });
-
-        aboart{{ testgroup.name }}.addEventListener("click", function () {
-          showAddFrom{{ testgroup.name }}.classList.remove("d-none");
-
-          addForm{{ testgroup.name }}.hidden = true;
-          addForm{{ testgroup.name }}.classList.remove("d-inline-block");
-        });
-
-        submit{{ testgroup.name }}.addEventListener("click", function () {
-          showAddFrom{{ testgroup.name }}.classList.remove("d-none");
-
-          addForm{{ testgroup.name }}.hidden = true;
-          addForm{{ testgroup.name }}.classList.remove("d-inline-block");
-        });
-
+<script>
         document.body.addEventListener('htmx:responseError', function (event) {
           // event.detail enthält Response-Daten
           const errorBox = document.querySelector('#placeholder');
@@ -140,16 +89,4 @@
             </div>
           `;
         });
-        })();
-      </script>
-
-      {% endfor %}
-      {% else %}
-      <tr>
-          <td colspan="100%">No Test Groups yet.</td>
-      </tr>
-      {% endif %}
-      </tbody>
-  </table>
-</div>
-
+</script>
