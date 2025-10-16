@@ -241,6 +241,9 @@ function createInputListeners(parameters) {
                 }
             });
         }
+        field.onFocus(async () => {
+            displayParameterInfo(field);
+        });
     }
 }
 

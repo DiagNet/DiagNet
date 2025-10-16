@@ -101,6 +101,10 @@ class ParameterField {
         if (this.field) this.field.addEventListener('input', callback);
     }
 
+    onFocus(callback) {
+        if (this.field) this.field.addEventListener('focus', callback);
+    }
+
     /**
      * Resets the input field's border to its default style.
      */
@@ -146,6 +150,10 @@ class SingleLineInputField extends ParameterField {
     getField() {
         return this.container;
     }
+
+    onFocus(callback) {
+        this.container.addEventListener('focus', callback);
+    }
 }
 
 class ChoiceField extends ParameterField {
@@ -189,6 +197,10 @@ class ChoiceField extends ParameterField {
 
     onChange(callback) {
         if (this.field) this.field.addEventListener('change', callback);
+    }
+
+    onFocus(callback) {
+        this.container.addEventListener('focus', callback);
     }
 
     /**
@@ -317,6 +329,10 @@ class ListField extends ParameterField {
 
     onChange(callback) {
         this.callback = callback;
+    }
+
+    onFocus(callback) {
+        this.container.addEventListener('focus', callback);
     }
 
     unknownDatatype() {
