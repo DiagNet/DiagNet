@@ -128,6 +128,18 @@
           addForm{{ testgroup.name }}.classList.remove("d-inline-block");
         });
 
+        document.body.addEventListener('htmx:responseError', function (event) {
+          // event.detail enthält Response-Daten
+          const errorBox = document.querySelector('#placeholder');
+
+          // Optional: Response-Text einfügen
+          errorBox.innerHTML = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <strong>Error:</strong> ${event.detail.xhr.responseText || 'Unknown Error'}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          `;
+        });
         })();
       </script>
 
