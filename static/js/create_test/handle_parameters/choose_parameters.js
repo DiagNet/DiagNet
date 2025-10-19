@@ -242,7 +242,8 @@ function createInputListeners(parameters) {
             });
         }
 
-        field.onFocus(async () => {
+        field.onFocus(async (event) => {
+            event.stopPropagation();
             displayParameterInfo(field);
         });
     }

@@ -273,8 +273,6 @@ class ListField extends ParameterField {
         return this.container;
     }
 
-
-
     /** Collects the Values of child elements and returns them. */
     getValue() {
         let addOutputAsObject = []
@@ -287,7 +285,10 @@ class ListField extends ParameterField {
     /** Removes the given Value */
     removeValue(value) {
         const removeIndex = this.addOutput.indexOf(value);
-        if (removeIndex > -1) this.addOutput.splice(removeIndex, 1);
+        if (removeIndex > -1) {
+            this.addOutput.splice(removeIndex, 1);
+            this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) - 1) + "";
+        }
     }
 
     /**
@@ -306,7 +307,7 @@ class ListField extends ParameterField {
     add() {
         this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) + 1) + "";
         this.addOutput.push(this.receiveValuesFromChildren());
-        this.clearValue();
+        this.clearValue(false);
         this.callback();
     }
 
@@ -315,9 +316,13 @@ class ListField extends ParameterField {
     }
 
     /** Clears all child fields and disables the add button. */
-    clearValue() {
-        this.children.forEach(c => c.clearValue());
+    clearValue(clearSelf) {
+        this.children.forEach(c => c.clearValue(true));
         disableSubmit(this.addButton);
+        if (clearSelf) {
+            this.addOutput.length = 0;
+            this.countBadge.innerHTML = "0";
+        }
     }
 
     getField() {
