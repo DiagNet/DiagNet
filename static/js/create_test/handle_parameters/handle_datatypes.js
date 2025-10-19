@@ -19,11 +19,7 @@ async function checkDatatype(field, datatype_as_string) {
         return undefined;
     }
     if (allDevices.length === 0 && datatype_as_string.trim().toLowerCase() === "device") {
-        try {
-            allDevices = await fetchAllDevices();
-        } catch (error) {
-            throwException(error.message);
-        }
+        await updateDevices();
     }
     switch (datatype_as_string.toLowerCase()) {
         case "device":
@@ -45,6 +41,16 @@ async function checkDatatype(field, datatype_as_string) {
 
         default:
             return true
+    }
+}
+
+async function updateDevices() {
+    if (allDevices.length === 0) {
+        try {
+            allDevices = await fetchAllDevices();
+        } catch (error) {
+            throwException(error.message);
+        }
     }
 }
 

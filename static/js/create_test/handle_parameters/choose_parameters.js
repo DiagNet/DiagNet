@@ -64,6 +64,10 @@ function loadParameterFieldsIntoDocument(parameters, requiredContainer, optional
 
     requiredContainer.appendChild(fragmentRequired);
     optionalContainer.appendChild(fragmentOptional);
+
+    parameters.forEach(param => {
+        param['parameter_info'].afterCreatingField();
+    });
 }
 
 /**
@@ -229,15 +233,15 @@ function createDatatypeHandler(parameters, validInputMap) {
 function createInputListeners(parameters) {
     for (const parameterInfo of parameters) {
         const field = parameterInfo['parameter_info'];
-        const handlerNames = ['mutually_exclusive_handler', 'datatype_handler', 'valid_submit_handler'];
+        const handlerNames = ['mutually_exclusive_handler', 'datatype_handler', 'valid_submit_handler', 'datatype_dropdown_handler'];
         const handlers = handlerNames
             .map(name => parameterInfo[name])
             .filter(fn => typeof fn === 'function');
 
         if (handlers.length !== 0) {
-            field.onChange(async () => {
+            field.onChange(async (e) => {
                 for (const handler of handlers) {
-                    await handler();
+                    await handler(e);
                 }
             });
         }

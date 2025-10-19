@@ -1,6 +1,7 @@
 const singleLineInputTemplate = document.getElementById('parameterInputTemplate');
 const choiceInputTemplate = document.getElementById('choiceInputTemplate');
 const listInputTemplate = document.getElementById('listInputTemplate');
+const singleLineInputTemplateForDevices = document.getElementById('parameterInputTemplateForDevices');
 
 /**
  * Abstract base class representing a parameter input field.
@@ -93,8 +94,8 @@ class ParameterField {
     onChange(callback) {
         let list_parent = this.parameter['parent_list'];
         if (list_parent) {
-            if (this.field) this.field.addEventListener('input', () => {
-                callback();
+            if (this.field) this.field.addEventListener('input', (e) => {
+                callback(e);
                 list_parent.onInternalChange()
             });
         }
@@ -133,12 +134,31 @@ class ParameterField {
     async checkDatatype() {
         return handleCheckDataType(this, this.parameter['type']);
     }
+
+    /**
+     * Called after the Field that is returned by createField() is added in the document.
+     */
+    afterCreatingField() {
+        // do nothing
+    }
 }
 
 
 class SingleLineInputField extends ParameterField {
     createField() {
-        this.container = singleLineInputTemplate.content.cloneNode(true).querySelector('div');
+        if (this.parameter['type'] === "device") {
+            this.container = singleLineInputTemplateForDevices.content.cloneNode(true).querySelector('div');
+
+            this.searchResults = this.container.querySelector("#searchResults");
+            this.insertDevicesIntoResults();
+            this.resetPointer();
+
+            this.parameter['datatype_dropdown_handler'] = (e) => {
+                this.handleDropDownInput(e);
+            };
+        } else {
+            this.container = singleLineInputTemplate.content.cloneNode(true).querySelector('div');
+        }
         this.field = this.container.querySelector('.param-input');
 
         this.container.querySelector('.param-label').textContent = this.parameter['name'];
@@ -147,12 +167,112 @@ class SingleLineInputField extends ParameterField {
         return this.container;
     }
 
+    resetPointer() {
+        this.selectedIndex = -1;
+        this.searchResults.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+    }
+
+    async insertDevicesIntoResults() {
+        await updateDevices();
+        for (const device of allDevices) {
+
+            const li = document.createElement('li');      // create li element
+            li.className = 'list-group-item';
+            li.textContent = device;
+            li.addEventListener("click", () => {
+                this.dropdown.hide();
+                this.resetPointer();
+                this.field.value = device;
+                this.triggerDatatypeValidation();
+            });
+            this.searchResults.appendChild(li);
+        }
+    }
+
+    handleDropDownKeyDown(e) {
+        if (e && e.detail && e.detail.calledByDropDownSelection) {
+            return;
+        }
+
+        const items = Array.from(this.searchResults.querySelectorAll('li'))
+            .filter(li => li.offsetParent !== null);
+        if (!items.length) return;
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            this.selectedIndex = (this.selectedIndex + 1) % items.length;
+            this.updateSelection(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            this.selectedIndex = (this.selectedIndex - 1 + items.length) % items.length;
+            this.updateSelection(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (this.selectedIndex >= 0) this.selectItem(items[this.selectedIndex].textContent);
+        } else if (e.key === 'Tab') {
+            this.dropdown.hide();
+            this.resetPointer();
+        }
+    }
+
+    triggerDatatypeValidation() {
+        const event = new CustomEvent('input', {
+            bubbles: true,
+            detail: {calledByDropDownSelection: true}
+        });
+        this.field.dispatchEvent(event);
+    }
+
+    selectItem(value) {
+        this.field.value = value;
+        this.dropdown.hide();
+        this.triggerDatatypeValidation();
+    }
+
+    updateSelection(items) {
+        items.forEach((li, i) => li.classList.toggle('active', i === this.selectedIndex));
+        if (this.selectedIndex >= 0) {
+            items[this.selectedIndex].scrollIntoView({block: 'nearest'});
+        }
+    }
+
+    handleDropDownInput(event) {
+        if (event && event.detail && event.detail.calledByDropDownSelection) {
+            return;
+        }
+        this.resetPointer();
+        const filter = this.field.value.toLowerCase();
+        const items = this.searchResults.querySelectorAll('li');
+        this.dropdown.show();
+
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(filter)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    afterCreatingField() {
+        if (this.parameter['type'] === "device") {
+            this.dropdown = new bootstrap.Dropdown(this.field);
+            this.field.addEventListener("blur", () => {
+                this.dropdown.hide();
+            });
+            this.field.addEventListener("keydown", (e) => this.handleDropDownKeyDown(e));
+        }
+    }
+
     getField() {
         return this.container;
     }
 
     onFocus(callback) {
-        this.field.addEventListener('click', callback);
+        this.field.addEventListener('focus', (event) => {
+            callback(event);
+            if (this.dropdown) this.dropdown.show();
+        });
     }
 }
 
@@ -366,7 +486,6 @@ class ListField extends ParameterField {
     }
 
     async checkDatatype() {
-        console.log("checking list status " + this.addOutput);
         if (this.isEmpty()) {
             this.unknownDatatype();
             return DATATYPE_RESULT.UNKNOWN;
