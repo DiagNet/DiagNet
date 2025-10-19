@@ -10,6 +10,7 @@ const listItemSmallInfo = document.getElementById('ListItemSmallInfo');
 const listItemInfo = document.getElementById('ListItemInfo');
 const listItemInfoDefaultItem = document.getElementById('ListItemInfoDefaultItem');
 const listItemListing = document.getElementById('ListItemListing');
+const indexCounter = document.getElementById('IndexCounter');
 
 // Fields
 const parentName = document.getElementById("infoTabParentName");
@@ -62,7 +63,7 @@ function displayListParameterInfo(parameter) {
             listItemViewContainer.querySelector('#getInfoForItem').addEventListener("click", () => {
                 parameterInfoContainer.classList.remove('hidden');
                 parameterInfoContainer.innerHTML = "";
-                displayListItemInfo([item], parameterInfoContainer);
+                displayListItemInfo([item], parameterInfoContainer, "");
             });
             listItemViewContainer.querySelector('#deleteItem').addEventListener("click", () => {
                 parameter.removeValue(item);
@@ -77,21 +78,26 @@ function displayListParameterInfo(parameter) {
 }
 
 
-function displayListItemInfo(item, containerToAddTo) {
-    for (const collection of item) {
+function displayListItemInfo(item, containerToAddTo, listName) {
+    for (const [index, collection] of item.entries()) {
+        if (item.length > 1 && index !== 0) {
+            const indexCounterContainer = indexCounter.content.cloneNode(true).querySelector('div');
+            containerToAddTo.appendChild(indexCounterContainer);
+        }
         for (const [key, value] of Object.entries(collection)) {
             if (Array.isArray(value)) {
                 const templateContainer = listItemListing.content.cloneNode(true).querySelector('div');
                 const itemContainer = templateContainer.querySelector("#listItemContainer")
                 templateContainer.querySelector("#listTitle").textContent = key;
                 // List View
-                displayListItemInfo(value, itemContainer);
+                displayListItemInfo(value, itemContainer, key);
                 containerToAddTo.appendChild(templateContainer);
             } else {
                 // Default View
                 containerToAddTo.appendChild(displayItemInfoDefaultParameter(key, value));
             }
         }
+
     }
 }
 
