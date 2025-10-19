@@ -5,6 +5,7 @@ const parameterInfoContainer = document.getElementById('parameterInfoContainer')
 const listParameterInfo = document.getElementById('ListParameterInfo');
 const defaultParameterInfo = document.getElementById('RegularParameterInfo');
 const listItemSmallInfo = document.getElementById('ListItemSmallInfo');
+const listItemPageInfo = document.getElementById('ListItemPageInfo');
 
 // Templates - List Item Info Page
 const listItemInfo = document.getElementById('ListItemInfo');
@@ -59,11 +60,24 @@ function displayListParameterInfo(parameter) {
             const paramValue = item[paramName];
 
 
-            listItemViewContainer.querySelector('#infoText').textContent = `${paramName} = ${paramValue}`;
+            listItemViewContainer.querySelector('#infoText').textContent = `${paramName} = ${paramValue} ...`;
             listItemViewContainer.querySelector('#getInfoForItem').addEventListener("click", () => {
                 parameterInfoContainer.classList.remove('hidden');
                 parameterInfoContainer.innerHTML = "";
-                displayListItemInfo([item], parameterInfoContainer, "");
+                const templateContainer = listItemPageInfo.content.cloneNode(true).querySelector('div');
+
+                templateContainer.querySelector('#returnToListView').addEventListener("click", () => {
+                    displayParameterInfo(parameter);
+                });
+
+                templateContainer.querySelector('#deleteItem').addEventListener("click", () => {
+                    parameter.removeValue(item);
+                    displayParameterInfo(parameter);
+                });
+
+                displayListItemInfo([item], templateContainer, "");
+
+                parameterInfoContainer.appendChild(templateContainer);
             });
             listItemViewContainer.querySelector('#deleteItem').addEventListener("click", () => {
                 parameter.removeValue(item);
