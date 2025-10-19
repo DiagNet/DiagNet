@@ -135,30 +135,25 @@ class ParameterField {
         return handleCheckDataType(this, this.parameter['type']);
     }
 
-    /**
-     * Called after the Field that is returned by createField() is added in the document.
-     */
+    /** Called after the Field that is returned by createField() is added in the document. */
     afterCreatingField() {
         // do nothing
     }
 }
 
-
-class SingleLineInputField extends ParameterField {
+class SingleLineDeviceField extends ParameterField {
     createField() {
-        if (this.parameter['type'] === "device") {
-            this.container = singleLineInputTemplateForDevices.content.cloneNode(true).querySelector('div');
+        this.container = singleLineInputTemplateForDevices.content.cloneNode(true).querySelector('div');
 
-            this.searchResults = this.container.querySelector("#searchResults");
-            this.insertDevicesIntoResults();
-            this.resetPointer();
+        this.visibleItems = [];
 
-            this.parameter['datatype_dropdown_handler'] = (e) => {
-                this.handleDropDownInput(e);
-            };
-        } else {
-            this.container = singleLineInputTemplate.content.cloneNode(true).querySelector('div');
-        }
+        this.searchResults = this.container.querySelector("#searchResults");
+        _ = this.insertDevicesIntoResults();
+        this.resetPointer();
+
+        this.parameter['datatype_dropdown_handler'] = (e) => {
+            this.handleDropDownInput(e);
+        };
         this.field = this.container.querySelector('.param-input');
 
         this.container.querySelector('.param-label').textContent = this.parameter['name'];
@@ -167,35 +162,35 @@ class SingleLineInputField extends ParameterField {
         return this.container;
     }
 
+    /** Resets the Pointer to determine what DropDown Element is currently Selected */
     resetPointer() {
         this.selectedIndex = -1;
         this.searchResults.querySelectorAll('li').forEach(li => li.classList.remove('active'));
     }
 
+    /** Takes all Devices and puts them into the dropdown */
     async insertDevicesIntoResults() {
+        this.initializedDeviceList = false;
         await updateDevices();
         for (const device of allDevices) {
-
             const li = document.createElement('li');      // create li element
             li.className = 'list-group-item';
             li.textContent = device;
-            li.addEventListener("click", () => {
-                this.dropdown.hide();
-                this.resetPointer();
-                this.field.value = device;
-                this.triggerDatatypeValidation();
-            });
             this.searchResults.appendChild(li);
         }
+        this.initializedDeviceList = true;
+        this.dropdownItems = this.searchResults.querySelectorAll('li');
     }
 
+    /** Handles Keyboard Navigation (in order to enable Arrow-Key Navigation) */
     handleDropDownKeyDown(e) {
-        if (e && e.detail && e.detail.calledByDropDownSelection) {
+        // Escape Datatype Validation Trigger
+        if ((!this.initializedDeviceList) || (e && e.detail && e.detail.calledByDropDownSelection)) {
             return;
         }
 
-        const items = Array.from(this.searchResults.querySelectorAll('li'))
-            .filter(li => li.offsetParent !== null);
+        const items = this.visibleItems;
+
         if (!items.length) return;
         if (e.key === 'ArrowDown') {
             e.preventDefault();
@@ -211,9 +206,13 @@ class SingleLineInputField extends ParameterField {
         } else if (e.key === 'Tab') {
             this.dropdown.hide();
             this.resetPointer();
+        } else if (e.key === 'Escape') {
+            this.dropdown.hide();
+            this.resetPointer();
         }
     }
 
+    /** Triggers a Datatype Validation and sets a flag to prevent internal loops. */
     triggerDatatypeValidation() {
         const event = new CustomEvent('input', {
             bubbles: true,
@@ -222,12 +221,16 @@ class SingleLineInputField extends ParameterField {
         this.field.dispatchEvent(event);
     }
 
+    /** Selects an Item chosen by the Navigation */
     selectItem(value) {
+        if (!this.initializedDeviceList) return;
         this.field.value = value;
         this.dropdown.hide();
+        this.resetPointer();
         this.triggerDatatypeValidation();
     }
 
+    /** Checks what dropdown item is currently chosen and "selects" it */
     updateSelection(items) {
         items.forEach((li, i) => li.classList.toggle('active', i === this.selectedIndex));
         if (this.selectedIndex >= 0) {
@@ -235,33 +238,37 @@ class SingleLineInputField extends ParameterField {
         }
     }
 
+    /** Called on input - Handles the Filter when searching */
     handleDropDownInput(event) {
-        if (event && event.detail && event.detail.calledByDropDownSelection) {
+        if ((!this.initializedDeviceList) || (event && event.detail && event.detail.calledByDropDownSelection)) {
             return;
         }
         this.resetPointer();
         const filter = this.field.value.toLowerCase();
-        const items = this.searchResults.querySelectorAll('li');
         this.dropdown.show();
 
-        items.forEach(item => {
+        const visibleItems = [];
+        this.dropdownItems.forEach(item => {
             const text = item.textContent.toLowerCase();
             if (text.includes(filter)) {
                 item.style.display = '';
+                visibleItems.push(item);
             } else {
                 item.style.display = 'none';
             }
         });
+
+        this.visibleItems = visibleItems;
     }
 
+    /** Needed because dropdown can only be initialized after the input field is loaded into the document */
     afterCreatingField() {
-        if (this.parameter['type'] === "device") {
-            this.dropdown = new bootstrap.Dropdown(this.field);
-            this.field.addEventListener("blur", () => {
-                this.dropdown.hide();
-            });
-            this.field.addEventListener("keydown", (e) => this.handleDropDownKeyDown(e));
-        }
+        this.dropdown = new bootstrap.Dropdown(this.field);
+        this.field.addEventListener("blur", () => this.dropdown.hide());
+        this.field.addEventListener("keydown", (e) => this.handleDropDownKeyDown(e));
+        this.searchResults.addEventListener('click', (e) => {
+            if (e.target.tagName === 'LI') this.selectItem(e.target.textContent);
+        });
     }
 
     getField() {
@@ -273,6 +280,26 @@ class SingleLineInputField extends ParameterField {
             callback(event);
             if (this.dropdown) this.dropdown.show();
         });
+    }
+}
+
+class SingleLineInputField extends ParameterField {
+    createField() {
+        this.container = singleLineInputTemplate.content.cloneNode(true).querySelector('div');
+        this.field = this.container.querySelector('.param-input');
+
+        this.container.querySelector('.param-label').textContent = this.parameter['name'];
+        this.field.placeholder = this.parameter['name'];
+
+        return this.container;
+    }
+
+    getField() {
+        return this.container;
+    }
+
+    onFocus(callback) {
+        this.field.addEventListener('focus', callback);
     }
 }
 
@@ -512,6 +539,8 @@ function createParameterFields(parameter) {
             return new ChoiceField(parameter);
         case "list":
             return new ListField(parameter);
+        case "device":
+            return new SingleLineDeviceField(parameter);
         default:
             return new SingleLineInputField(parameter);
     }
