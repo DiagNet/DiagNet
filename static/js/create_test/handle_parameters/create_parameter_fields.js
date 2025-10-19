@@ -152,7 +152,7 @@ class SingleLineInputField extends ParameterField {
     }
 
     onFocus(callback) {
-        this.container.addEventListener('focus', callback);
+        this.field.addEventListener('click', callback);
     }
 }
 
@@ -200,7 +200,7 @@ class ChoiceField extends ParameterField {
     }
 
     onFocus(callback) {
-        this.container.addEventListener('focus', callback);
+        this.container.addEventListener('click', callback);
     }
 
     /**
@@ -258,6 +258,8 @@ class ListField extends ParameterField {
 
         let nested_index = Number(this.parameter['nested_index'] ?? 0) + 1;
         for (const value of this.allParameters) {
+            value['parent_name'] = this;
+            value['parent_type'] = this.parameter['type'];
             value['nested_index'] = nested_index;
 
             const field = value['parameter_info'];
@@ -272,6 +274,7 @@ class ListField extends ParameterField {
     }
 
 
+
     /** Collects the Values of child elements and returns them. */
     getValue() {
         let addOutputAsObject = []
@@ -279,6 +282,12 @@ class ListField extends ParameterField {
             addOutputAsObject.push(item);
         }
         return addOutputAsObject;
+    }
+
+    /** Removes the given Value */
+    removeValue(value) {
+        const removeIndex = this.addOutput.indexOf(value);
+        if (removeIndex > -1) this.addOutput.splice(removeIndex, 1);
     }
 
     /**
@@ -332,7 +341,7 @@ class ListField extends ParameterField {
     }
 
     onFocus(callback) {
-        this.container.addEventListener('focus', callback);
+        this.container.addEventListener('click', callback);
     }
 
     unknownDatatype() {
