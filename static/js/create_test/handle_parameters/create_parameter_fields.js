@@ -288,6 +288,7 @@ class ListField extends ParameterField {
         if (removeIndex > -1) {
             this.addOutput.splice(removeIndex, 1);
             this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) - 1) + "";
+            this.callback();
         }
     }
 
@@ -317,10 +318,13 @@ class ListField extends ParameterField {
 
     /** Clears all child fields and disables the add button. */
     clearValue(clearSelf) {
-        this.children.forEach(c => c.clearValue(true));
+        this.children.forEach(c => {
+            c.clearValue(true)
+        });
         disableSubmit(this.addButton);
         if (clearSelf) {
             this.addOutput.length = 0;
+            this.callback();
             this.countBadge.innerHTML = "0";
         }
     }
@@ -362,6 +366,7 @@ class ListField extends ParameterField {
     }
 
     async checkDatatype() {
+        console.log("checking list status " + this.addOutput);
         if (this.isEmpty()) {
             this.unknownDatatype();
             return DATATYPE_RESULT.UNKNOWN;
