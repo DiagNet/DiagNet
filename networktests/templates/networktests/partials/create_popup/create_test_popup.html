@@ -37,8 +37,11 @@
         height: 100%;
     }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <link rel="stylesheet" href="{% static 'css/choose_test.css' %}">
 <link rel="stylesheet" href="{% static 'css/choose_parameters.css' %}">
+
 {% endblock %}
 
 
@@ -80,6 +83,13 @@
 {% include "networktests/partials/create_popup/popup/input_fields/single_line_input_field_2.html" %}
 {% include "networktests/partials/create_popup/popup/input_fields/choice_input_field.html" %}
 {% include "networktests/partials/create_popup/popup/input_fields/list_input_field.html" %}
+{% include "networktests/partials/create_popup/popup/info_tab_templates/show_list_item_info.html" %}
+{% include "networktests/partials/create_popup/popup/info_tab_templates/show_list_parameter_info.html" %}
+{% include "networktests/partials/create_popup/popup/info_tab_templates/show_regular_parameter_info.html" %}
+{% include "networktests/partials/create_popup/popup/info_tab_templates/list_item_templates/list_item_inline_view.html" %}
+{% include "networktests/partials/create_popup/popup/info_tab_templates/list_item_templates/list_item_values_templates/default_item.html" %}
+{% include "networktests/partials/create_popup/popup/info_tab_templates/list_item_templates/list_item_values_templates/list_parent_item.html" %}
+
 <script>
 
     const tabs = document.querySelectorAll('#popupTabs .nav-link');
