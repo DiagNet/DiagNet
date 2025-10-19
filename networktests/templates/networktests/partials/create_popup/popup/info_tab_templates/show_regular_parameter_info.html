@@ -1,0 +1,23 @@
+<template id="RegularParameterInfo">
+    <div>
+        <div>
+            <div class="d-flex align-items-center justify-content-between">
+                <h4 class="mb-0">Parent</h4>
+                <div class="text-start">
+                    <i class="btn btn-light btn-sm border close-btn bi bi-x-lg"
+                       onclick="this.closest('#parameterInfoContainer').classList.add('hidden')">
+                    </i>
+                </div>
+            </div>
+
+            <p class="mb-1" id="infoTabParentName"><strong>Name:</strong> ExampleParent</p>
+            <p class="mb-0" id="infoTabParentType"><strong>Type:</strong> BaseClass</p>
+        </div>
+
+        <div class="mt-3">
+            <h4 class="mb-0">Datatype</h4>
+            <p class="mb-1" id="infoTabDatatypeName"><strong>Name:</strong> ExampleParent</p>
+            <p class="mb-0" id="infoTabDatatypeDescription"><strong>Type:</strong> BaseClass</p>
+        </div>
+    </div>
+</template>

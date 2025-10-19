@@ -1,0 +1,18 @@
+<template id="ListItemSmallInfo">
+    <div class="mt-1 d-flex align-items-center bg-light border rounded-3 p-2 shadow-sm w-100">
+        <span class="text-muted small flex-grow-1 me-2 text-truncate"
+              style="overflow: hidden; white-space: nowrap;"
+              id="infoText">
+        </span>
+
+        <!-- Icons -->
+        <div class="d-flex gap-2 flex-shrink-0">
+            <button class="btn btn-light btn-sm p-1" title="More info" id="getInfoForItem">
+                <i class="bi bi-info-circle"></i>
+            </button>
+            <button class="btn btn-light btn-sm p-1 text-danger" title="Delete" id="deleteItem">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    </div>
+</template>
