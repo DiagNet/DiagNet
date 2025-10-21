@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 from devices.forms import DeviceForm
 
@@ -78,6 +78,25 @@ def device_check(request, pk):
         "devices/partials/device_status_cell.html",
         {"status": STATE_MAP[new_status]},
     )
+
+
+def export_devices_from_yaml(request):
+    """
+    Exports all devices that are stored in the database into a yaml file.
+    """
+    import yaml
+
+    devices = Device.objects.all()
+    all_data = {}
+
+    for obj in devices:
+        data = yaml.safe_load(obj.export_to_yaml())
+        all_data.update(data)
+
+    yaml_data = yaml.safe_dump(all_data, sort_keys=False)
+    response = HttpResponse(yaml_data, content_type="application/x-yaml")
+    response["Content-Disposition"] = 'attachment; filename="devices.yaml"'
+    return response
 
 
 def get_all_devices(request):
