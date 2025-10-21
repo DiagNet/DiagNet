@@ -240,6 +240,7 @@ function createInputListeners(parameters) {
 
         if (handlers.length !== 0) {
             field.onChange(async (e) => {
+                e.stopPropagation();
                 for (const handler of handlers) {
                     await handler(e);
                 }
