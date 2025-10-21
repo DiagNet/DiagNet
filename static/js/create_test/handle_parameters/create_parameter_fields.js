@@ -366,11 +366,14 @@ class ChoiceField extends ParameterField {
      * @returns {Promise<string>} Result of the datatype validation.
      */
     async checkDatatype() {
-        if (this.getValue().length === 0) {
+        let value = this.getValue().trim();
+        if (value.length === 0) {
             this.unknownDatatype();
+            await uncacheValue(this.parameter['name']);
             return DATATYPE_RESULT.UNKNOWN;
         } else {
             this.correctDatatype();
+            await cacheValue(this.parameter['name'], value);
             return DATATYPE_RESULT.SUCCESS;
         }
     }
