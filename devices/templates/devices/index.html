@@ -9,6 +9,9 @@
 <a class="btn btn-success mb-3" id="check-all-devices">
 	<i class="bi bi-check2-all"></i> Check All Devices
 </a>
+<a class="btn btn-primary mb-3" href="{% url 'devices-export' %}">
+	<i class="bi bi-database-add"></i> Export Devices
+</a>
 <div hx-get="{% url 'devices-table' %}" hx-trigger="load, refresh from:body" hx-swap="innerHTML" id="device-table">
 	<div class="text-center">
 		<div class="spinner-border" role="status">

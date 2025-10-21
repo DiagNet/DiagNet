@@ -111,6 +111,25 @@ def device_check(request, pk):
     )
 
 
+def export_devices_from_yaml(request):
+    """
+    Exports all devices that are stored in the database into a yaml file.
+    """
+    import yaml
+
+    devices = Device.objects.all()
+    all_data = {}
+
+    for obj in devices:
+        data = yaml.safe_load(obj.export_to_yaml())
+        all_data.update(data)
+
+    yaml_data = yaml.safe_dump(all_data, sort_keys=False)
+    response = HttpResponse(yaml_data, content_type="application/x-yaml")
+    response["Content-Disposition"] = 'attachment; filename="devices.yaml"'
+    return response
+
+
 def get_all_devices(request):
     devices = Device.objects.all()
     names = [obj.name for obj in devices]
