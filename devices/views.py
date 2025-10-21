@@ -141,6 +141,7 @@ def get_all_devices(request):
 def handle_uploaded_file(f):
     device_list_yaml: dict = yaml.safe_load(f)
     for name, params in device_list_yaml.items():
+        print(name)
         try:
             device = Device(
                 name=name,
@@ -152,19 +153,22 @@ def handle_uploaded_file(f):
                 password=params["password"],
             )
             device.save()
-        except Exception:
+        except Exception as e:
+            print(e)
             return False
 
-        return True
+    return True
 
 
 def import_devices_from_yaml(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            if not handle_uploaded_file(request.FILES["file"]):
-                return HttpResponseBadRequest()
-            return HttpResponseRedirect("/devices/")
+            try:
+                handle_uploaded_file(request.FILES["file"])
+                return HttpResponseRedirect("/devices/")
+            except Exception as e:
+                return render(request, "upload.html", {"form": form, "error": e})
     else:
         form = UploadFileForm()
     return render(request, "upload.html", {"form": form})

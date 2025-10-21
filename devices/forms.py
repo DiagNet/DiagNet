@@ -44,4 +44,9 @@ class DeviceForm(forms.ModelForm):
 
 
 class UploadFileForm(forms.Form):
-    file = forms.FileField()
+    yaml_file = forms.FileField(
+        widget=forms.ClearableFileInput(attrs={"class": "form-control"})
+    )
+    Overwrite_Existing_Devices = forms.BooleanField(
+        required=False, widget=forms.CheckboxInput(attrs={"class": "form-check-input"})
+    )
