@@ -9,6 +9,13 @@
         <div class="card-body">
             <h1 class="h4 mb-4 text-center">Import Devices</h1>
 
+            {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Error:</strong> {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ form.as_p }}
@@ -19,13 +26,6 @@
             </form>
         </div>
     </div>
-
-    {% if error %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      <strong>Error:</strong> {{ error }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    {% endif %}
 </div>
 
 {% endblock %}
