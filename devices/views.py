@@ -16,6 +16,10 @@ STATE_MAP = {
 }
 
 
+def index(request):
+    return render(request, "devices/index.html")
+
+
 class DeviceListView(generic.ListView):
     """Generic class-based view for a list of devices."""
 
@@ -38,7 +42,7 @@ class DeviceCreate(CreateView):
     form_class = DeviceForm
 
     def get_success_url(self):
-        return reverse_lazy("device-list")
+        return reverse_lazy("devices-page")
 
 
 class DeviceUpdate(UpdateView):
@@ -46,12 +50,12 @@ class DeviceUpdate(UpdateView):
     form_class = DeviceForm
 
     def get_success_url(self):
-        return reverse_lazy("device-list")
+        return reverse_lazy("devices-page")
 
 
 class DeviceDelete(DeleteView):
     model = Device
-    success_url = reverse_lazy("device-list")
+    success_url = reverse_lazy("devices-page")
 
     def form_valid(self, form):
         try:
