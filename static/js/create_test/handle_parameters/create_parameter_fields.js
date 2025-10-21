@@ -266,7 +266,7 @@ class SingleLineDeviceField extends ParameterField {
         this.dropdown = new bootstrap.Dropdown(this.field);
         this.field.addEventListener("blur", () => this.dropdown.hide());
         this.field.addEventListener("keydown", (e) => this.handleDropDownKeyDown(e));
-        this.searchResults.addEventListener('click', (e) => {
+        this.searchResults.addEventListener('mousedown', (e) => {
             if (e.target.tagName === 'LI') this.selectItem(e.target.textContent);
         });
     }
@@ -299,7 +299,7 @@ class SingleLineInputField extends ParameterField {
     }
 
     onFocus(callback) {
-        this.field.addEventListener('focus', callback);
+        this.container.addEventListener('mousedown', callback);
     }
 }
 
@@ -347,7 +347,7 @@ class ChoiceField extends ParameterField {
     }
 
     onFocus(callback) {
-        this.container.addEventListener('click', callback);
+        this.container.addEventListener('mousedown', callback);
     }
 
     /**
@@ -497,7 +497,10 @@ class ListField extends ParameterField {
     }
 
     onFocus(callback) {
-        this.container.addEventListener('click', callback);
+        this.container.addEventListener('mousedown', (e) => {
+            console.log("called");
+            callback(e);
+        });
     }
 
     unknownDatatype() {
