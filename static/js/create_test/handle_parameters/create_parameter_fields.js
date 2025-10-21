@@ -159,7 +159,17 @@ class SingleLineDeviceField extends ParameterField {
         this.container.querySelector('.param-label').textContent = this.parameter['name'];
         this.field.placeholder = this.parameter['name'];
 
+        this.selectedDropDownItem = false;
         return this.container;
+    }
+
+    /**
+     * Whe selecting a value from the dropdown list it should count as changing the value (since the selection does not trigger === 1)
+     */
+    changedFromEmptyToValue() {
+        const evaluation = (this.field ? this.field.value.length === 1 : true) || this.selectedDropDownItem;
+        this.selectedDropDownItem = false;
+        return evaluation;
     }
 
     /** Resets the Pointer to determine what DropDown Element is currently Selected */
@@ -227,6 +237,7 @@ class SingleLineDeviceField extends ParameterField {
         this.field.value = value;
         this.dropdown.hide();
         this.resetPointer();
+        this.selectedDropDownItem = true;
         this.triggerDatatypeValidation();
     }
 
@@ -498,7 +509,6 @@ class ListField extends ParameterField {
 
     onFocus(callback) {
         this.container.addEventListener('mousedown', (e) => {
-            console.log("called");
             callback(e);
         });
     }
