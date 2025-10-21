@@ -29,4 +29,5 @@ urlpatterns = [
         views.get_doc_of_testcase,
         name="get_doc_of_testcase",
     ),
+    path('generate_report/', views.generate_report, name='generate_report'),
 ]

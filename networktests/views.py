@@ -1,5 +1,7 @@
 import importlib.resources
 import json
+from io import BytesIO
+
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, QuerySet
 from django.http import (
@@ -9,6 +11,9 @@ from django.http import (
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import generic
 from django.views.decorators.http import require_http_methods
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 
 from devices.models import Device
 
@@ -284,3 +289,50 @@ def delete_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     testcase.delete()
     return HttpResponse(status=200)
+
+def generate_report(request):
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(Paragraph("Testbericht", styles["Heading1"]))
+    elements.append(Spacer(1, 12))
+
+    testcases = TestCase.objects.all()
+
+    if not testcases:
+        elements.append(Paragraph("Keine Testfälle vorhanden.", styles["Normal"]))
+    else:
+        data = [["Label", "Modul", "Erwartetes Ergebnis", "Letztes Ergebnis", "Datum"]]
+
+        for tc in testcases:
+            latest_result = tc.results.order_by('-finished_at').first()
+
+            data.append([
+                tc.label,
+                tc.test_module,
+                "PASS" if tc.expected_result else "FAIL",
+                "PASS" if (latest_result and latest_result.result) else "FAIL",
+                latest_result.finished_at.strftime("%d.%m.%Y %H:%M") if latest_result and latest_result.finished_at else "-"
+            ])
+
+        table = Table(data, repeatRows=1)
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+        ]))
+
+        elements.append(table)
+
+    doc.build(elements)
+
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type="application/pdf")
+    response["Content-Disposition"] = "attachment; filename=test_report.pdf"
+    return response
