@@ -14,15 +14,64 @@ class ParameterField {
     /**
      * @param {Object.<string, any>} parameter - Metadata map for the parameter.
      * @param {Object.<string, Array<ParameterField>>} datatypeDependencyMap - Stores the parameters which's datatype is dependent on other parameters.
+     * @param {Object.<string, Array<ParameterField>>} activationDependencyMap Map of parameters that manages when a parameter is displayed.
      * @throws {Error} If instantiated directly (abstract class).
      */
-    constructor(parameter, datatypeDependencyMap) {
+    constructor(parameter, datatypeDependencyMap, activationDependencyMap) {
         if (new.target === ParameterField) throw new Error("Cannot instantiate abstract class ParameterField directly");
 
         this.parameter = parameter;
         this.field = null;
         this.datatypeDependencyMap = datatypeDependencyMap;
+        this.activationDependencyMap = activationDependencyMap;
         datatypeDependencyMap[parameter['name']] = [];
+    }
+
+    // Activation Management
+    /** Returns what parameters are triggering the activation of this parameter */
+    getActivationTriggers() {
+        return [
+            ...Object.keys(this.get('forbidden_if') || {}),
+            ...Object.keys(this.get('required_if') || {})
+        ];
+    }
+
+    /** Shows this Parameter */
+    showField() {
+        this.getField().style.display = "";
+    }
+
+    /** Hides this Parameter */
+    hideField() {
+        this.getField().style.display = "none";
+    }
+
+    /**
+     * Handles a Trigger
+     * @param parameterName The Parameter that initiated the trigger.
+     * @param value the value parsed in the trigger.
+     */
+    handleActivationTrigger(parameterName, value) {
+        // forbidden if
+        const forbiddenMap = this.get('forbidden_if');
+        if (forbiddenMap && parameterName in forbiddenMap) {
+            const forbiddenRegex = new RegExp(forbiddenMap[parameterName].toLowerCase());
+            if (forbiddenRegex.test(value.toLowerCase())) {
+                this.hideField();
+            } else {
+                this.showField();
+            }
+        }
+
+        const requiredMap = this.get('required_if');
+        if (requiredMap && parameterName in requiredMap) {
+            const requiredRegex = new RegExp(requiredMap[parameterName].toLowerCase());
+            if (requiredRegex.test(value.toLowerCase())) {
+                this.showField();
+            } else {
+                this.hideField();
+            }
+        }
     }
 
     // Info
@@ -100,6 +149,9 @@ class ParameterField {
 
     /** Called after the Field that is returned by createField() is added in the document. */
     afterCreatingField() {
+        // check activation triggers
+        this.triggerInputValidation();
+
         // check for datatype dependency
         const match = this.parameter['type'].match(ParameterField.parameterDatatypeDependencyRegex); // value(target_field)
         if (match) {
@@ -141,7 +193,6 @@ class ParameterField {
     /** Triggers Input Validation and sets a flag to prevent internal loops. */
     triggerInputValidation() {
         const event = new CustomEvent('input', {
-            bubbles: true,
             detail: {calledByInputValidation: true}
         });
         this.field.dispatchEvent(event);
@@ -436,6 +487,13 @@ class ChoiceField extends ParameterField {
         if (this.field) this.field.addEventListener('change', callback);
     }
 
+    triggerInputValidation() {
+        const event = new CustomEvent('change', {
+            detail: {calledByInputValidation: true}
+        });
+        this.field.dispatchEvent(event);
+    }
+
     onFocus(callback) {
         this.container.addEventListener('mousedown', callback);
     }
@@ -463,9 +521,10 @@ class ListField extends ParameterField {
     /**
      * @param {Object.<string, any>} parameter - Metadata for the list.
      * @param {Object.<string, Array<ParameterField>>} dependencyMap - Stores what parameters are linked to each other.
+     * @param {Object.<string, Array<ParameterField>>} activationDependencyMap Map of parameters that manages when a parameter is displayed.
      */
-    constructor(parameter, dependencyMap) {
-        super(parameter, dependencyMap);
+    constructor(parameter, dependencyMap, activationDependencyMap) {
+        super(parameter, dependencyMap, activationDependencyMap);
         this.children = new Set();
     }
 
@@ -497,6 +556,8 @@ class ListField extends ParameterField {
             this.container,
             this.addButton,
             this.getDatatypeDependencyMap(),
+            this.activationDependencyMap,
+            false,
             () => this.checkGlobalSubmitValidity(this)
         );
 
@@ -676,17 +737,18 @@ class ListField extends ParameterField {
  *
  * @param parameter The parameter Object mapping.
  * @param dependencyMap The Object-Map describing what datatypes are linked with what parameter values.
+ * @param activationDependencyMap Map of parameters that manages when a parameter is displayed.
  * @returns {ParameterField} The created ParameterField
  */
-function createParameterFields(parameter, dependencyMap) {
+function createParameterFields(parameter, dependencyMap, activationDependencyMap) {
     switch (parameter['type']) {
         case "choice":
-            return new ChoiceField(parameter, dependencyMap);
+            return new ChoiceField(parameter, dependencyMap, activationDependencyMap);
         case "list":
-            return new ListField(parameter, dependencyMap);
+            return new ListField(parameter, dependencyMap, activationDependencyMap);
         case "device":
-            return new SingleLineDeviceField(parameter, dependencyMap);
+            return new SingleLineDeviceField(parameter, dependencyMap, activationDependencyMap);
         default:
-            return new SingleLineInputField(parameter, dependencyMap);
+            return new SingleLineInputField(parameter, dependencyMap, activationDependencyMap);
     }
 }
