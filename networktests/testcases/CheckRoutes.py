@@ -35,6 +35,7 @@ class CheckRoutes(DiagNetTest):
                 {
                     "name": "destination_prefix",
                     "type": "CIDR-value(type)",
+                    "forbidden_if": {"type": "IPv4"},
                     "description": "The destination network in CIDR notation"
                 },
                 {
@@ -54,6 +55,7 @@ class CheckRoutes(DiagNetTest):
                             {
                                 "name": "destination_prefix2",
                                 "type": "CIDR-value(type)",
+                                "forbidden_if": {"type": "IPv4"},
                                 "description": "The destination network in CIDR notation"
                             },
                             {
@@ -73,6 +75,7 @@ class CheckRoutes(DiagNetTest):
                                     {
                                         "name": "destination_prefix3",
                                         "type": "CIDR-value(type)",
+                                        "required_if": {"type": "IPv4"},
                                         "description": "The destination network in CIDR notation"
                                     },
                                     {
