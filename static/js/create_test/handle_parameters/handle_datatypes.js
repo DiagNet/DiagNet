@@ -77,7 +77,7 @@ function insertCachedValuesIntoDatatypeIfNeeded(datatype) {
 // Methods for caching Values
 async function cacheValue(field, value) {
     cacheParameterValues[field.parameter['name']] = value;
-    for (const dependentField of field.dependencyMap[field.parameter['name']]) {
+    for (const dependentField of field.datatypeDependencyMap[field.parameter['name']]) {
         dependentField.triggerInputValidation();
     }
 }
@@ -85,7 +85,7 @@ async function cacheValue(field, value) {
 async function uncacheValue(field) {
     if (field.parameter['name'] in cacheParameterValues) {
         delete cacheParameterValues[field.parameter['name']];
-        for (const dependentField of field.dependencyMap[field.parameter['name']]) {
+        for (const dependentField of field.datatypeDependencyMap[field.parameter['name']]) {
             dependentField.triggerInputValidation();
         }
     }

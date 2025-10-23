@@ -87,12 +87,12 @@ class CheckRoutes(DiagNetTest):
                                 ],
                                 "optional": [],
                                 "mutually_exclusive": [],
-                                "constraints": ["min_length=1", "unique=true"]
+                                "constraints": ["min_length=3", "unique=true"]
                             }
                         ],
                         "optional": [],
                         "mutually_exclusive": [],
-                        "constraints": ["min_length=1", "unique=true"]
+                        "constraints": ["max_length=1", "unique=true"]
                 }
             ],
             "optional": [],
