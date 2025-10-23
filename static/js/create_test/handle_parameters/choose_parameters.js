@@ -11,11 +11,17 @@ const submitParametersButton = document.getElementById("submitParameters");
  * A parameter is considered valid if it is either valid in `validInputMap`
  * or currently blocked in `currentlyBlockedMap`.
  *
+ * @param {Array<Object.<string, any>>} parameters - Map of parameters
  * @param {Object.<string, boolean>} validInputMap - Tracks each parameter's validity.
  * @param {Object.<string, boolean>} currentlyBlockedMap - Tracks which parameters are currently blocked/disabled.
  * @param {HTMLElement} submitButton that "finishes" the parameter selection.
+ * @param {function} extraSubmitValidity Function that is called for validating further submit requirements.
  */
-function checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton) {
+function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity) {
+    if (extraSubmitValidity && !extraSubmitValidity()) {
+        disableSubmit(submitButton);
+        return;
+    }
     for (const key in validInputMap) {
         const valueA = validInputMap[key];
         const valueB = currentlyBlockedMap[key] || false;
@@ -24,6 +30,12 @@ function checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton) {
             return;
         }
     }
+
+    if (!parameters.every(item => item['parameter_info'].checkFieldSubmitValidity())) {
+        disableSubmit(submitButton);
+        return;
+    }
+
     enableSubmit(submitButton);
 }
 
@@ -37,11 +49,12 @@ function checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton) {
  * @param {Object.<string, boolean>} validInputMap - Tracks current validity of each parameter.
  * @param {Object.<string, boolean>} currentlyBlockedMap - Tracks which parameters are currently blocked/disabled.
  * @param {HTMLElement} submitButton that "finishes" the parameter selection
+ * @param {function} extraSubmitValidity Function that is called for validating further submit requirements.
  */
-function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, submitButton) {
+function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity) {
     for (const parameterInfo of parameters) {
         parameterInfo['valid_submit_handler'] = () => {
-            checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton);
+            checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity);
         };
     }
 }
@@ -241,7 +254,7 @@ function createInputListeners(parameters) {
 
         if (handlers.length !== 0) {
             field.onChange(async (e) => {
-                e.stopPropagation();
+                if (e) e.stopPropagation();
                 for (const handler of handlers) {
                     await handler(e);
                 }
@@ -249,7 +262,7 @@ function createInputListeners(parameters) {
         }
 
         field.onFocus(async (event) => {
-            event.stopPropagation();
+            if (event) event.stopPropagation();
             displayParameterInfo(field);
         });
     }
@@ -265,8 +278,9 @@ function createInputListeners(parameters) {
  * @param {HTMLElement} optionalContainer - The DOM element to append optional parameter fields into.
  * @param {HTMLElement} submitButton button that "finishes" the parameter selection
  * @param {Object.<string, Array<ParameterField>>} dependencyMap Map of parameters that depend on each other.
+ * @param {function} extraSubmitValidity Function that is called for validating further submit requirements.
  */
-function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings, requiredContainer, optionalContainer, submitButton, dependencyMap) {
+function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings, requiredContainer, optionalContainer, submitButton, dependencyMap, extraSubmitValidity) {
 
     /**
      * Marks if a parameter's field currently has a valid input.
@@ -281,15 +295,14 @@ function showParameters(requiredParams, optionalParams, mutually_exclusive_bindi
 
     const allParameters = [...requiredParams, ...optionalParams];
 
-
     createAndSaveParameterFields(requiredParams, optionalParams, dependencyMap);
     createMutuallyExclusiveHandler(allParameters, mutually_exclusive_bindings, currentlyBlockedMap);
     createDatatypeHandler(allParameters, validInputMap);
-    createSubmitHandler(allParameters, validInputMap, currentlyBlockedMap, submitButton);
+    createSubmitHandler(allParameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity);
     createInputListeners(allParameters);
     loadParameterFieldsIntoDocument(allParameters, requiredContainer, optionalContainer);
 
-    checkSubmitValidity(validInputMap, currentlyBlockedMap, submitButton);
+    checkSubmitValidity(allParameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity);
 
     for (const parameterInfo of allParameters.values()) {
         parameterInfo['mutually_exclusive_handler']?.();
@@ -346,7 +359,9 @@ async function selectTestClass(testClass) {
         requiredContainer,
         optionalContainer,
         submitParametersButton,
-        {});
+        {},
+        undefined
+        );
 
     submitParametersButton.addEventListener("click", () => {
         selectParameters(requiredParameters, optionalParameters)
