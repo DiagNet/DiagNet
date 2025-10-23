@@ -75,11 +75,12 @@ function loadParameterFieldsIntoDocument(parameters, requiredContainer, optional
  *
  * @param {Array<Object.<string, any>>} requiredParams - Map of required parameters.
  * @param {Array<Object.<string, any>>} optionalParams - Map of optional parameters.
- */
-function createAndSaveParameterFields(requiredParams, optionalParams) {
+ * @param {Object.<string, Array<ParameterField>>} dependencyMap Map of parameters that depend on each other.
+ * */
+function createAndSaveParameterFields(requiredParams, optionalParams, dependencyMap) {
     for (const [params, requirement] of [[requiredParams, "required"], [optionalParams, "optional"]]) {
         for (const parameterInfo of params) {
-            let inputField = createParameterFields(parameterInfo);
+            let inputField = createParameterFields(parameterInfo, dependencyMap);
             inputField.createField();
             parameterInfo['parameter_info'] = inputField;
             parameterInfo['requirement'] = requirement;
@@ -263,8 +264,9 @@ function createInputListeners(parameters) {
  * @param {HTMLElement} requiredContainer - The DOM element to append required parameter fields into.
  * @param {HTMLElement} optionalContainer - The DOM element to append optional parameter fields into.
  * @param {HTMLElement} submitButton button that "finishes" the parameter selection
+ * @param {Object.<string, Array<ParameterField>>} dependencyMap Map of parameters that depend on each other.
  */
-function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings, requiredContainer, optionalContainer, submitButton) {
+function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings, requiredContainer, optionalContainer, submitButton, dependencyMap) {
 
     /**
      * Marks if a parameter's field currently has a valid input.
@@ -280,7 +282,7 @@ function showParameters(requiredParams, optionalParams, mutually_exclusive_bindi
     const allParameters = [...requiredParams, ...optionalParams];
 
 
-    createAndSaveParameterFields(requiredParams, optionalParams);
+    createAndSaveParameterFields(requiredParams, optionalParams, dependencyMap);
     createMutuallyExclusiveHandler(allParameters, mutually_exclusive_bindings, currentlyBlockedMap);
     createDatatypeHandler(allParameters, validInputMap);
     createSubmitHandler(allParameters, validInputMap, currentlyBlockedMap, submitButton);
@@ -343,7 +345,8 @@ async function selectTestClass(testClass) {
         parameters.mul,
         requiredContainer,
         optionalContainer,
-        submitParametersButton);
+        submitParametersButton,
+        {});
 
     submitParametersButton.addEventListener("click", () => {
         selectParameters(requiredParameters, optionalParameters)

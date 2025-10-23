@@ -19,8 +19,7 @@ async function checkDatatype(value, datatype_as_string) {
         await updateDevices();
     }
     datatype_as_string = insertCachedValuesIntoDatatypeIfNeeded(datatype_as_string);
-    console.log("checking datatype: " + datatype_as_string);
-    console.log("currect cache: " + cacheParameterValues);
+
     switch (datatype_as_string.toLowerCase()) {
         case "device":
             return allDevices.includes(value);
@@ -76,12 +75,20 @@ function insertCachedValuesIntoDatatypeIfNeeded(datatype) {
 }
 
 // Methods for caching Values
-async function cacheValue(name, value) {
-    cacheParameterValues[name] = value;
+async function cacheValue(field, value) {
+    cacheParameterValues[field.parameter['name']] = value;
+    for (const dependentField of field.dependencyMap[field.parameter['name']]) {
+        dependentField.triggerInputValidation();
+    }
 }
 
-async function uncacheValue(name) {
-    delete cacheParameterValues[name];
+async function uncacheValue(field) {
+    if (field.parameter['name'] in cacheParameterValues) {
+        delete cacheParameterValues[field.parameter['name']];
+        for (const dependentField of field.dependencyMap[field.parameter['name']]) {
+            dependentField.triggerInputValidation();
+        }
+    }
 }
 
 async function updateDevices() {
@@ -116,20 +123,16 @@ async function handleCheckDataType(field, datatype_as_string) {
     let value = field.getValue().trim();
     if (value.length === 0) {
         field.unknownDatatype();
-        await uncacheValue(field.parameter['name']);
+        await uncacheValue(field);
         return DATATYPE_RESULT.UNKNOWN;
     }
-
     let result = await checkDatatype(value, datatype_as_string);
     if (result) {
-        console.log("put in cache");
-        console.log(field.parameter['name']);
-        console.log(value);
-        await cacheValue(field.parameter['name'], value);
+        await cacheValue(field, value);
         field.correctDatatype();
         return DATATYPE_RESULT.SUCCESS;
     } else {
-        await uncacheValue(field.parameter['name']);
+        await uncacheValue(field);
         field.wrongDatatype();
         return DATATYPE_RESULT.FAIL;
     }

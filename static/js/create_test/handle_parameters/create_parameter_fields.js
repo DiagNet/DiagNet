@@ -8,17 +8,27 @@ const singleLineInputTemplateForDevices = document.getElementById('parameterInpu
  */
 class ParameterField {
     /**
-     * @param {Map<string, any>} parameter - Metadata map for the parameter.
+     * @param {Object.<string, any>} parameter - Metadata map for the parameter.
+     * @param {Object.<string, Array<ParameterField>>} dependencyMap - Stores what parameters are linked to each other.
      * @throws {Error} If instantiated directly (abstract class).
      */
-    constructor(parameter) {
+    constructor(parameter, dependencyMap) {
         if (new.target === ParameterField) {
             throw new Error("Cannot instantiate abstract class ParameterField directly");
         }
         this.parameter = parameter;
         this.field = null;
+        this.dependencyMap = dependencyMap;
+        dependencyMap[parameter['name']] = [];
     }
 
+    /**
+     * Returns the dependencyMap associated with this Parameter
+     */
+    getDependencyMap() {
+        return this.dependencyMap;
+    }
+    
     /**
      * Returns the DOM element representing this input field.
      * @returns {HTMLElement|null} The input field DOM element.
@@ -137,7 +147,27 @@ class ParameterField {
 
     /** Called after the Field that is returned by createField() is added in the document. */
     afterCreatingField() {
-        // do nothing
+        // check for dependency
+
+        const match = this.parameter['type'].match(/value\(([^)]+)\)/);
+        if (match) {
+            const dependentOn = match[1];
+            try {
+                this.getDependencyMap()[dependentOn].push(this);
+            } catch (e) {
+                // do nothing
+                console.log(e);
+            }
+        }
+    }
+
+    /** Triggers a Datatype Validation and sets a flag to prevent internal loops. */
+    triggerInputValidation() {
+        const event = new CustomEvent('input', {
+            bubbles: true,
+            detail: {calledByDropDownSelection: true}
+        });
+        this.field.dispatchEvent(event);
     }
 }
 
@@ -222,15 +252,6 @@ class SingleLineDeviceField extends ParameterField {
         }
     }
 
-    /** Triggers a Datatype Validation and sets a flag to prevent internal loops. */
-    triggerDatatypeValidation() {
-        const event = new CustomEvent('input', {
-            bubbles: true,
-            detail: {calledByDropDownSelection: true}
-        });
-        this.field.dispatchEvent(event);
-    }
-
     /** Selects an Item chosen by the Navigation */
     selectItem(value) {
         if (!this.initializedDeviceList) return;
@@ -238,7 +259,7 @@ class SingleLineDeviceField extends ParameterField {
         this.dropdown.hide();
         this.resetPointer();
         this.selectedDropDownItem = true;
-        this.triggerDatatypeValidation();
+        this.triggerInputValidation();
     }
 
     /** Checks what dropdown item is currently chosen and "selects" it */
@@ -274,6 +295,7 @@ class SingleLineDeviceField extends ParameterField {
 
     /** Needed because dropdown can only be initialized after the input field is loaded into the document */
     afterCreatingField() {
+        super.afterCreatingField();
         this.dropdown = new bootstrap.Dropdown(this.field);
         this.field.addEventListener("blur", () => this.dropdown.hide());
         this.field.addEventListener("keydown", (e) => this.handleDropDownKeyDown(e));
@@ -369,23 +391,23 @@ class ChoiceField extends ParameterField {
         let value = this.getValue().trim();
         if (value.length === 0) {
             this.unknownDatatype();
-            await uncacheValue(this.parameter['name']);
+            await uncacheValue(this);
             return DATATYPE_RESULT.UNKNOWN;
         } else {
             this.correctDatatype();
-            await cacheValue(this.parameter['name'], value);
+            await cacheValue(this, value);
             return DATATYPE_RESULT.SUCCESS;
         }
     }
-
 }
 
 class ListField extends ParameterField {
     /**
-     * @param {Map<string, any>} parameter - Metadata for the list.
+     * @param {Object.<string, any>} parameter - Metadata for the list.
+     * @param {Object.<string, Array<ParameterField>>} dependencyMap - Stores what parameters are linked to each other.
      */
-    constructor(parameter) {
-        super(parameter);
+    constructor(parameter, dependencyMap) {
+        super(parameter, dependencyMap);
         this.children = new Set();
     }
 
@@ -414,7 +436,8 @@ class ListField extends ParameterField {
             mutually_exclusive_bindings,
             this.container,
             this.container,
-            this.addButton
+            this.addButton,
+            this.getDependencyMap()
         );
 
         let nested_index = Number(this.parameter['nested_index'] ?? 0) + 1;
@@ -547,17 +570,18 @@ class ListField extends ParameterField {
  * 3. List Views (type === "list")
  *
  * @param parameter
+ * @param dependencyMap
  * @returns {ParameterField}
  */
-function createParameterFields(parameter) {
+function createParameterFields(parameter, dependencyMap) {
     switch (parameter['type']) {
         case "choice":
-            return new ChoiceField(parameter);
+            return new ChoiceField(parameter, dependencyMap);
         case "list":
-            return new ListField(parameter);
+            return new ListField(parameter, dependencyMap);
         case "device":
-            return new SingleLineDeviceField(parameter);
+            return new SingleLineDeviceField(parameter, dependencyMap);
         default:
-            return new SingleLineInputField(parameter);
+            return new SingleLineInputField(parameter, dependencyMap);
     }
 }
