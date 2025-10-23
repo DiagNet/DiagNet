@@ -3,32 +3,39 @@ const choiceInputTemplate = document.getElementById('choiceInputTemplate');
 const listInputTemplate = document.getElementById('listInputTemplate');
 const singleLineInputTemplateForDevices = document.getElementById('parameterInputTemplateForDevices');
 
-/**
- * Abstract base class representing a parameter input field.
- */
+/** Abstract base class representing a parameter input field. */
 class ParameterField {
     /**
-     * @param {Object.<string, any>} parameter - Metadata map for the parameter.
-     * @param {Object.<string, Array<ParameterField>>} dependencyMap - Stores what parameters are linked to each other.
-     * @throws {Error} If instantiated directly (abstract class).
+     * Syntax used to describe a value being used by another datatype definition. <br>
+     * For Example: type: CIDR-value(type) | Where type is the name of a parameter
      */
-    constructor(parameter, dependencyMap) {
-        if (new.target === ParameterField) {
-            throw new Error("Cannot instantiate abstract class ParameterField directly");
-        }
-        this.parameter = parameter;
-        this.field = null;
-        this.dependencyMap = dependencyMap;
-        dependencyMap[parameter['name']] = [];
-    }
+    static parameterDatatypeDependencyRegex = /value\(([^)]+)\)/;
 
     /**
-     * Returns the dependencyMap associated with this Parameter
+     * @param {Object.<string, any>} parameter - Metadata map for the parameter.
+     * @param {Object.<string, Array<ParameterField>>} datatypeDependencyMap - Stores the parameters which's datatype is dependent on other parameters.
+     * @throws {Error} If instantiated directly (abstract class).
      */
-    getDependencyMap() {
-        return this.dependencyMap;
+    constructor(parameter, datatypeDependencyMap) {
+        if (new.target === ParameterField) throw new Error("Cannot instantiate abstract class ParameterField directly");
+
+        this.parameter = parameter;
+        this.field = null;
+        this.datatypeDependencyMap = datatypeDependencyMap;
+        datatypeDependencyMap[parameter['name']] = [];
     }
-    
+
+    // Info
+    /**
+     * Equivalent to this.parameter[str]
+     * @param str the info string to extract
+     */
+    get(str) {
+        return this.parameter[str];
+    }
+
+    // Field
+
     /**
      * Returns the DOM element representing this input field.
      * @returns {HTMLElement|null} The input field DOM element.
@@ -54,9 +61,7 @@ class ParameterField {
         return this.field ? this.field.value : null;
     }
 
-    /**
-     * Clears the input field's value.
-     */
+    /** Clears the input field's value. */
     clearValue() {
         if (this.field) this.field.value = "";
     }
@@ -71,15 +76,13 @@ class ParameterField {
 
     /**
      * Checks if the field's value just changed from empty to a value.
-     * @returns {boolean} True if value length is 1 or field not created.
+     * @returns {boolean} True if this field just changed from empty to not empty.
      */
     changedFromEmptyToValue() {
         return this.field ? this.field.value.length === 1 : true;
     }
 
-    /**
-     * Enables the input field for user interaction.
-     */
+    /** Enables the input field for user interaction. */
     enable() {
         if (this.field) {
             this.field.disabled = false;
@@ -87,9 +90,7 @@ class ParameterField {
         }
     }
 
-    /**
-     * Disables the input field, preventing user interaction.
-     */
+    /** Disables the input field, preventing user interaction. */
     disable() {
         if (this.field) {
             this.field.disabled = true;
@@ -97,8 +98,25 @@ class ParameterField {
         }
     }
 
+    /** Called after the Field that is returned by createField() is added in the document. */
+    afterCreatingField() {
+        // check for datatype dependency
+        const match = this.parameter['type'].match(ParameterField.parameterDatatypeDependencyRegex); // value(target_field)
+        if (match) {
+            const dependentOn = match[1]; // value(target_field) -> target_field
+            try {
+                this.getDatatypeDependencyMap()[dependentOn].push(this); // Mark itself dependent on read parameter
+            } catch (e) {
+                throwException("Could not build Datatype dependencies for parameter " + this.get('name') + ". (maybe you mistyped a parameter name?)")
+            }
+        }
+    }
+
+    // Event Listeners
     /**
      * Attaches a callback to execute whenever the input value changes.
+     * If this field has a parent, input changes trigger onInternalChange() for the parent field.
+     *
      * @param {function} callback - Function to run on input event.
      */
     onChange(callback) {
@@ -106,33 +124,55 @@ class ParameterField {
         if (list_parent) {
             if (this.field) this.field.addEventListener('input', (e) => {
                 callback(e);
-                list_parent.onInternalChange()
+                list_parent.onInternalChange();
             });
         }
         if (this.field) this.field.addEventListener('input', callback);
     }
 
+    /**
+     * Attaches a callback to execute whenever the input gains focus.
+     * @param {function} callback Function to run on input event.
+     */
     onFocus(callback) {
         if (this.field) this.field.addEventListener('focus', callback);
     }
 
+    /** Triggers Input Validation and sets a flag to prevent internal loops. */
+    triggerInputValidation() {
+        const event = new CustomEvent('input', {
+            bubbles: true,
+            detail: {calledByInputValidation: true}
+        });
+        this.field.dispatchEvent(event);
+    }
+
     /**
-     * Resets the input field's border to its default style.
+     * Checks if the given event was produced by triggerInputValidation()
+     * @param event The event to check
+     * @returns {boolean} True if it was triggered by triggerInputValidation(), otherwise false. (looks for internal flag event.detail.calledByInputValidation)
      */
+    isTriggeredByInputValidation(event) {
+        return event && event.detail && event.detail.calledByInputValidation
+    }
+
+    // Datatype
+    /** Returns the datatypeDependencyMap associated with this Parameter */
+    getDatatypeDependencyMap() {
+        return this.datatypeDependencyMap;
+    }
+
+    /** Resets the input field's border to its default style. */
     unknownDatatype() {
         if (this.field) this.field.style.border = "";
     }
 
-    /**
-     * Marks the input field as valid by setting its border to green.
-     */
+    /** Marks the input field as valid by setting its border to green. */
     correctDatatype() {
         if (this.field) this.field.style.border = "2px solid green";
     }
 
-    /**
-     * Marks the input field as invalid by setting its border to red.
-     */
+    /** Marks the input field as invalid by setting its border to red. */
     wrongDatatype() {
         if (this.field) this.field.style.border = "2px solid red";
     }
@@ -142,36 +182,22 @@ class ParameterField {
      * @returns {Promise<string>} Result of the datatype validation.
      */
     async checkDatatype() {
-        return handleCheckDataType(this, this.parameter['type']);
+        return handleCheckDataType(this, this.parameter['type']); // handle_datatypes.js
     }
 
-    /** Called after the Field that is returned by createField() is added in the document. */
-    afterCreatingField() {
-        // check for dependency
-
-        const match = this.parameter['type'].match(/value\(([^)]+)\)/);
-        if (match) {
-            const dependentOn = match[1];
-            try {
-                this.getDependencyMap()[dependentOn].push(this);
-            } catch (e) {
-                // do nothing
-                console.log(e);
-            }
-        }
-    }
-
-    /** Triggers a Datatype Validation and sets a flag to prevent internal loops. */
-    triggerInputValidation() {
-        const event = new CustomEvent('input', {
-            bubbles: true,
-            detail: {calledByDropDownSelection: true}
-        });
-        this.field.dispatchEvent(event);
+    // Submit Validity
+    /**
+     * Additionally to Datatype Validation and Mutually Exclusive Validation,
+     * this method also checks for additional submit conditions.
+     */
+    checkFieldSubmitValidity() {
+        return true;
     }
 }
 
+/** Displays a single line input device field. */
 class SingleLineDeviceField extends ParameterField {
+    // Field
     createField() {
         this.container = singleLineInputTemplateForDevices.content.cloneNode(true).querySelector('div');
 
@@ -181,102 +207,101 @@ class SingleLineDeviceField extends ParameterField {
         _ = this.insertDevicesIntoResults();
         this.resetPointer();
 
+        // Additional Handler for the device dropdown
         this.parameter['datatype_dropdown_handler'] = (e) => {
-            this.handleDropDownInput(e);
+            this.handleDropdownInput(e);
         };
         this.field = this.container.querySelector('.param-input');
 
         this.container.querySelector('.param-label').textContent = this.parameter['name'];
         this.field.placeholder = this.parameter['name'];
 
-        this.selectedDropDownItem = false;
         return this.container;
     }
 
-    /**
-     * Whe selecting a value from the dropdown list it should count as changing the value (since the selection does not trigger === 1)
-     */
+    getField() {
+        return this.container;
+    }
+
     changedFromEmptyToValue() {
-        const evaluation = (this.field ? this.field.value.length === 1 : true) || this.selectedDropDownItem;
-        this.selectedDropDownItem = false;
+        const evaluation = (this.field ? this.field.value.length === 1 : true) || this.selectedDropdownItem; // Selecting Something does not trigger === 1
+        this.selectedDropdownItem = false;
         return evaluation;
     }
 
-    /** Resets the Pointer to determine what DropDown Element is currently Selected */
+
+    // Device Dropdown
+
+    /** Hides the Device Dropdown*/
+    hideDropdown() {
+        this.dropdown.hide();
+    }
+
+    /** Shows the Device Dropdown*/
+    showDropdown() {
+        this.dropdown.show();
+    }
+
+    // Setup
+    afterCreatingField() {
+        super.afterCreatingField();
+
+        // Dropdown can only be initialized after the input field is loaded into the document
+        this.dropdown = new bootstrap.Dropdown(this.field);
+
+        this.field.addEventListener("blur", this.hideDropdown.bind(this));
+        this.field.addEventListener("keydown", this.handleDropdownKeyDown.bind(this));
+
+        this.searchResults.addEventListener('mousedown', (e) => {
+            if (e.target.tagName === 'LI') this.selectItem(e.target.textContent);
+        });
+    }
+
+    onFocus(callback) {
+        this.field.addEventListener('focus', (event) => {
+            callback(event);
+            if (this.dropdown) {
+                this.showDropdown();
+                this.handleDropdownInput(new Event("input", {bubbles: true})); // Trigger Dropdown as if an input was made
+            }
+        });
+    }
+
+    /** Takes all Devices and puts them into the dropdown. */
+    async insertDevicesIntoResults() {
+        this.uninitializedDeviceList = true;
+        await updateDevices(); // fetch devices
+        allDevices.forEach(this.addDeviceToDropdown, this);
+        this.uninitializedDeviceList = false;
+
+        this.dropdownItems = this.searchResults.querySelectorAll('li');
+    }
+
+    // Logic
+    /** Resets the Pointer to determine what Dropdown Element is currently Selected. */
     resetPointer() {
         this.selectedIndex = -1;
         this.searchResults.querySelectorAll('li').forEach(li => li.classList.remove('active'));
     }
 
-    /** Takes all Devices and puts them into the dropdown */
-    async insertDevicesIntoResults() {
-        this.initializedDeviceList = false;
-        await updateDevices();
-        for (const device of allDevices) {
-            const li = document.createElement('li');      // create li element
-            li.className = 'list-group-item';
-            li.textContent = device;
-            this.searchResults.appendChild(li);
-        }
-        this.initializedDeviceList = true;
-        this.dropdownItems = this.searchResults.querySelectorAll('li');
+    /**
+     * Adds a device to the dropdown content.
+     * @param device Device as string.
+     */
+    addDeviceToDropdown(device) {
+        const li = document.createElement('li');      // create li element
+        li.className = 'list-group-item hoverable';
+        li.textContent = device;
+        this.searchResults.appendChild(li);
     }
 
-    /** Handles Keyboard Navigation (in order to enable Arrow-Key Navigation) */
-    handleDropDownKeyDown(e) {
+    /** Called on input - Handles the Filter when searching. */
+    handleDropdownInput(event) {
         // Escape Datatype Validation Trigger
-        if ((!this.initializedDeviceList) || (e && e.detail && e.detail.calledByDropDownSelection)) {
-            return;
-        }
+        if ((this.uninitializedDeviceList) || this.isTriggeredByInputValidation(event)) return;
 
-        const items = this.visibleItems;
-
-        if (!items.length) return;
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            this.selectedIndex = (this.selectedIndex + 1) % items.length;
-            this.updateSelection(items);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            this.selectedIndex = (this.selectedIndex - 1 + items.length) % items.length;
-            this.updateSelection(items);
-        } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (this.selectedIndex >= 0) this.selectItem(items[this.selectedIndex].textContent);
-        } else if (e.key === 'Tab') {
-            this.dropdown.hide();
-            this.resetPointer();
-        } else if (e.key === 'Escape') {
-            this.dropdown.hide();
-            this.resetPointer();
-        }
-    }
-
-    /** Selects an Item chosen by the Navigation */
-    selectItem(value) {
-        if (!this.initializedDeviceList) return;
-        this.field.value = value;
-        this.dropdown.hide();
         this.resetPointer();
-        this.selectedDropDownItem = true;
-        this.triggerInputValidation();
-    }
-
-    /** Checks what dropdown item is currently chosen and "selects" it */
-    updateSelection(items) {
-        items.forEach((li, i) => li.classList.toggle('active', i === this.selectedIndex));
-        if (this.selectedIndex >= 0) {
-            items[this.selectedIndex].scrollIntoView({block: 'nearest'});
-        }
-    }
-
-    /** Called on input - Handles the Filter when searching */
-    handleDropDownInput(event) {
-        if ((!this.initializedDeviceList) || (event && event.detail && event.detail.calledByDropDownSelection)) {
-            return;
-        }
-        this.resetPointer();
-        const filter = this.field.value.toLowerCase();
+        const filter = this.getValue().toLowerCase();
         this.dropdown.show();
 
         const visibleItems = [];
@@ -293,29 +318,60 @@ class SingleLineDeviceField extends ParameterField {
         this.visibleItems = visibleItems;
     }
 
-    /** Needed because dropdown can only be initialized after the input field is loaded into the document */
-    afterCreatingField() {
-        super.afterCreatingField();
-        this.dropdown = new bootstrap.Dropdown(this.field);
-        this.field.addEventListener("blur", () => this.dropdown.hide());
-        this.field.addEventListener("keydown", (e) => this.handleDropDownKeyDown(e));
-        this.searchResults.addEventListener('mousedown', (e) => {
-            if (e.target.tagName === 'LI') this.selectItem(e.target.textContent);
-        });
+    /** Handles Keyboard Navigation (in order to enable Arrow-Key Navigation). */
+    handleDropdownKeyDown(e) {
+        // Escape Datatype Validation Trigger
+        if (this.uninitializedDeviceList || this.isTriggeredByInputValidation(e)) return;
+
+        const items = this.visibleItems;
+        if (!items.length) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            let prevIndex = this.selectedIndex;
+            this.selectedIndex = (this.selectedIndex + 1) % items.length;
+            this.updateSelection(items, prevIndex);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            let prevIndex = this.selectedIndex;
+            this.selectedIndex = (this.selectedIndex - 1 + items.length) % items.length;
+            this.updateSelection(items, prevIndex);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (this.selectedIndex >= 0) this.selectItem(items[this.selectedIndex].textContent);
+        } else if (e.key === 'Tab') {
+            this.dropdown.hide();
+            this.resetPointer();
+        } else if (e.key === 'Escape') {
+            this.dropdown.hide();
+            this.resetPointer();
+        }
     }
 
-    getField() {
-        return this.container;
+    /** Selects an Item chosen by the Navigation. */
+    selectItem(value) {
+        if (this.uninitializedDeviceList) return;
+
+        this.field.value = value;
+        this.hideDropdown();
+        this.resetPointer();
+
+        this.selectedDropdownItem = true;
+        this.triggerInputValidation();
     }
 
-    onFocus(callback) {
-        this.field.addEventListener('focus', (event) => {
-            callback(event);
-            if (this.dropdown) this.dropdown.show();
-        });
+    /**
+     * Checks what dropdown item is currently chosen and "selects" it.
+     * @param items all items.
+     * @param prev the previous selected Index.
+     */
+    updateSelection(items, prev) {
+        items[this.selectedIndex].classList.add('active');
+        if (prev >= 0) items[prev].classList.remove('active');
     }
 }
 
+/** Displays a single line input field. */
 class SingleLineInputField extends ParameterField {
     createField() {
         this.container = singleLineInputTemplate.content.cloneNode(true).querySelector('div');
@@ -336,6 +392,7 @@ class SingleLineInputField extends ParameterField {
     }
 }
 
+/** Displays a multiple choice input field. */
 class ChoiceField extends ParameterField {
     createField() {
         this.container = choiceInputTemplate.content.cloneNode(true).querySelector('div');
@@ -401,6 +458,7 @@ class ChoiceField extends ParameterField {
     }
 }
 
+/** Displays a list input field. */
 class ListField extends ParameterField {
     /**
      * @param {Object.<string, any>} parameter - Metadata for the list.
@@ -411,8 +469,9 @@ class ListField extends ParameterField {
         this.children = new Set();
     }
 
+    // Field
     createField() {
-        this.addOutput = [];
+        this.items = [];
 
         this.container = listInputTemplate.content.cloneNode(true).querySelector('div');
 
@@ -437,7 +496,8 @@ class ListField extends ParameterField {
             this.container,
             this.container,
             this.addButton,
-            this.getDependencyMap()
+            this.getDatatypeDependencyMap(),
+            () => this.checkGlobalSubmitValidity(this)
         );
 
         let nested_index = Number(this.parameter['nested_index'] ?? 0) + 1;
@@ -454,63 +514,19 @@ class ListField extends ParameterField {
 
         this.addButton.addEventListener("click", () => this.add());
 
+        // Constraints
+        if (this.parameter['constraints']) {
+            for (const constraint of this.parameter['constraints']) {
+                try {
+                    const [key, value] = constraint.split("=");
+                    this[key] = value;
+                } catch (e) {
+                    throwException("Failed to load constraint: " + constraint + " for parameter " + this.parameter['name']);
+                }
+            }
+        }
+
         return this.container;
-    }
-
-    /** Collects the Values of child elements and returns them. */
-    getValue() {
-        let addOutputAsObject = []
-        for (const item of this.addOutput) {
-            addOutputAsObject.push(item);
-        }
-        return addOutputAsObject;
-    }
-
-    /** Removes the given Value */
-    removeValue(value) {
-        const removeIndex = this.addOutput.indexOf(value);
-        if (removeIndex > -1) {
-            this.addOutput.splice(removeIndex, 1);
-            this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) - 1) + "";
-            this.callback();
-        }
-    }
-
-    /**
-     * Retrieves current values from all child fields.
-     * @returns {Array} Values of all child input fields.
-     */
-    receiveValuesFromChildren() {
-        let output = {};
-        for (const value of this.allParameters) {
-            output[value['name']] = value['parameter_info'].getValue();
-        }
-        return output;
-    }
-
-    /** Adds current child values to the output array and updates count. */
-    add() {
-        this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) + 1) + "";
-        this.addOutput.push(this.receiveValuesFromChildren());
-        this.clearValue(false);
-        this.callback();
-    }
-
-    getChildren() {
-        return this.children;
-    }
-
-    /** Clears all child fields and disables the add button. */
-    clearValue(clearSelf) {
-        this.children.forEach(c => {
-            c.clearValue(true)
-        });
-        disableSubmit(this.addButton);
-        if (clearSelf) {
-            this.addOutput.length = 0;
-            this.callback();
-            this.countBadge.innerHTML = "0";
-        }
     }
 
     getField() {
@@ -529,8 +545,95 @@ class ListField extends ParameterField {
         // do nothing
     }
 
+    /** Collects the Values of child elements and returns them. */
+    getValue() {
+        return [...this.items];
+    }
+
+    /** Removes the given value */
+    removeValue(value) {
+        const removeIndex = this.items.indexOf(value);
+        if (removeIndex >= 0) {
+            this.items.splice(removeIndex, 1);
+            this.decreaseCountBadge();
+            this.triggerInputValidation();
+        }
+    }
+
+    // Submit Validation
+
+    /**
+     * Handles a Global Submit Validation Check for Lists.
+     * @param {ListField} listField The ListField
+     * @returns {boolean}
+     */
+    checkGlobalSubmitValidity(listField) {
+        if (listField.max_length !== undefined) {
+            return listField.items.length < listField.max_length;
+        }
+        return true;
+    }
+
+    checkFieldSubmitValidity() {
+        if (this.min_length !== undefined) {
+            return this.items.length >= this.min_length;
+        }
+        return true;
+    }
+
+
+    // countBadge
+
+    /** Increases the Count Badge signifying the amount of items in this list. */
+    decreaseCountBadge() {
+        this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) - 1) + "";
+    }
+
+    /** Decreases the Count Badge signifying the amount of items in this list. */
+    increaseCountBadge() {
+        this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) + 1) + "";
+    }
+
+    /**
+     * Retrieves current values from all child fields.
+     * @returns {Array} Values of all child input fields.
+     */
+    receiveValuesFromChildren() {
+        let output = {};
+        for (const value of this.allParameters) {
+            output[value['name']] = value['parameter_info'].getValue();
+        }
+        return output;
+    }
+
+    /** Adds current child values to the current items and updates count. */
+    add() {
+        this.increaseCountBadge();
+        this.items.push(this.receiveValuesFromChildren());
+        this.clearValue(false);
+        this.triggerInputValidation();
+    }
+
+    /** Clears all child fields and disables the add button. */
+    clearValue(clearSelf) {
+        this.children.forEach(c => {
+            c.clearValue(true)
+        });
+        disableSubmit(this.addButton);
+        if (clearSelf) {
+            this.items.length = 0;
+            this.triggerInputValidation();
+            this.countBadge.innerHTML = "0";
+        }
+    }
+
+    // Event Listeners
     onChange(callback) {
         this.callback = callback;
+    }
+
+    triggerInputValidation() {
+        this.callback();
     }
 
     onFocus(callback) {
@@ -539,6 +642,7 @@ class ListField extends ParameterField {
         });
     }
 
+    // Datatype
     unknownDatatype() {
         // do nothing
     }
@@ -564,14 +668,15 @@ class ListField extends ParameterField {
 
 /**
  * Creates a Parameter Field according to its type.
- * There are 3 options:
+ * There are 4 options:
  * 1. Single Input Fields (default)
+ * 1. Device Input Fields (type === "device")
  * 2. Multiple Choice (type === "choice")
  * 3. List Views (type === "list")
  *
- * @param parameter
- * @param dependencyMap
- * @returns {ParameterField}
+ * @param parameter The parameter Object mapping.
+ * @param dependencyMap The Object-Map describing what datatypes are linked with what parameter values.
+ * @returns {ParameterField} The created ParameterField
  */
 function createParameterFields(parameter, dependencyMap) {
     switch (parameter['type']) {
