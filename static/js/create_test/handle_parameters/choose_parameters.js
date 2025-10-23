@@ -22,6 +22,7 @@ function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, sub
         disableSubmit(submitButton);
         return;
     }
+
     for (const key in validInputMap) {
         const valueA = validInputMap[key];
         const valueB = currentlyBlockedMap[key] || false;
@@ -88,12 +89,12 @@ function loadParameterFieldsIntoDocument(parameters, requiredContainer, optional
  *
  * @param {Array<Object.<string, any>>} requiredParams - Map of required parameters.
  * @param {Array<Object.<string, any>>} optionalParams - Map of optional parameters.
- * @param {Object.<string, Array<ParameterField>>} dependencyMap Map of parameters that depend on each other.
+ * @param {Object.<string, Array<ParameterField>>} datatypeDependencyMap Map of parameters that depend on each other.
  * */
-function createAndSaveParameterFields(requiredParams, optionalParams, dependencyMap) {
+function createAndSaveParameterFields(requiredParams, optionalParams, datatypeDependencyMap) {
     for (const [params, requirement] of [[requiredParams, "required"], [optionalParams, "optional"]]) {
         for (const parameterInfo of params) {
-            let inputField = createParameterFields(parameterInfo, dependencyMap);
+            let inputField = createParameterFields(parameterInfo, datatypeDependencyMap);
             inputField.createField();
             parameterInfo['parameter_info'] = inputField;
             parameterInfo['requirement'] = requirement;
@@ -277,10 +278,10 @@ function createInputListeners(parameters) {
  * @param {HTMLElement} requiredContainer - The DOM element to append required parameter fields into.
  * @param {HTMLElement} optionalContainer - The DOM element to append optional parameter fields into.
  * @param {HTMLElement} submitButton button that "finishes" the parameter selection
- * @param {Object.<string, Array<ParameterField>>} dependencyMap Map of parameters that depend on each other.
+ * @param {Object.<string, Array<ParameterField>>} datatypeDependencyMap Map of parameters that depend on each other.
  * @param {function} extraSubmitValidity Function that is called for validating further submit requirements.
  */
-function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings, requiredContainer, optionalContainer, submitButton, dependencyMap, extraSubmitValidity) {
+function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings, requiredContainer, optionalContainer, submitButton, datatypeDependencyMap, extraSubmitValidity) {
 
     /**
      * Marks if a parameter's field currently has a valid input.
@@ -288,14 +289,12 @@ function showParameters(requiredParams, optionalParams, mutually_exclusive_bindi
      */
     let validInputMap = {};
 
-    /**
-     * Marks if a parameter's field is currently blocked (unable to change value)
-     */
+    /** Marks if a parameter's field is currently blocked (unable to change value) */
     let currentlyBlockedMap = {};
 
     const allParameters = [...requiredParams, ...optionalParams];
 
-    createAndSaveParameterFields(requiredParams, optionalParams, dependencyMap);
+    createAndSaveParameterFields(requiredParams, optionalParams, datatypeDependencyMap);
     createMutuallyExclusiveHandler(allParameters, mutually_exclusive_bindings, currentlyBlockedMap);
     createDatatypeHandler(allParameters, validInputMap);
     createSubmitHandler(allParameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity);
