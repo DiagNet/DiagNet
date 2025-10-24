@@ -74,7 +74,7 @@ function insertCachedValuesIntoDatatypeIfNeeded(datatype) {
     return datatype;
 }
 
-// Methods for caching Values
+// Methods for caching values
 async function cacheValue(field, value) {
     cacheParameterValues[field.parameter['name']] = value;
     for (const dependentField of field.datatypeDependencyMap[field.parameter['name']]) {

@@ -14,10 +14,11 @@ const submitParametersButton = document.getElementById("submitParameters");
  * @param {Array<Object.<string, any>>} parameters - Map of parameters
  * @param {Object.<string, boolean>} validInputMap - Tracks each parameter's validity.
  * @param {Object.<string, boolean>} currentlyBlockedMap - Tracks which parameters are currently blocked/disabled.
+ * @param {Object.<string, Array<ParameterField>|Object.<string, boolean>>} activationMap Maps what parameters are effected when changing one specific Parameter
  * @param {HTMLElement} submitButton that "finishes" the parameter selection.
  * @param {function} extraSubmitValidity Function that is called for validating further submit requirements.
  */
-function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity) {
+function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity) {
     if (extraSubmitValidity && !extraSubmitValidity()) {
         disableSubmit(submitButton);
         return;
@@ -26,7 +27,10 @@ function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, sub
     for (const key in validInputMap) {
         const valueA = validInputMap[key];
         const valueB = currentlyBlockedMap[key] || false;
-        if (!valueA && !valueB) {
+        let valueC = activationMap[key];
+        if (valueC === undefined) valueC = true;
+        else valueC = valueC !== ParameterField.ACTIVATION_RESULT.DEACTIVATE;
+        if (valueC && !valueA && !valueB) {
             disableSubmit(submitButton);
             return;
         }
@@ -49,13 +53,14 @@ function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, sub
  * @param {Array<Object.<string, any>>} parameters - Map of parameters to attach the handler to.
  * @param {Object.<string, boolean>} validInputMap - Tracks current validity of each parameter.
  * @param {Object.<string, boolean>} currentlyBlockedMap - Tracks which parameters are currently blocked/disabled.
+ * @param {Object.<string, Array<ParameterField>|Object.<string, boolean>>} activationMap Maps what parameters are effected when changing one specific Parameter
  * @param {HTMLElement} submitButton that "finishes" the parameter selection
  * @param {function} extraSubmitValidity Function that is called for validating further submit requirements.
  */
-function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity) {
+function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity) {
     for (const parameterInfo of parameters) {
         parameterInfo['valid_submit_handler'] = () => {
-            checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity);
+            checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity);
         };
     }
 }
@@ -275,7 +280,7 @@ function createInputListeners(parameters) {
  * This covers required_if and forbidden_if keywords.
  *
  * @param allParameters Map of parameters.
- * @param {Object.<string, Array<ParameterField>>} activationMap Maps what parameters are effected when changing one specific Parameter
+ * @param {Object.<string, Array<ParameterField>|Object.<string, boolean>>} activationMap Maps what parameters are effected when changing one specific Parameter
  * @param {boolean} createActivationDependencyHandlers decides if the handler should be assigned. (Should only be true if the global layer is reached)
  */
 function createActivationHandler(allParameters, activationMap, createActivationDependencyHandlers) {
@@ -292,13 +297,16 @@ function createActivationHandler(allParameters, activationMap, createActivationD
     }
 
     if (createActivationDependencyHandlers) {
+        activationMap["ACTIVATION_STATE"] = {}; // Store what parameters are considered "active"
         for (const parameter of allParameters) {
             const parameterName = parameter['name'];
             const toTrigger = activationMap[parameterName];
             const field = parameter['parameter_info'];
             if (toTrigger) {
                 parameter['activation_handler'] = async () => {
-                    toTrigger.forEach(item => item.handleActivationTrigger(parameterName, field.getValue()))
+                    toTrigger.forEach(item => {
+                        activationMap["ACTIVATION_STATE"][parameterName] = item.handleActivationTrigger(parameterName, field.getValue());
+                    });
                 };
             }
         }
@@ -335,12 +343,12 @@ function showParameters(requiredParams, optionalParams, mutually_exclusive_bindi
     createAndSaveParameterFields(requiredParams, optionalParams, datatypeDependencyMap, activationDependencyMap);
     createMutuallyExclusiveHandler(allParameters, mutually_exclusive_bindings, currentlyBlockedMap);
     createDatatypeHandler(allParameters, validInputMap);
-    createSubmitHandler(allParameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity);
+    createSubmitHandler(allParameters, validInputMap, currentlyBlockedMap, activationDependencyMap, submitButton, extraSubmitValidity);
     createActivationHandler(allParameters, activationDependencyMap, createActivationDependencyHandlers);
     createInputListeners(allParameters);
     loadParameterFieldsIntoDocument(allParameters, requiredContainer, optionalContainer);
 
-    checkSubmitValidity(allParameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity);
+    checkSubmitValidity(allParameters, validInputMap, currentlyBlockedMap, activationDependencyMap, submitButton, extraSubmitValidity);
 
     for (const parameterInfo of allParameters.values()) {
         parameterInfo['mutually_exclusive_handler']?.();
