@@ -27,9 +27,13 @@ function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, act
     for (const key in validInputMap) {
         const valueA = validInputMap[key];
         const valueB = currentlyBlockedMap[key] || false;
-        let valueC = activationMap[key];
-        if (valueC === undefined) valueC = true;
-        else valueC = valueC !== ParameterField.ACTIVATION_RESULT.DEACTIVATE;
+        let valueC = true; // default is true
+        if (activationMap["ACTIVATION_STATE"]) {
+            let activationState = activationMap["ACTIVATION_STATE"][key];
+            if (activationState === undefined) activationState = ParameterField.ACTIVATION_RESULT.ACTIVATE;
+            else valueC = (activationState === ParameterField.ACTIVATION_RESULT.ACTIVATE) || (activationState === ParameterField.ACTIVATION_RESULT.UNKNOWN);
+        }
+
         if (valueC && !valueA && !valueB) {
             disableSubmit(submitButton);
             return;
@@ -59,8 +63,10 @@ function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, act
  */
 function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity) {
     for (const parameterInfo of parameters) {
-        parameterInfo['valid_submit_handler'] = () => {
-            checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity);
+        parameterInfo['valid_submit_handler'] = (e) => {
+            if (validInputMap[parameterInfo['name']] || (e && e.detail && e.detail.calledByInputValidation)) {
+                checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity);
+            }
         };
     }
 }
@@ -97,11 +103,11 @@ function loadParameterFieldsIntoDocument(parameters, requiredContainer, optional
  * @param {Object.<string, Array<ParameterField>>} datatypeDependencyMap Map of parameters that depend on each other.
  * @param {Object.<string, Array<ParameterField>>} activationDependencyMap Map of parameters that manages when a parameter is displayed.
  * */
-function createAndSaveParameterFields(requiredParams, optionalParams, datatypeDependencyMap, activationDependencyMap) {
+async function createAndSaveParameterFields(requiredParams, optionalParams, datatypeDependencyMap, activationDependencyMap) {
     for (const [params, requirement] of [[requiredParams, "required"], [optionalParams, "optional"]]) {
         for (const parameterInfo of params) {
             let inputField = createParameterFields(parameterInfo, datatypeDependencyMap, activationDependencyMap);
-            inputField.createField();
+            await inputField.createField();
             parameterInfo['parameter_info'] = inputField;
             parameterInfo['requirement'] = requirement;
         }
@@ -254,7 +260,7 @@ function createDatatypeHandler(parameters, validInputMap) {
 function createInputListeners(parameters) {
     for (const parameterInfo of parameters) {
         const field = parameterInfo['parameter_info'];
-        const handlerNames = ['mutually_exclusive_handler', 'datatype_handler', 'valid_submit_handler', 'datatype_dropdown_handler', 'activation_handler'];
+        const handlerNames = ['mutually_exclusive_handler', 'datatype_handler', 'activation_handler', 'valid_submit_handler', 'datatype_dropdown_handler'];
         const handlers = handlerNames
             .map(name => parameterInfo[name])
             .filter(fn => typeof fn === 'function');
@@ -305,7 +311,9 @@ function createActivationHandler(allParameters, activationMap, createActivationD
             if (toTrigger) {
                 parameter['activation_handler'] = async () => {
                     toTrigger.forEach(item => {
-                        activationMap["ACTIVATION_STATE"][parameterName] = item.handleActivationTrigger(parameterName, field.getValue());
+                        let isShownBefore = item.isShown();
+                        activationMap["ACTIVATION_STATE"][item.parameter['name']] = item.handleActivationTrigger(parameterName, field.getValue());
+                        if (isShownBefore !== item.isShown()) item.refreshSubmitValidity();
                     });
                 };
             }
@@ -327,7 +335,7 @@ function createActivationHandler(allParameters, activationMap, createActivationD
  * @param {boolean} createActivationDependencyHandlers decides if the handler should be assigned. (Should only be true if the global layer is reached)
  * @param {function} extraSubmitValidity Function that is called for validating further submit requirements.
  */
-function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings, requiredContainer, optionalContainer, submitButton, datatypeDependencyMap, activationDependencyMap, createActivationDependencyHandlers, extraSubmitValidity) {
+async function showParameters(requiredParams, optionalParams, mutually_exclusive_bindings, requiredContainer, optionalContainer, submitButton, datatypeDependencyMap, activationDependencyMap, createActivationDependencyHandlers, extraSubmitValidity) {
 
     /**
      * Marks if a parameter's field currently has a valid input.
@@ -340,20 +348,22 @@ function showParameters(requiredParams, optionalParams, mutually_exclusive_bindi
 
     const allParameters = [...requiredParams, ...optionalParams];
 
-    createAndSaveParameterFields(requiredParams, optionalParams, datatypeDependencyMap, activationDependencyMap);
+    await createAndSaveParameterFields(requiredParams, optionalParams, datatypeDependencyMap, activationDependencyMap);
     createMutuallyExclusiveHandler(allParameters, mutually_exclusive_bindings, currentlyBlockedMap);
     createDatatypeHandler(allParameters, validInputMap);
     createSubmitHandler(allParameters, validInputMap, currentlyBlockedMap, activationDependencyMap, submitButton, extraSubmitValidity);
     createActivationHandler(allParameters, activationDependencyMap, createActivationDependencyHandlers);
     createInputListeners(allParameters);
-    loadParameterFieldsIntoDocument(allParameters, requiredContainer, optionalContainer);
-
-    checkSubmitValidity(allParameters, validInputMap, currentlyBlockedMap, activationDependencyMap, submitButton, extraSubmitValidity);
 
     for (const parameterInfo of allParameters.values()) {
         parameterInfo['mutually_exclusive_handler']?.();
-        parameterInfo['datatype_handler']?.();
+        await parameterInfo['datatype_handler']();
     }
+
+    loadParameterFieldsIntoDocument(allParameters, requiredContainer, optionalContainer);
+
+
+    checkSubmitValidity(allParameters, validInputMap, currentlyBlockedMap, activationDependencyMap, submitButton, extraSubmitValidity);
 }
 
 
@@ -398,7 +408,7 @@ async function selectTestClass(testClass) {
     let requiredParameters = parameters.requiredParams;
     let optionalParameters = parameters.optionalParams;
 
-    showParameters(
+    await showParameters(
         requiredParameters,
         optionalParameters,
         parameters.mul,
