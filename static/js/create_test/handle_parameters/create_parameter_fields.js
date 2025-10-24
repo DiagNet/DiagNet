@@ -46,14 +46,31 @@ class ParameterField {
         ];
     }
 
+    /** Returns if the Parameter is currently shown. */
+    isShown() {
+        return this.getField().style.display === "";
+    }
+
+    /** Triggers submit validition for this field */
+    refreshSubmitValidity() {
+        const event = new CustomEvent('input', {
+            detail: {calledByInputValidation: true}
+        });
+        this.parameter['valid_submit_handler'](event);
+    }
+
     /** Shows this Parameter */
     showField() {
+        //let refreshSubmitValidity = !this.isShown();
         this.getField().style.display = "";
+        //if (refreshSubmitValidity) this.refreshSubmitValidity();
     }
 
     /** Hides this Parameter */
     hideField() {
+        //let refreshSubmitValidity = this.isShown();
         this.getField().style.display = "none";
+        //if (refreshSubmitValidity) this.refreshSubmitValidity();
     }
 
     /**
@@ -69,10 +86,10 @@ class ParameterField {
             const requiredRegex = new RegExp(requiredMap[parameterName].toLowerCase());
             if (requiredRegex.test(value.toLowerCase())) {
                 this.showField();
-                currentState =  ParameterField.ACTIVATION_RESULT.ACTIVATE;
+                currentState = ParameterField.ACTIVATION_RESULT.ACTIVATE;
             } else {
                 this.hideField();
-                currentState =  ParameterField.ACTIVATION_RESULT.DEACTIVATE;
+                currentState = ParameterField.ACTIVATION_RESULT.DEACTIVATE;
             }
         }
         const forbiddenMap = this.get('forbidden_if');
@@ -80,12 +97,13 @@ class ParameterField {
             const forbiddenRegex = new RegExp(forbiddenMap[parameterName].toLowerCase());
             if (forbiddenRegex.test(value.toLowerCase())) {
                 this.hideField();
-                currentState = ParameterField.ACTIVATION_RESULT.ACTIVATE;
+                currentState = ParameterField.ACTIVATION_RESULT.DEACTIVATE;
             } else {
                 this.showField();
-                currentState = ParameterField.ACTIVATION_RESULT.DEACTIVATE;
+                currentState = ParameterField.ACTIVATION_RESULT.ACTIVATE;
             }
         }
+
 
         return currentState;
     }
@@ -166,7 +184,7 @@ class ParameterField {
     /** Called after the Field that is returned by createField() is added in the document. */
     afterCreatingField() {
         // check activation triggers
-        this.triggerInputValidation();
+        this.parameter['activation_handler']?.();
 
         // check for datatype dependency
         const match = this.parameter['type'].match(ParameterField.parameterDatatypeDependencyRegex); // value(target_field)
@@ -265,7 +283,7 @@ class ParameterField {
 /** Displays a single line input device field. */
 class SingleLineDeviceField extends ParameterField {
     // Field
-    createField() {
+    async createField() {
         this.container = singleLineInputTemplateForDevices.content.cloneNode(true).querySelector('div');
 
         this.visibleItems = [];
@@ -440,7 +458,7 @@ class SingleLineDeviceField extends ParameterField {
 
 /** Displays a single line input field. */
 class SingleLineInputField extends ParameterField {
-    createField() {
+    async createField() {
         this.container = singleLineInputTemplate.content.cloneNode(true).querySelector('div');
         this.field = this.container.querySelector('.param-input');
 
@@ -461,7 +479,7 @@ class SingleLineInputField extends ParameterField {
 
 /** Displays a multiple choice input field. */
 class ChoiceField extends ParameterField {
-    createField() {
+    async createField() {
         this.container = choiceInputTemplate.content.cloneNode(true).querySelector('div');
         this.field = this.container.querySelector('.choice-select');
 
@@ -545,7 +563,7 @@ class ListField extends ParameterField {
     }
 
     // Field
-    createField() {
+    async createField() {
         this.items = [];
 
         this.container = listInputTemplate.content.cloneNode(true).querySelector('div');
@@ -564,7 +582,7 @@ class ListField extends ParameterField {
 
         this.allParameters.forEach(value => value['parent_list'] = this);
 
-        showParameters(
+        await showParameters(
             requiredParams,
             optionalParams,
             mutually_exclusive_bindings,
@@ -702,6 +720,12 @@ class ListField extends ParameterField {
             this.triggerInputValidation();
             this.countBadge.innerHTML = "0";
         }
+        this.triggerChildValidation();
+    }
+
+    triggerChildValidation() {
+        let firstChild = [...this.children][0];
+        if (firstChild) firstChild.triggerInputValidation();
     }
 
     // Event Listeners
