@@ -12,6 +12,16 @@ class ParameterField {
     static parameterDatatypeDependencyRegex = /value\(([^)]+)\)/;
 
     /**
+     * Simulates an Enum. Displays Datatype-checking-results.
+     * @type {{UNKNOWN: string, SUCCESS: string, FAIL: string}}
+     */
+    static ACTIVATION_RESULT = {
+        ACTIVATE: "active",
+        DEACTIVATE: "deactive",
+        UNKNOWN: "unknown"
+    };
+
+    /**
      * @param {Object.<string, any>} parameter - Metadata map for the parameter.
      * @param {Object.<string, Array<ParameterField>>} datatypeDependencyMap - Stores the parameters which's datatype is dependent on other parameters.
      * @param {Object.<string, Array<ParameterField>>} activationDependencyMap Map of parameters that manages when a parameter is displayed.
@@ -53,25 +63,31 @@ class ParameterField {
      */
     handleActivationTrigger(parameterName, value) {
         // forbidden if
-        const forbiddenMap = this.get('forbidden_if');
-        if (forbiddenMap && parameterName in forbiddenMap) {
-            const forbiddenRegex = new RegExp(forbiddenMap[parameterName].toLowerCase());
-            if (forbiddenRegex.test(value.toLowerCase())) {
-                this.hideField();
-            } else {
-                this.showField();
-            }
-        }
-
+        let currentState = ParameterField.ACTIVATION_RESULT.UNKNOWN;
         const requiredMap = this.get('required_if');
         if (requiredMap && parameterName in requiredMap) {
             const requiredRegex = new RegExp(requiredMap[parameterName].toLowerCase());
             if (requiredRegex.test(value.toLowerCase())) {
                 this.showField();
+                currentState =  ParameterField.ACTIVATION_RESULT.ACTIVATE;
             } else {
                 this.hideField();
+                currentState =  ParameterField.ACTIVATION_RESULT.DEACTIVATE;
             }
         }
+        const forbiddenMap = this.get('forbidden_if');
+        if (forbiddenMap && parameterName in forbiddenMap) {
+            const forbiddenRegex = new RegExp(forbiddenMap[parameterName].toLowerCase());
+            if (forbiddenRegex.test(value.toLowerCase())) {
+                this.hideField();
+                currentState = ParameterField.ACTIVATION_RESULT.ACTIVATE;
+            } else {
+                this.showField();
+                currentState = ParameterField.ACTIVATION_RESULT.DEACTIVATE;
+            }
+        }
+
+        return currentState;
     }
 
     // Info
