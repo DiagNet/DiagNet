@@ -4,7 +4,10 @@
 
 {% block content %}
 <h1>Test Groups</h1>
-<form hx-post="create-testgroup/" hx-target="#testgroup-table" hx-swap="outerHTML" hx-on::after-request="this.reset()">
+<form hx-post="create-testgroup/"
+      hx-target="#testgroup-table"
+      hx-swap="outerHTML"
+      hx-on::after-request="this.reset()">
   {% csrf_token %}
   <div class="from-group row">
     <div class="col-sm-8">

@@ -10,7 +10,6 @@ from django.views.decorators.http import require_http_methods
 def testgroups_page(request):
     context = {}
     if len(TestGroup.objects.all()) > 0:
-        print(len(TestGroup.objects.all()))
         context = {"testgroup_list": list(TestGroup.objects.all())}
 
     return render(request, "testgroup_page.html", context=context)
@@ -20,7 +19,6 @@ def list_testgroups(request, error=None):
     context = {}
     if error:
         context["error"] = error
-        print(error)
 
     if len(TestGroup.objects.all()) > 0:
         context["testgroup_list"] = TestGroup.objects.all()
@@ -136,14 +134,13 @@ def add_testcases_to_testgroup(request: HttpRequest):
     testgroup_pk = request.POST.get("testgroup")
     testcases = request.POST.getlist("selected_testcases")
     if not testcases or not testgroup_pk:
-        return HttpResponseBadRequest()
+        return HttpResponseBadRequest("Select one or more testcases")
 
     try:
         testgroup = TestGroup.objects.get(pk=testgroup_pk)
     except TestGroup.DoesNotExist:
         return HttpResponseBadRequest("Test group does not exist")
 
-    print(request.POST)
     for pk in testcases:
         try:
             testcase = TestCase.objects.get(pk=pk)
@@ -201,7 +198,9 @@ def run_testcase(request, group, pk):
 @require_http_methods(["GET"])
 def get_testcase_search_popup(request, testgroup_name):
     testgroup = get_object_or_404(TestGroup, name=testgroup_name)
-    testcases = TestCase.objects.all()
+    already_added = set(testgroup.testcases.get_queryset())
+
+    testcases = set(TestCase.objects.all()) - already_added
     context = {"testcases": testcases, "testgroup": testgroup}
 
     return render(request, "testcase_search_popup.html", context)
