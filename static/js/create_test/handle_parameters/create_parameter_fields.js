@@ -143,6 +143,7 @@ class ParameterField {
     /** Clears the input field's value. */
     clearValue() {
         if (this.field) this.field.value = "";
+        this.triggerInputValidation();
     }
 
     /**
@@ -267,6 +268,11 @@ class ParameterField {
         }
     }
 
+    /** If this Parameter is part of a list, this method is called after the list has been initialized */
+    afterParentInitialization() {
+        // do nothing
+    }
+
     /**
      * Checks if the current field's value matches the expected datatype.
      * @returns {Promise<string>} Result of the datatype validation.
@@ -306,11 +312,17 @@ class SingleLineDeviceField extends ParameterField {
         };
         this.field = this.container.querySelector('.param-input');
 
-        this.container.querySelector('.param-label').textContent = this.parameter['name'];
-        this.field.placeholder = this.parameter['name'];
+        this.container.querySelector('.param-label').textContent = this.get('display_name') ? this.get('display_name') : this.get('name');
 
+        this.optionalBadge = this.container.querySelector('.param-optional-field');
 
         return this.container;
+    }
+
+    afterParentInitialization() {
+        if (this.get('requirement') === "optional") {
+            this.optionalBadge.classList.remove('d-none');
+        }
     }
 
     getField() {
@@ -333,6 +345,7 @@ class SingleLineDeviceField extends ParameterField {
 
     /** Shows the Device Dropdown*/
     showDropdown() {
+        console.log("show");
         this.dropdownMenu.classList.add('show');
     }
 
@@ -475,13 +488,19 @@ class SingleLineInputField extends ParameterField {
         this.container = singleLineInputTemplate.content.cloneNode(true).querySelector('div');
         this.field = this.container.querySelector('.param-input');
 
-        this.container.querySelector('.param-label').textContent = this.parameter['name'];
-        this.field.placeholder = this.parameter['name'];
+        this.container.querySelector('.param-label').textContent = this.get('display_name') ? this.get('display_name') : this.get('name');
+        this.optionalBadge = this.container.querySelector('.param-optional-field');
 
         this.datatypeLabel = this.container.querySelector('.param-datatype');
         this.updateDatatypeLabel();
 
         return this.container;
+    }
+
+    afterParentInitialization() {
+        if (this.get('requirement') === "optional") {
+            this.optionalBadge.classList.remove('d-none');
+        }
     }
 
     updateDatatypeLabel() {
@@ -504,7 +523,8 @@ class ChoiceField extends ParameterField {
         this.field = this.container.querySelector('.choice-select');
 
         this.label = this.container.querySelector('.choice-label');
-        this.label.textContent = this.parameter['name'];
+        this.label.textContent = this.get('display_name') ? this.get('display_name') : this.get('name');
+        ;
 
         const options = this.parameter['choices'] || [];
         const defaultChoice = this.parameter['default_choice'];
@@ -629,6 +649,7 @@ class ListField extends ParameterField {
             this.children.add(field);
 
             field.getField().style.marginLeft = `${nested_index}rem`;
+            value['parameter_info'].afterParentInitialization();
         }
 
         // Stop list mousedown behaviour when clicking the add button.
@@ -812,7 +833,7 @@ class ListField extends ParameterField {
     }
 
     triggerInputValidation() {
-        this.callback();
+        this.callback(new Event('input', {bubbles: true}));
     }
 
     triggerFocus() {
