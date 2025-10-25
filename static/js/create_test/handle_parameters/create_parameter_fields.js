@@ -61,16 +61,12 @@ class ParameterField {
 
     /** Shows this Parameter */
     showField() {
-        //let refreshSubmitValidity = !this.isShown();
         this.getField().style.display = "";
-        //if (refreshSubmitValidity) this.refreshSubmitValidity();
     }
 
     /** Hides this Parameter */
     hideField() {
-        //let refreshSubmitValidity = this.isShown();
         this.getField().style.display = "none";
-        //if (refreshSubmitValidity) this.refreshSubmitValidity();
     }
 
     /**
@@ -490,7 +486,8 @@ class ChoiceField extends ParameterField {
 
         const options = this.parameter['choices'] || [];
         const defaultChoice = this.parameter['default_choice'];
-        if (defaultChoice === undefined) options.unshift("");
+        const emptyChoice = this.parameter['empty_choice'];
+        if (emptyChoice === "true") options.unshift("");
 
         options.forEach(opt => {
             const option = document.createElement("option");
