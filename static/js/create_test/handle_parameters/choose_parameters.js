@@ -64,7 +64,7 @@ function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, act
 function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity) {
     for (const parameterInfo of parameters) {
         parameterInfo['valid_submit_handler'] = (e) => {
-            if ((parameterInfo['requirement'] === "optional") || validInputMap[parameterInfo['name']] || (e && e.detail && e.detail.calledByInputValidation)) {
+            if ((parameterInfo['requirement'] === "optional") || (parameterInfo['type'] === "list") || validInputMap[parameterInfo['name']] || (e && e.detail && e.detail.calledByInputValidation)) {
                 checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity);
             }
         };
