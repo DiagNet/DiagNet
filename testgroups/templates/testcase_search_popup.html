@@ -6,8 +6,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
-      <form hx-post="{% url 'testgroup-add-testcase' %}" hx-target="#td-coll-{{ testgroup.name }}" hx-swap="innerHTML"
-      hx-vals='{"testgroup": "{{ testgroup.pk }}"}'>
+      <form hx-post="{% url 'testgroup-add-testcase' %}"
+            hx-target="#td-coll-{{ testgroup.name }}"
+            hx-swap="innerHTML"
+            hx-vals='{"testgroup": "{{ testgroup.pk }}"}'>
 
         {% csrf_token %}
         <div class="modal-body">
@@ -39,7 +41,7 @@
                   {% endfor %}
                   {% else %}
                   <tr>
-                    <td colspan="100%">No Testcases yet.</td>
+                    <td colspan="100%">No Testcases to add.</td>
                   </tr>
                   {% endif %}
                 </tbody>
@@ -48,8 +50,8 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abort</button>
-          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Submit</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Add</button>
         </div>
       </form>
     </div>
