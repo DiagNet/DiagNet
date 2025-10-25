@@ -3,6 +3,7 @@
 const requiredContainer = document.getElementById("requiredContainer");
 const optionalContainer = document.getElementById("optionalContainer");
 const submitParametersButton = document.getElementById("submitParameters");
+const optionalParameterTab = document.getElementById('optional-parameter-tab');
 
 /**
  * Checks if all parameters are valid and updates the submit button state.
@@ -410,6 +411,8 @@ async function selectTestClass(testClass) {
 
     let requiredParameters = parameters.requiredParams;
     let optionalParameters = parameters.optionalParams;
+
+    optionalParameterTab.disabled = Object.keys(optionalParameters).length === 0;
 
     await showParameters(
         requiredParameters,
