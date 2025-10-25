@@ -17,6 +17,7 @@ class CheckRoutes(DiagNetTest):
             "name": "type",
             "type": "choice",
             "choices": ["IPv4", "IPv6"],
+            "empty_choice": "true",
             "description": "Selects if IPv4 or IPv6 Routes are checked"
         },
         {
@@ -84,6 +85,7 @@ class CheckRoutes(DiagNetTest):
                                         "choices": [
                                             "ANY","CONNECTED (C)"
                                         ],
+                                        "empty_choice": "true",
                                         "default_choice": "ANY",
                                         "description": "The origin or protocol through which a route was learned"
                                     }
