@@ -93,7 +93,7 @@ class CheckRoutes(DiagNetTest):
                                 "optional": [
                                     {
                                         "name": "test_param",
-                                        "type": "ipv4",
+                                        "type": "IPv4",
                                     },
                                 ],
                                 "mutually_exclusive": [],

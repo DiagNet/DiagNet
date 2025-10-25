@@ -1,6 +1,5 @@
 /** Makes tab navigation unavailable for hidden tabs. */
 function updateTabContentAccessibility() {
-    console.log(document.activeElement);
     document.activeElement.blur();
 
     const navs = document.querySelectorAll('.create-popup-nav');
@@ -12,7 +11,6 @@ function updateTabContentAccessibility() {
         tabMap.set(navs[i], panes[i]);
     }
 
-    console.log("UPDATE");
     navs.forEach(nav_pane => {
         const isActive = nav_pane.classList.contains('active'); // or whichever logic you use for current pane
         // focusable elements
@@ -20,7 +18,6 @@ function updateTabContentAccessibility() {
 
         focusable.forEach(el => {
             if (isActive) {
-                console.log("ACTIVE " + el.placeholder);
                 el.setAttribute('tabindex', '0'); // skip tabbing
             } else {
                 el.setAttribute('tabindex', '-1'); // skip tabbing
