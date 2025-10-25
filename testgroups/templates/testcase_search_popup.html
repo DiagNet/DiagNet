@@ -1,4 +1,3 @@
-<!-- popup.html (wird mit htmx geladen) -->
 <div class="modal fade" id="simpleModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -7,42 +6,52 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
-      <div class="modal-body">
-        <input type="text" class="form-control mb-3" placeholder="Type something...">
+      <form hx-post="{% url 'testgroup-add-testcase' %}" hx-target="#td-coll-{{ testgroup.name }}" hx-swap="innerHTML"
+      hx-vals='{"testgroup": "{{ testgroup.pk }}"}'>
 
-        <div class="table-scrollable" style="max-height:300px; overflow-y:auto;">
-          <table class="table table-striped mb-0">
-            <thead class="table-light">
-              <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
+        {% csrf_token %}
+        <div class="modal-body">
+          <input type="text" class="form-control mb-3" placeholder="Type something...">
 
-              {% if testcases %}
-              {% for testcase in testcases %}
-              <tr>
-                <td>1</td>
-                <td>{{ testcase.label }}</td>
-                <td><button class="btn btn-sm btn-outline-primary">Select</button></td>
-              </tr>
-              {% endfor %}
-              {% else %}
-              <tr>
-                <td colspan="100%">No Testcases yet.</td>
-              </tr>
-              {% endif %}
-            </tbody>
-          </table>
+          <div class="table-scrollable" style="max-height:300px; overflow-y:auto;">
+              <table class="table table-striped mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Select</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if testcases %}
+                  {% for testcase in testcases %}
+                  <tr>
+                    <td>{{ testcase.pk }}</td>
+                    <td>{{ testcase.label }}</td>
+                    <td>
+                      <input 
+                        type="checkbox" 
+                        name="selected_testcases" 
+                        value="{{ testcase.pk }}" 
+                        class="form-check-input">
+                    </td>
+                  </tr>
+                  {% endfor %}
+                  {% else %}
+                  <tr>
+                    <td colspan="100%">No Testcases yet.</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+          </div>
         </div>
-      </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abort</button>
-        <button type="button" class="btn btn-primary">Submit</button>
-      </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abort</button>
+          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Submit</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

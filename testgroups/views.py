@@ -129,6 +129,32 @@ def add_testcase_to_testgroup(request: HttpRequest):
     return list_testcases(request, testgroup_name)
 
 
+def add_testcases_to_testgroup(request: HttpRequest):
+    if request.method != "POST":
+        return HttpResponseBadRequest()
+
+    testgroup_pk = request.POST.get("testgroup")
+    testcases = request.POST.getlist("selected_testcases")
+    if not testcases or not testgroup_pk:
+        return HttpResponseBadRequest()
+
+    try:
+        testgroup = TestGroup.objects.get(pk=testgroup_pk)
+    except TestGroup.DoesNotExist:
+        return HttpResponseBadRequest("Test group does not exist")
+
+    print(request.POST)
+    for pk in testcases:
+        try:
+            testcase = TestCase.objects.get(pk=pk)
+        except TestCase.DoesNotExist:
+            return HttpResponseBadRequest("Testcase does not exist")
+
+        testgroup.testcases.add(testcase)
+
+    return list_testcases(request, testgroup.name)
+
+
 def remove_testcase_from_testgroup(request: HttpRequest):
     if request.method != "POST":
         return HttpResponseBadRequest()
@@ -176,6 +202,6 @@ def run_testcase(request, group, pk):
 def get_testcase_search_popup(request, testgroup_name):
     testgroup = get_object_or_404(TestGroup, name=testgroup_name)
     testcases = TestCase.objects.all()
-    context = {"testcases": testcases}
+    context = {"testcases": testcases, "testgroup": testgroup}
 
     return render(request, "testcase_search_popup.html", context)
