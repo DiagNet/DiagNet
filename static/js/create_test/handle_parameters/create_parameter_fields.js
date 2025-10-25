@@ -608,7 +608,18 @@ class ListField extends ParameterField {
             field.getField().style.marginLeft = `${nested_index}rem`;
         }
 
-        this.addButton.addEventListener("click", () => this.add());
+        // Stop list mousedown behaviour when clicking the add button.
+        this.addButton.addEventListener("mousedown", (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+        });
+
+        this.addButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            this.add();
+            this.triggerFocus();
+        });
 
         // Constraints
         if (this.parameter['constraints']) {
@@ -779,6 +790,10 @@ class ListField extends ParameterField {
 
     triggerInputValidation() {
         this.callback();
+    }
+
+    triggerFocus() {
+        this.container.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
     }
 
     onFocus(callback) {
