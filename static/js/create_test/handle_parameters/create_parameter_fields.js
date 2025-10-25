@@ -258,12 +258,23 @@ class ParameterField {
         if (this.field) this.field.style.border = "2px solid red";
     }
 
+    checkDatatypeDependencyInteractions() {
+        const name = this.get('name');
+        for (const dependentField of this.getDatatypeDependencyMap()[name]) {
+            if (dependentField instanceof SingleLineInputField) {
+                dependentField.updateDatatypeLabel();
+            }
+        }
+    }
+
     /**
      * Checks if the current field's value matches the expected datatype.
      * @returns {Promise<string>} Result of the datatype validation.
      */
     async checkDatatype() {
-        return handleCheckDataType(this, this.parameter['type']); // handle_datatypes.js
+        const result = handleCheckDataType(this, this.parameter['type']); // handle_datatypes.js
+        this.checkDatatypeDependencyInteractions();
+        return result;
     }
 
     // Submit Validity
@@ -283,6 +294,7 @@ class SingleLineDeviceField extends ParameterField {
         this.container = singleLineInputTemplateForDevices.content.cloneNode(true).querySelector('div');
 
         this.visibleItems = [];
+        this.dropdownMenu = this.container.querySelector('#dropdownMenu');
 
         this.searchResults = this.container.querySelector("#searchResults");
         _ = this.insertDevicesIntoResults();
@@ -297,6 +309,7 @@ class SingleLineDeviceField extends ParameterField {
         this.container.querySelector('.param-label').textContent = this.parameter['name'];
         this.field.placeholder = this.parameter['name'];
 
+
         return this.container;
     }
 
@@ -310,42 +323,43 @@ class SingleLineDeviceField extends ParameterField {
         return evaluation;
     }
 
-
     // Device Dropdown
 
     /** Hides the Device Dropdown*/
     hideDropdown() {
-        // do nothing - deselection happens automatically
+        this.dropdownMenu.classList.remove('show');
+        this.resetPointer();
     }
 
     /** Shows the Device Dropdown*/
     showDropdown() {
-        this.dropdown.show();
+        this.dropdownMenu.classList.add('show');
     }
 
     // Setup
     afterCreatingField() {
         super.afterCreatingField();
 
-        // Dropdown can only be initialized after the input field is loaded into the document
-        this.dropdown = new bootstrap.Dropdown(this.field, {
-            autoClose: 'outside' // 'outside' prevents it from re-focusing on the toggle
-        });
-
-        this.field.addEventListener("blur", this.hideDropdown.bind(this));
         this.field.addEventListener("keydown", this.handleDropdownKeyDown.bind(this));
+        this.field.addEventListener("click", this.handleDropdownKeyDown.bind(this));
 
         this.searchResults.addEventListener('mousedown', (e) => {
             if (e.target.tagName === 'LI') this.selectItem(e.target.textContent);
+        });
+
+        document.addEventListener('mousedown', e => {
+            if (!this.container.contains(e.target)) {
+                this.hideDropdown();
+            }
         });
     }
 
     onFocus(callback) {
         this.field.addEventListener('focus', (event) => {
             callback(event);
-            if (this.dropdown) {
+            if (this.dropdownMenu) {
                 this.showDropdown();
-                this.handleDropdownInput(new Event("input", {bubbles: true})); // Trigger Dropdown as if an input was made
+                this.handleDropdownInput(new Event("input", {bubbles: false})); // Trigger Dropdown as if an input was made
             }
         });
     }
@@ -385,7 +399,6 @@ class SingleLineDeviceField extends ParameterField {
 
         this.resetPointer();
         const filter = this.getValue().toLowerCase();
-        this.dropdown.show();
 
         const visibleItems = [];
         this.dropdownItems.forEach(item => {
@@ -399,6 +412,8 @@ class SingleLineDeviceField extends ParameterField {
         });
 
         this.visibleItems = visibleItems;
+        this.resetPointer();
+        this.showDropdown();
     }
 
     /** Handles Keyboard Navigation (in order to enable Arrow-Key Navigation). */
@@ -423,7 +438,7 @@ class SingleLineDeviceField extends ParameterField {
             e.preventDefault();
             if (this.selectedIndex >= 0) this.selectItem(items[this.selectedIndex].textContent);
         } else if (e.key === 'Tab') {
-            this.dropdown.hide();
+            this.hideDropdown();
             this.resetPointer();
         } else if (e.key === 'Escape') {
             this.dropdown.hide();
@@ -463,7 +478,14 @@ class SingleLineInputField extends ParameterField {
         this.container.querySelector('.param-label').textContent = this.parameter['name'];
         this.field.placeholder = this.parameter['name'];
 
+        this.datatypeLabel = this.container.querySelector('.param-datatype');
+        this.updateDatatypeLabel();
+
         return this.container;
+    }
+
+    updateDatatypeLabel() {
+        this.datatypeLabel.textContent = insertCachedValuesIntoDatatypeIfNeeded(this.parameter['type']);
     }
 
     getField() {
@@ -491,7 +513,7 @@ class ChoiceField extends ParameterField {
 
         options.forEach(opt => {
             const option = document.createElement("option");
-            option.value = opt.toLowerCase();
+            option.value = opt;
             option.textContent = opt;
             if (opt === defaultChoice) option.selected = true;
             this.field.appendChild(option);
@@ -540,10 +562,12 @@ class ChoiceField extends ParameterField {
         if (value.length === 0) {
             this.unknownDatatype();
             await uncacheValue(this);
+            this.checkDatatypeDependencyInteractions();
             return DATATYPE_RESULT.UNKNOWN;
         } else {
             this.correctDatatype();
             await cacheValue(this, value);
+            this.checkDatatypeDependencyInteractions();
             return DATATYPE_RESULT.SUCCESS;
         }
     }
