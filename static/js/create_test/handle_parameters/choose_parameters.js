@@ -275,7 +275,8 @@ function createInputListeners(parameters) {
         }
 
         field.onFocus(async (event) => {
-            if (event) event.stopPropagation();
+            if (event.noAction) return; // Stop parent elements to steal focus and display their info.
+            event.noAction = true;
             displayParameterInfo(field);
         });
     }
