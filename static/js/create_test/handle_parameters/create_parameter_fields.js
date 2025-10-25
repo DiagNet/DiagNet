@@ -573,6 +573,7 @@ class ListField extends ParameterField {
 
         this.countBadge = this.container.querySelector('.list-count');
         this.addButton = this.container.querySelector('.add-to-list-btn');
+        this.countInfo = this.container.querySelector('.count-label');
 
         const requiredParams = this.parameter['required'] || [];
         const optionalParams = this.parameter['optional'] || [];
@@ -655,6 +656,62 @@ class ListField extends ParameterField {
         }
     }
 
+    // countBadge
+
+    clearCountBadge() {
+        this.countBadge.innerHTML = "0";
+        this.badgeInfoUpdate();
+    }
+
+    /** Increases the Count Badge signifying the amount of items in this list. */
+    decreaseCountBadge() {
+        this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) - 1) + "";
+        this.badgeInfoUpdate();
+    }
+
+    /** Decreases the Count Badge signifying the amount of items in this list. */
+    increaseCountBadge() {
+        this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) + 1) + "";
+        this.badgeInfoUpdate();
+    }
+
+    badgeCountCorrect() {
+        this.countBadge.classList.remove('bg-primary', 'bg-warning', 'bg-secondary');
+        this.countBadge.classList.add('bg-success');
+        this.countInfo.innerHTML = "";
+    }
+
+    badgeCountUnknown() {
+        this.countBadge.classList.remove('bg-primary', 'bg-warning', 'bg-success');
+        this.countBadge.classList.add('bg-secondary');
+        this.countInfo.innerHTML = "";
+    }
+
+    badgeCountMaxed() {
+        this.countBadge.classList.remove('bg-secondary', 'bg-warning', 'bg-success');
+        this.countBadge.classList.add('bg-primary');
+        this.countInfo.innerHTML = "maximum length reached";
+    }
+
+    badgeCountTooLow() {
+        this.countBadge.classList.remove('bg-secondary', 'bg-primary', 'bg-success');
+        this.countBadge.classList.add('bg-warning');
+        this.countInfo.innerHTML = "minimum length for this list is " + this.min_length;
+    }
+
+    badgeInfoUpdate() {
+        const currentBadgeNumber = Number(this.countBadge.innerHTML);
+        if (this.items.length === 0) {
+            this.badgeCountUnknown();
+        } else if (this.min_length && currentBadgeNumber < this.min_length) {
+            this.badgeCountTooLow();
+        } else if (this.max_length && currentBadgeNumber >= this.max_length) {
+            this.badgeCountMaxed();
+        } else {
+            this.badgeCountCorrect();
+        }
+    }
+
     // Submit Validation
 
     /**
@@ -676,19 +733,6 @@ class ListField extends ParameterField {
         return true;
     }
 
-
-    // countBadge
-
-    /** Increases the Count Badge signifying the amount of items in this list. */
-    decreaseCountBadge() {
-        this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) - 1) + "";
-    }
-
-    /** Decreases the Count Badge signifying the amount of items in this list. */
-    increaseCountBadge() {
-        this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) + 1) + "";
-    }
-
     /**
      * Retrieves current values from all child fields.
      * @returns {Array} Values of all child input fields.
@@ -703,10 +747,10 @@ class ListField extends ParameterField {
 
     /** Adds current child values to the current items and updates count. */
     add() {
-        this.increaseCountBadge();
         this.items.push(this.receiveValuesFromChildren());
         this.clearValue(false);
         this.triggerInputValidation();
+        this.increaseCountBadge();
     }
 
     /** Clears all child fields and disables the add button. */
@@ -718,7 +762,7 @@ class ListField extends ParameterField {
         if (clearSelf) {
             this.items.length = 0;
             this.triggerInputValidation();
-            this.countBadge.innerHTML = "0";
+            this.clearCountBadge();
         }
         this.triggerChildValidation();
     }
