@@ -1,10 +1,12 @@
 /* Handles Search-Inputs and displays available testcases */
 
+
 const searchInput = document.getElementById("searchInput");
 const resultsList = document.getElementById("resultsList");
 const popupWindow = document.getElementById("largeModal");
 const docWindow = document.getElementById("doc");
 const templateTab = document.getElementById('template-tab');
+const paramTab = document.getElementById('parameters-tab');
 
 const emptyItem = document.createElement("li");
 emptyItem.textContent = "No testcases found";
@@ -19,8 +21,16 @@ templateTab.addEventListener("click", (e) => {
     if (paramTab.disabled) {
         paramTab.disabled = true;
         popupWindow.addEventListener("keydown", onPopUpClickHandler);
+    } else {
+        templateTab.classList.add("active");
+        updateTabContentAccessibility();
+        searchInput.focus();
     }
-})
+});
+
+paramTab.addEventListener("click", (e) => {
+    updateTabContentAccessibility();
+});
 
 // Test-Info
 /**
@@ -39,6 +49,7 @@ function showInfoForTestClass(testCase, data) {
     docClickHandler = async () => {
         popupWindow.removeEventListener("keydown", onPopUpClickHandler); // remove focus from search Element in template tab
         await selectTestClass(testCase);
+        updateTabContentAccessibility();
     };
 
     docWindow.addEventListener("click", docClickHandler);
@@ -199,6 +210,7 @@ async function handleKeyboardNavigation(e) {
             if (currentIndex >= 0 && currentIndex < items.length) {
                 popupWindow.removeEventListener("keydown", onPopUpClickHandler); // remove focus from search Element in template tab
                 await selectTestClass(items[currentIndex].dataset.name);
+                updateTabContentAccessibility();
             }
             break;
 
