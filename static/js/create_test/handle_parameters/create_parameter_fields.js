@@ -319,7 +319,7 @@ class SingleLineDeviceField extends ParameterField {
 
     /** Hides the Device Dropdown*/
     hideDropdown() {
-        this.dropdown.hide();
+        // do nothing - deselection happens automatically
     }
 
     /** Shows the Device Dropdown*/
@@ -332,7 +332,9 @@ class SingleLineDeviceField extends ParameterField {
         super.afterCreatingField();
 
         // Dropdown can only be initialized after the input field is loaded into the document
-        this.dropdown = new bootstrap.Dropdown(this.field);
+        this.dropdown = new bootstrap.Dropdown(this.field, {
+            autoClose: 'outside' // 'outside' prevents it from re-focusing on the toggle
+        });
 
         this.field.addEventListener("blur", this.hideDropdown.bind(this));
         this.field.addEventListener("keydown", this.handleDropdownKeyDown.bind(this));
@@ -793,7 +795,7 @@ class ListField extends ParameterField {
     }
 
     triggerFocus() {
-        this.container.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        this.container.dispatchEvent(new MouseEvent('mousedown', {bubbles: true}));
     }
 
     onFocus(callback) {
