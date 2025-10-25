@@ -1,6 +1,5 @@
 /* Handles Parameters */
 
-const paramTab = document.getElementById('parameters-tab');
 const requiredContainer = document.getElementById("requiredContainer");
 const optionalContainer = document.getElementById("optionalContainer");
 const submitParametersButton = document.getElementById("submitParameters");
@@ -397,6 +396,7 @@ async function selectTestClass(testClass) {
     paramTab.classList.remove('disabled');
     paramTab.disabled = false;
     paramTab.click();
+    paramTab.setAttribute('tabindex', '0');
 
     // Fetch needed parameters
     let parameters;

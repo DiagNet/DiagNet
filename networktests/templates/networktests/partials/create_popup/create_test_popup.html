@@ -50,13 +50,13 @@
 <div class="modal-header justify-content-center">
     <ul class="nav nav-pills" id="popupTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="template-tab" type="button">Template</button>
+            <button class="nav-link create-popup-nav active" id="template-tab" type="button" aria-disabled="true">Template</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link disabled" id="parameters-tab" type="button">Parameters</button>
+            <button class="nav-link create-popup-nav disabled" id="parameters-tab" type="button" tabindex="-1" aria-disabled="true">Parameters</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link disabled" id="info-tab" type="button">Info</button>
+            <button class="nav-link create-popup-nav disabled" id="info-tab" type="button" tabindex="-1" aria-disabled="true">Info</button>
         </li>
     </ul>
     <button type="button" class="btn-close position-absolute end-0 me-3" data-bs-dismiss="modal"
@@ -68,13 +68,13 @@
 
 <div class="modal-body p-0" style="overflow:hidden;">
     <div id="popupTabsContent" class="d-flex transition-transform">
-        <div id="template-site" class="tab-pane outer-slide-pane" style="flex-shrink:0; width:100%; padding:1rem;">
+        <div id="template-site" class="tab-pane outer-slide-pane create-popup-content" style="flex-shrink:0; width:100%; padding:1rem;">
             {% include "networktests/partials/create_popup/popup/choose_test.html" %}
         </div>
-        <div class="tab-pane outer-slide-pane" style="flex-shrink:0; width:100%; padding:1rem;">
+        <div class="tab-pane outer-slide-pane create-popup-content" style="flex-shrink:0; width:100%; padding:1rem;">
             {% include "networktests/partials/create_popup/popup/choose_parameters.html" %}
         </div>
-        <div class="tab-pane outer-slide-pane" style="flex-shrink:0; width:100%; padding:1rem;">
+        <div class="tab-pane outer-slide-pane create-popup-content" style="flex-shrink:0; width:100%; padding:1rem;">
             {% include "networktests/partials/create_popup/popup/choose_test_values.html" %}
         </div>
     </div>
@@ -109,6 +109,7 @@
 </script>
 
 <script src="{% static 'js/create_test/api_calls.js' %}"></script>
+<script src="{% static 'js/create_test/tab_management.js' %}"></script>
 <script src="{% static 'js/create_test/choose_test.js' %}"></script>
 <script src="{% static 'js/create_test/handle_parameters/parameter_info_tab.js' %}"></script>
 <script src="{% static 'js/create_test/handle_parameters/handle_parameter_tabs.js' %}"></script>

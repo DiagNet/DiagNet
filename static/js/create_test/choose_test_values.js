@@ -45,6 +45,7 @@ async function selectParameters(selectedRequiredParams, selectedOptionalParamete
 
     infoTab.disabled = false;
     infoTab.click();
+    updateTabContentAccessibility();
 
     currentRequiredParams = requiredParams.values;
     currentOptionalParams = optionalParams.values;
