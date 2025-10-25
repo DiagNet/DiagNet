@@ -34,7 +34,6 @@ function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, act
         }
 
         if (valueC && !valueA && !valueB) {
-
             disableSubmit(submitButton);
             return;
         }
@@ -64,7 +63,7 @@ function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, act
 function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity) {
     for (const parameterInfo of parameters) {
         parameterInfo['valid_submit_handler'] = (e) => {
-            if ((parameterInfo['requirement'] === "optional") || (parameterInfo['type'] === "list") || validInputMap[parameterInfo['name']] || (e && e.detail && e.detail.calledByInputValidation)) {
+            if ((parameterInfo['requirement'] === "optional") || (parameterInfo['type'] === "list") || e.validInputChanged || (e && e.detail && e.detail.calledByInputValidation)) {
                 checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity);
             }
         };
@@ -242,9 +241,11 @@ function createDatatypeHandler(parameters, validInputMap) {
             optional: result => result === DATATYPE_RESULT.SUCCESS || result === DATATYPE_RESULT.UNKNOWN
         };
 
-        parameterInfo['datatype_handler'] = async () => {
+        parameterInfo['datatype_handler'] = async (event) => {
             const result = await field.checkDatatype();
+            const previousCheck = validInputMap[parameterName];
             validInputMap[parameterName] = validateResultBasedOnRequirement[requirement](result);
+            if (event && previousCheck === validInputMap[parameterName]) event.validInputChanged = true;
         };
     }
 }
