@@ -88,7 +88,12 @@ class CheckRoutes(DiagNetTest):
                                         "description": "The origin or protocol through which a route was learned"
                                     }
                                 ],
-                                "optional": [],
+                                "optional": [
+                                    {
+                                        "name": "test_param",
+                                        "type": "ipv4",
+                                    },
+                                ],
                                 "mutually_exclusive": [],
                                 "constraints": ["min_length=3", "unique=true"]
                             }
