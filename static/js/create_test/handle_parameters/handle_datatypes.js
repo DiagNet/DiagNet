@@ -4,23 +4,42 @@ let allDevices = []
 let cacheParameterValues = {}
 
 /**
- * Checks whether the value of a given input field matches the specified datatype.
+ * Syntax used to describe a value being used by another datatype definition. <br>
+ * For Example: type: CIDR-value(type) | Where type is the name of a parameter
+ */
+const parameterDatatypeDependencyRegex = /value\(([^)]+)\)/;
+
+/**
+ * Checks whether the value of a given input field matches the specified datatypes.
  *
  * @async
  * @param {string} value The value to validate.
- * @param {string} datatype_as_string Expected datatype as a string.
+ * @param {Array<string>} datatypes Expected datatypes as a list.
  * @returns {Promise<boolean|undefined>} Resolves to:
- *   - true if the field's value matches the datatype,
- *   - false if it does not match,
- *   - undefined if the field is empty.
+ *   - true if the field's value matches any of the datatypes
+ *   - false if it does not match for any datatype
  */
-async function checkDatatype(value, datatype_as_string) {
-    if (allDevices.length === 0 && datatype_as_string.trim().toLowerCase() === "device") {
+async function beforeDatatypeCheck(value, datatypes) {
+    for (const datatype of datatypes) {
+        if (await checkDatatype(value, fetchDatatypeValueInfo(datatype))) {
+        return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Checks if the value matches the given datatype.
+ * @param {string} value The value to check.
+ * @param {string} datatype The datatype used for checking.
+ * @returns {Promise<boolean>} true, if they match, otherwise false.
+ */
+async function checkDatatype(value, datatype) {
+    if (datatype.trim().toLowerCase() === "device") {
         await updateDevices();
     }
-    datatype_as_string = insertCachedValuesIntoDatatypeIfNeeded(datatype_as_string);
 
-    switch (datatype_as_string.toLowerCase()) {
+    switch (datatype.toLowerCase()) {
         case "device":
             return allDevices.includes(value);
 
@@ -60,37 +79,47 @@ async function checkDatatype(value, datatype_as_string) {
 }
 
 /**
- * If the datatype needs a previously cached value it is inserted here.
+ * If the datatype needs a value that was previously cached it is inserted here.
  * @param datatype datatype to check for cached values.
  */
-function insertCachedValuesIntoDatatypeIfNeeded(datatype) {
-    const match = datatype.match(/value\(([^)]+)\)/);
+function fetchDatatypeValueInfo(datatype) {
+    const match = datatype.match(parameterDatatypeDependencyRegex);
     if (match) {
         const toBeLookedUp = match[1];
         if (toBeLookedUp in cacheParameterValues) {
-            return datatype.replace(/value\([^)]+\)/, cacheParameterValues[toBeLookedUp]);
+            return datatype.replace(parameterDatatypeDependencyRegex, cacheParameterValues[toBeLookedUp]);
         }
     }
     return datatype;
 }
 
-// Methods for caching values
-async function cacheValue(field, value) {
-    cacheParameterValues[field.parameter['name']] = value;
-    for (const dependentField of field.datatypeDependencyMap[field.parameter['name']]) {
+/**
+ * For every field whose datatype dependents on the given field, this method calls triggerInputValidation().
+ * @param field The given field.
+ */
+function triggerInputValidationForDependentFields(field) {
+    for (const dependentField of field.datatypeDependencyMap[field.get('name')]) {
         dependentField.triggerInputValidation();
     }
 }
 
+/** Caches a value */
+async function cacheValue(field, value) {
+    const parameterName = field.get('name');
+    cacheParameterValues[parameterName] = value;
+    triggerInputValidationForDependentFields(field);
+}
+
+/** Uncaches a value */
 async function uncacheValue(field) {
-    if (field.parameter['name'] in cacheParameterValues) {
-        delete cacheParameterValues[field.parameter['name']];
-        for (const dependentField of field.datatypeDependencyMap[field.parameter['name']]) {
-            dependentField.triggerInputValidation();
-        }
+    const parameterName = field.get('name');
+    if (parameterName in cacheParameterValues) {
+        delete cacheParameterValues[parameterName];
+        triggerInputValidationForDependentFields(field);
     }
 }
 
+/** Fetches the available devices. */
 async function updateDevices() {
     if (allDevices.length === 0) {
         try {
@@ -116,17 +145,18 @@ const DATATYPE_RESULT = {
  *
  * @async
  * @param {ParameterField} field The input field to validate.
- * @param {string} datatype_as_string Expected datatype as a string.
+ * @param {string} datatype Expected datatype(s) as a string.
  * @returns {Promise<string>} Resolves to true if the field's value matches the datatype, false otherwise.
  */
-async function handleCheckDataType(field, datatype_as_string) {
+async function handleCheckDataType(field, datatype) {
     let value = field.getValue().trim();
     if (value.length === 0) {
         field.unknownDatatype();
         await uncacheValue(field);
         return DATATYPE_RESULT.UNKNOWN;
     }
-    let result = await checkDatatype(value, datatype_as_string);
+
+    let result = await beforeDatatypeCheck(value, field.getType());
     if (result) {
         await cacheValue(field, value);
         field.correctDatatype();
