@@ -377,6 +377,10 @@ class SingleLineDeviceField extends ParameterField {
         super.afterCreatingField();
         this.updateDatatypeBadges();
 
+        if (this.get('requirement') === "optional") {
+            this.optionalBadge.classList.remove('d-none');
+        }
+        
         this.field.addEventListener("keydown", this.handleDropdownKeyDown.bind(this));
         this.field.addEventListener("click", this.handleDropdownKeyDown.bind(this));
 
@@ -524,11 +528,12 @@ class SingleLineInputField extends ParameterField {
     afterCreatingField() {
         super.afterCreatingField();
         this.updateDatatypeBadges();
-    }
-    afterParentInitialization() {
+
         if (this.get('requirement') === "optional") {
             this.optionalBadge.classList.remove('d-none');
         }
+    }
+    afterParentInitialization() {
     }
 
     createDatatypeBadges(templateNode) {
@@ -661,19 +666,15 @@ class ListField extends ParameterField {
         this.addButton = this.container.querySelector('.add-to-list-btn');
         this.countInfo = this.container.querySelector('.count-label');
 
-        const requiredParams = this.parameter['required'] || [];
-        const optionalParams = this.parameter['optional'] || [];
-        this.allParameters = [...requiredParams, ...optionalParams];
+        this.parameters = this.parameter['parameters'] || [];
         const mutually_exclusive_bindings = this.parameter['mutually_exclusive'];
 
 
-        this.allParameters.forEach(value => value['parent_list'] = this);
+        this.parameters.forEach(value => value['parent_list'] = this);
 
         await showParameters(
-            requiredParams,
-            optionalParams,
+            this.parameters,
             mutually_exclusive_bindings,
-            this.container,
             this.container,
             this.addButton,
             this.getDatatypeDependencyMap(),
@@ -683,7 +684,7 @@ class ListField extends ParameterField {
         );
 
         let nested_index = Number(this.parameter['nested_index'] ?? 0) + 1;
-        for (const value of this.allParameters) {
+        for (const value of this.parameters) {
             value['parent_name'] = this;
             value['parent_type'] = this.parameter['type'];
             value['nested_index'] = nested_index;
@@ -837,7 +838,7 @@ class ListField extends ParameterField {
      */
     receiveValuesFromChildren() {
         let output = {};
-        for (const value of this.allParameters) {
+        for (const value of this.parameters) {
             output[value['name']] = value['parameter_info'].getValue();
         }
         return output;
