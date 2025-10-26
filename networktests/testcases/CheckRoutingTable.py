@@ -2,6 +2,15 @@ from networktests.testcases.base import DiagNetTest
 
 
 class CheckRoutingTable(DiagNetTest):
+    _optional_params =  [
+        {
+            "name": "test",
+            "display_name": "Target Device",
+            "type": "Device",
+            "description": "The device from which to test the routes",
+            "requirement": "optional",
+        },
+    ]
     _required_params = [
         {
             "name": "target_device",
@@ -21,7 +30,7 @@ class CheckRoutingTable(DiagNetTest):
             "name": "routes",
             "display_name": "Routes",
             "type": "list",
-            "required": [
+            "parameters": [
                 {
                     "name": "route_origin",
                     "display_name": "Route Origin",
@@ -52,26 +61,27 @@ class CheckRoutingTable(DiagNetTest):
                     "display_name": "Prefix - Network Destination",
                     "type": "CIDR-value(address_family)",
                     "description": "Destination network in CIDR notation",
-                }
-            ],
-            "optional": [
+                },
                 {
                     "name": "administrative distance",
                     "display_name": "Administrative Distance",
                     "type": "Device",
                     "description": "[AD (trust level)/metric (cost to reach)]",
+                    "requirement": "optional",
                 },
                 {
                     "name": "next_hop",
                     "display_name": "Next Hop",
                     "type": "value(address_family)",
                     "description": "Next device used to reach the network",
+                    "requirement": "optional",
                 },
                 {
                     "name": "outgoing_interface",
                     "display_name": "Outgoing Interface",
                     "type": ["CIDR-IPv4", "IPv4"],
                     "description": "Interface used to reach the next hop",
+                    "requirement": "optional",
                 },
             ],
             "mutually_exclusive": [],
