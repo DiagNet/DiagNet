@@ -14,7 +14,7 @@ const indexCounter = document.getElementById('IndexCounter');
 
 /**
  * Displays Info about the current Parameter in the info tab.
- * @param {ParameterField|ListField} parameter
+ * @param {Parameter_field|ListField} parameter
  */
 function displayParameterInfo(parameter) {
     parameterInfoContainer.classList.remove('hidden');
@@ -137,7 +137,7 @@ function displayDefaultItemInfo(name, value) {
 
 /**
  * Displays Info about a given Parameter.
- * @param {ParameterField} parameter The Parameter
+ * @param {Parameter_field} parameter The Parameter
  */
 function displayDefaultParameterInfo(parameter) {
     const container = defaultParameterInfo.content.cloneNode(true).querySelector('div');
@@ -155,7 +155,7 @@ function displayDefaultParameterInfo(parameter) {
 /**
  * Displays Info about a Field's Parent
  * @param {HTMLElement} container The Container where to change the parent values.
- * @param {ParameterField} parameter The parameter which's parent is being displayed.
+ * @param {Parameter_field} parameter The parameter which's parent is being displayed.
  */
 function displayParentInfo(container, parameter) {
     let parentName = parameter.parameter['parent_name'];
@@ -165,7 +165,7 @@ function displayParentInfo(container, parameter) {
         parentType = "TestCase";
     } else {
         parentName = parentName.parameter['name'];
-        parentType = parameter.parameter['parent_type'];
+        parentType = "List";
     }
 
     container.querySelector('#infoTabParentName').textContent = parentName;

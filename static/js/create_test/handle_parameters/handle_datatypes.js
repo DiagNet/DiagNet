@@ -144,7 +144,7 @@ const DATATYPE_RESULT = {
  * Checks whether the value of a given input field matches the specified datatype.
  *
  * @async
- * @param {ParameterField} field The input field to validate.
+ * @param {Parameter_field} field The input field to validate.
  * @param {string} datatype Expected datatype(s) as a string.
  * @returns {Promise<string>} Resolves to true if the field's value matches the datatype, false otherwise.
  */
