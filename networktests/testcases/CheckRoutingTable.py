@@ -6,7 +6,7 @@ class CheckRoutingTable(DiagNetTest):
         {
             "name": "target_device",
             "display_name": "Target Device",
-            "type": "device",
+            "type": "Device",
             "description": "The device from which to test the routes"
         },
         {
@@ -58,7 +58,7 @@ class CheckRoutingTable(DiagNetTest):
                 {
                     "name": "administrative distance",
                     "display_name": "Administrative Distance",
-                    "type": "device",
+                    "type": "Device",
                     "description": "[AD (trust level)/metric (cost to reach)]",
                 },
                 {
@@ -70,7 +70,7 @@ class CheckRoutingTable(DiagNetTest):
                 {
                     "name": "outgoing_interface",
                     "display_name": "Outgoing Interface",
-                    "type": "Interface",
+                    "type": ["CIDR-IPv4", "IPv4"],
                     "description": "Interface used to reach the next hop",
                 },
             ],

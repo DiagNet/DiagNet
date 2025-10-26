@@ -6,12 +6,6 @@ const singleLineInputTemplateForDevices = document.getElementById('parameterInpu
 /** Abstract base class representing a parameter input field. */
 class ParameterField {
     /**
-     * Syntax used to describe a value being used by another datatype definition. <br>
-     * For Example: type: CIDR-value(type) | Where type is the name of a parameter
-     */
-    static parameterDatatypeDependencyRegex = /value\(([^)]+)\)/;
-
-    /**
      * Simulates an Enum. Displays Datatype-checking-results.
      * @type {{UNKNOWN: string, SUCCESS: string, FAIL: string}}
      */
@@ -113,6 +107,11 @@ class ParameterField {
         return this.parameter[str];
     }
 
+    getType() {
+        const type = this.get('type');
+        return Array.isArray(type) ? type : [type];
+    }
+
     // Field
 
     /**
@@ -184,13 +183,15 @@ class ParameterField {
         this.parameter['activation_handler']?.();
 
         // check for datatype dependency
-        const match = this.parameter['type'].match(ParameterField.parameterDatatypeDependencyRegex); // value(target_field)
-        if (match) {
-            const dependentOn = match[1]; // value(target_field) -> target_field
-            try {
-                this.getDatatypeDependencyMap()[dependentOn].push(this); // Mark itself dependent on read parameter
-            } catch (e) {
-                throwException("Could not build Datatype dependencies for parameter " + this.get('name') + ". (maybe you mistyped a parameter name?)")
+        for (const datatype of this.getType()) {
+            const match = datatype.match(parameterDatatypeDependencyRegex); // value(target_field)
+            if (match) {
+                const dependentOn = match[1]; // value(target_field) -> target_field
+                try {
+                    this.getDatatypeDependencyMap()[dependentOn].push(this); // Mark itself dependent on read parameter
+                } catch (e) {
+                    throwException("Could not build Datatype dependencies for parameter " + this.get('name') + ". (maybe you mistyped a parameter name?)")
+                }
             }
         }
     }
@@ -259,11 +260,12 @@ class ParameterField {
         if (this.field) this.field.style.border = "2px solid red";
     }
 
+    /** Updates the displayed Badges when a datatype validation has happened. */
     checkDatatypeDependencyInteractions() {
         const name = this.get('name');
         for (const dependentField of this.getDatatypeDependencyMap()[name]) {
-            if (dependentField instanceof SingleLineInputField) {
-                dependentField.updateDatatypeLabel();
+            if (dependentField instanceof SingleLineInputField || dependentField instanceof SingleLineDeviceField) {
+                dependentField.updateDatatypeBadges();
             }
         }
     }
@@ -316,7 +318,29 @@ class SingleLineDeviceField extends ParameterField {
 
         this.optionalBadge = this.container.querySelector('.param-optional-field');
 
+        let datatypeLabel = this.container.querySelector('.param-datatype');
+        this.createDatatypeBadges(datatypeLabel);
+
         return this.container;
+    }
+
+    createDatatypeBadges(templateNode) {
+        let datatypes = this.getType();
+
+        const badges = [templateNode];
+        while (badges.length < datatypes.length) {
+            const clone = templateNode.cloneNode(false);
+            templateNode.after(clone);
+            badges.push(clone);
+        }
+        this.datatypeBadges = badges;
+    }
+
+    updateDatatypeBadges() {
+        const parameterDatatypes = this.getType();
+        for (let i = 0; i < parameterDatatypes.length; i++) {
+            this.datatypeBadges[i].textContent = fetchDatatypeValueInfo(parameterDatatypes[i]);
+        }
     }
 
     afterParentInitialization() {
@@ -345,13 +369,13 @@ class SingleLineDeviceField extends ParameterField {
 
     /** Shows the Device Dropdown*/
     showDropdown() {
-        console.log("show");
         this.dropdownMenu.classList.add('show');
     }
 
     // Setup
     afterCreatingField() {
         super.afterCreatingField();
+        this.updateDatatypeBadges();
 
         this.field.addEventListener("keydown", this.handleDropdownKeyDown.bind(this));
         this.field.addEventListener("click", this.handleDropdownKeyDown.bind(this));
@@ -491,20 +515,39 @@ class SingleLineInputField extends ParameterField {
         this.container.querySelector('.param-label').textContent = this.get('display_name') ? this.get('display_name') : this.get('name');
         this.optionalBadge = this.container.querySelector('.param-optional-field');
 
-        this.datatypeLabel = this.container.querySelector('.param-datatype');
-        this.updateDatatypeLabel();
+        let datatypeLabel = this.container.querySelector('.param-datatype');
+
+        this.createDatatypeBadges(datatypeLabel);
 
         return this.container;
     }
-
+    afterCreatingField() {
+        super.afterCreatingField();
+        this.updateDatatypeBadges();
+    }
     afterParentInitialization() {
         if (this.get('requirement') === "optional") {
             this.optionalBadge.classList.remove('d-none');
         }
     }
 
-    updateDatatypeLabel() {
-        this.datatypeLabel.textContent = insertCachedValuesIntoDatatypeIfNeeded(this.parameter['type']);
+    createDatatypeBadges(templateNode) {
+        let datatypes = this.getType();
+
+        const badges = [templateNode];
+        while (badges.length < datatypes.length) {
+            const clone = templateNode.cloneNode(false);
+            templateNode.after(clone);
+            badges.push(clone);
+        }
+        this.datatypeBadges = badges;
+    }
+
+    updateDatatypeBadges() {
+        const parameterDatatypes = this.getType();
+        for (let i = 0; i < parameterDatatypes.length; i++) {
+            this.datatypeBadges[i].textContent = fetchDatatypeValueInfo(parameterDatatypes[i]);
+        }
     }
 
     getField() {
@@ -884,14 +927,10 @@ class ListField extends ParameterField {
  * @returns {ParameterField} The created ParameterField
  */
 function createParameterFields(parameter, dependencyMap, activationDependencyMap) {
-    switch (parameter['type']) {
-        case "choice":
-            return new ChoiceField(parameter, dependencyMap, activationDependencyMap);
-        case "list":
-            return new ListField(parameter, dependencyMap, activationDependencyMap);
-        case "device":
-            return new SingleLineDeviceField(parameter, dependencyMap, activationDependencyMap);
-        default:
-            return new SingleLineInputField(parameter, dependencyMap, activationDependencyMap);
-    }
+    const datatypes = (Array.isArray(parameter['type']) ? parameter['type'] : [parameter['type']]).map(d => d.trim().toLowerCase());
+
+    if (datatypes.includes("choice")) return new ChoiceField(parameter, dependencyMap, activationDependencyMap);
+    else if (datatypes.includes("list")) return new ListField(parameter, dependencyMap, activationDependencyMap);
+    else if (datatypes.includes("device")) return new SingleLineDeviceField(parameter, dependencyMap, activationDependencyMap);
+    else return new SingleLineInputField(parameter, dependencyMap, activationDependencyMap);
 }
