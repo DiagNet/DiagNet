@@ -11,6 +11,9 @@ class CheckRoutingTable(DiagNetTest):
             "requirement": "optional",
         },
     ]
+
+    _mutually_exclusive_parameters = [("target_device", "test")]
+
     _required_params = [
         {
             "name": "target_device",
@@ -79,7 +82,7 @@ class CheckRoutingTable(DiagNetTest):
                 {
                     "name": "outgoing_interface",
                     "display_name": "Outgoing Interface",
-                    "type": ["CIDR-IPv4", "IPv4"],
+                    "type": "Interface",
                     "description": "Interface used to reach the next hop",
                     "requirement": "optional",
                 },
