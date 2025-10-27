@@ -336,7 +336,7 @@ function createActivationHandler(allParameters, activationMap, createActivationD
 
     if (createActivationDependencyHandlers) {
         activationMap["ACTIVATION_STATE"] = {}; // Store what parameters are considered "active"
-        for (const parameter of allParameters) {
+        for (const parameter of allParametersDisplayed) {
             const parameterName = parameter['name'];
             const toTrigger = activationMap[parameterName];
             const field = parameter['parameter_info'];
@@ -350,6 +350,7 @@ function createActivationHandler(allParameters, activationMap, createActivationD
                 };
             }
         }
+        createInputListeners(allParametersDisplayed);
     }
 }
 
@@ -404,7 +405,7 @@ async function showParameters(parameters, mutually_exclusive_bindings, parameter
     createDatatypeHandler(parameters, validInputMap);
     createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, activationDependencyMap, submitButton, extraSubmitValidity);
     createActivationHandler(parameters, activationDependencyMap, createActivationDependencyHandlers);
-    createInputListeners(parameters);
+    //createInputListeners(parameters);
 
     for (const parameterInfo of parameters.values()) {
         parameterInfo['mutually_exclusive_handler']?.();
