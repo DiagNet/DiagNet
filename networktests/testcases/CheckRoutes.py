@@ -15,6 +15,7 @@ class CheckRoutes(DiagNetTest):
     _required_params = [
         {
             "name": "type",
+            "display_name": "Address-Family",
             "type": "choice",
             "choices": ["IPv4", "IPv6"],
             "empty_choice": "true",
@@ -32,10 +33,10 @@ class CheckRoutes(DiagNetTest):
             "name": "routes",
             "type": "list",
             "description": "The routes to check",
-            "required": [
+            "parameters": [
                 {
                     "name": "destination_prefix",
-                    "type": "CIDR-value(type)",
+                    "type": "IPv4",
                     "forbidden_if": {"type": "IPv4"},
                     "description": "The destination network in CIDR notation"
                 },
@@ -52,10 +53,10 @@ class CheckRoutes(DiagNetTest):
                         "name": "routes2",
                         "type": "list",
                         "description": "The routes to check",
-                        "required": [
+                        "parameters": [
                             {
                                 "name": "destination_prefix2",
-                                "type": "CIDR-value(type)",
+                                "type": "IPv4",
                                 "forbidden_if": {"type": "IPv4"},
                                 "description": "The destination network in CIDR notation"
                             },
@@ -72,10 +73,10 @@ class CheckRoutes(DiagNetTest):
                                 "name": "routes3",
                                 "type": "list",
                                 "description": "The routes to check",
-                                "required": [
+                                "parameters": [
                                     {
                                         "name": "destination_prefix3",
-                                        "type": "CIDR-value(type)",
+                                        "type": "IPv4",
                                         "required_if": {"type": "IPv4"},
                                         "description": "The destination network in CIDR notation"
                                     },
@@ -207,7 +208,3 @@ class CheckRoutes(DiagNetTest):
 
     def test_reachability(self) -> bool:
         return True
-
-if __name__ == "__main__":
-    d = CheckRoutes()
-    print(d.get_parameters())

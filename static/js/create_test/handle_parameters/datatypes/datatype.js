@@ -1,3 +1,13 @@
+/**
+ * Simulates an Enum. Displays Datatype-checking-results.
+ * @type {{UNKNOWN: string, SUCCESS: string, FAIL: string}}
+ */
+const DATATYPE_RESULT = {
+    UNKNOWN: "unknown",
+    SUCCESS: "success",
+    FAIL: "fail"
+};
+
 /** Abstract base class representing a datatype. */
 class Datatype {
     /**
@@ -40,6 +50,11 @@ class Datatype {
                 return new Device(conditions);
             case "ipv4":
                 return new IPv4(conditions);
+
+            case "str":
+            case "string":
+            case "text":
+                return new Text(conditions);
         }
     }
 
