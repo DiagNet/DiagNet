@@ -79,17 +79,15 @@ function mapToObj(input) {
  *
  * @async
  * @param {string} testClass The name of the test class.
- * @param {Object} requiredParams Map of required parameter names to values.
- * @param {Object} optionalParams Map of optional parameter names to values.
+ * @param {Object.<string, string>} params Map of parameter names to values.
  * @param {string[]} deviceParams List of device parameter names.
  * @param {string} label The label associated with the test class.
  * @param {boolean} expectedResult If the test class is supposed to pass (true) or fail (false).
  */
-async function createTest(testClass, requiredParams, optionalParams, deviceParams, label, expectedResult) {
+async function createTest(testClass, params, deviceParams, label, expectedResult) {
     const payload = {
         test_class: testClass,
-        required_parameters: requiredParams,
-        optional_parameters: optionalParams,
+        parameters: params,
         device_parameters: deviceParams,
         label: label,
         expected_result: expectedResult

@@ -1,13 +1,61 @@
-<div class="modal-body d-flex flex-column p-2" style="height: 100%;">
+<div class="modal-body d-flex flex-column gap-4 p-4 bg-white rounded shadow-sm">
     {% csrf_token %}
-    <input id="labelInput" type="text" class="form-control" placeholder="Name your Testcase...">
 
-    <label for="expectedResult">Expected Result:</label>
-    <select id="expectedResult" class="form-select mt-2">
-        <option value="PASS" selected>PASS</option>
-        <option value="FAIL">FAIL</option>
-    </select>
+    <div class="mb-3">
+        <label for="labelInput" class="form-label fw-bold">Testcase Name</label>
+        <input id="labelInput" type="text" class="form-control form-control" placeholder="Enter a descriptive name">
+        <small class="form-text text-muted mt-2">
+            Provide a clear and concise name for this testcase. Use descriptive keywords that summarize the scenario.
+        </small>
+    </div>
 
-    <button id="createTest" class="btn btn-primary mt-3" data-bs-dismiss="modal" hx-trigger="click"
-        hx-on:click="htmx.trigger('#networktests-table', 'refresh')">Create Test</button>
+    <div class="mb-3">
+        <label for="descriptionInput" class="form-label fw-bold">Testcase Description</label>
+        <textarea id="descriptionInput" class="form-control" rows="3"
+            placeholder="Write what this testcase does, its purpose and important details..."></textarea>
+
+        <small class="form-text text-muted mt-2">
+            Describe what this testcase does. Include the purpose, conditions, and any important details that help
+            understand the test scenario.
+        </small>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold d-block mb-2">Expected Result</label>
+        <div class="btn-group toggle-pill" role="group" style="width: 220px;">
+            <input type="radio" class="btn-check" name="expectedResult" id="passBtn" value="PASS" autocomplete="off"
+                checked>
+            <label class="btn btn-outline-success flex-fill fw-bold rounded-start" for="passBtn">
+                <i class="bi bi-check-circle-fill me-1"></i> PASS
+            </label>
+
+            <input type="radio" class="btn-check" name="expectedResult" id="failBtn" value="FAIL" autocomplete="off">
+            <label class="btn btn-outline-danger flex-fill fw-bold rounded-end" for="failBtn">
+                <i class="bi bi-x-circle-fill me-1"></i> FAIL
+            </label>
+        </div>
+    </div>
+
+    <button id="createTest" class="btn btn-primary btn-lg align-self-end">Create Test</button>
 </div>
+
+<style>
+    .btn-check:checked+.btn {
+        color: #fff !important;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-check:checked+.btn.btn-outline-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-check:checked+.btn.btn-outline-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .btn {
+        transition: all 0.2s ease-in-out;
+    }
+</style>
