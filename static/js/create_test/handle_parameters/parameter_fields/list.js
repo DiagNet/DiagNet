@@ -315,6 +315,10 @@ class ListField extends ParameterField {
         container.querySelector('.infoTabDatatypeName').textContent = "List";
         container.querySelector('.infoTabDatatypeDescription').textContent = "A list of entries, each defining its child parameters";
 
+        // Constraints
+        if (this.min_length) container.querySelector('.list-min-length').textContent = Math.max(1,this.min_length);
+        if (this.max_length) container.querySelector('.list-max-length').textContent = this.max_length;
+
         // List Entries
         const emptyEntries = container.querySelector('.entryEmpty');
         const entryContainer = container.querySelector('.entryContainer');
@@ -419,7 +423,6 @@ class ListField extends ParameterField {
                     containerToAddTo.appendChild(this.displayDefaultItemInfo(key, value));
                 }
             }
-
         }
     }
 
