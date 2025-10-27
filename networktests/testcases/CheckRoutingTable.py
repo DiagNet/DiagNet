@@ -12,8 +12,6 @@ class CheckRoutingTable(DiagNetTest):
         },
     ]
 
-    _mutually_exclusive_parameters = [("target_device", "test")]
-
     _required_params = [
         {
             "name": "target_device",
@@ -65,7 +63,6 @@ class CheckRoutingTable(DiagNetTest):
                     "type":
                         {"name": "IPv4","condition": {"address_family": "IPv4"}}
                     ,
-                    "required_if": {"address_family": "IPv4"},
                     "description": "Destination network in CIDR notation",
                 },
                 {
@@ -74,6 +71,7 @@ class CheckRoutingTable(DiagNetTest):
                     "type": ["str","Device", {"name": "IPv4", "condition": {"address_family": "IPv4"}}],
                     "description": "[AD (trust level)/metric (cost to reach)]",
                     "requirement": "optional",
+                    "required_if": {"prefix": "10.0.0.0"},
                 },
                 {
                     "name": "next_hop",

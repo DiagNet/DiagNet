@@ -468,7 +468,7 @@ async function selectTestClass(testClass) {
     });
 
     submitParametersButton.addEventListener("click", () => {
-        selectParameters(requiredParameters, optionalParameters); // TODO
+        selectParameters(allParameters);
     });
 
     settingUp = false;
