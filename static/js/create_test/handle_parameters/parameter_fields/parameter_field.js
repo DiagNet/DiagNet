@@ -2,16 +2,14 @@
 class ParameterField {
     /**
      * @param {Object.<string, any>} parameter - Metadata map for the parameter.
-     * @param {Object.<string, Array<ParameterField>>} activationDependencyMap Map of parameters that manages when a parameter is displayed.
      * @throws {Error} If instantiated directly (abstract class).
      */
-    constructor(parameter, activationDependencyMap) {
+    constructor(parameter) {
         if (new.target === ParameterField) throw new Error("Cannot instantiate abstract class ParameterField directly");
 
         this.parameter = parameter;
         this.field = null;
         this.datatypeDependencies = [];
-        this.activationDependencyMap = activationDependencyMap;
     }
 
     // Info

@@ -39,8 +39,6 @@ class ListField extends ParameterField {
             mutually_exclusive_bindings,
             this.container,
             this.addButton,
-            this.activationDependencyMap,
-            false,
             () => this.checkGlobalSubmitValidity(this)
         );
 
