@@ -14,7 +14,7 @@ function updateTabContentAccessibility() {
     navs.forEach(nav_pane => {
         const isActive = nav_pane.classList.contains('active'); // or whichever logic you use for current pane
         // focusable elements
-        const focusable = tabMap.get(nav_pane).querySelectorAll('input, button, select, textarea, a, [tabindex], div.active');
+        const focusable = tabMap.get(nav_pane).querySelectorAll('input, button, select, textarea, a');
 
         focusable.forEach(el => {
             if (isActive) {
