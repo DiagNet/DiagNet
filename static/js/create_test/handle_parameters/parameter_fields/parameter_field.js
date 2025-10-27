@@ -1,19 +1,17 @@
 /** Abstract base class representing a parameter input field. */
-class Parameter_field {
+class ParameterField {
     /**
      * @param {Object.<string, any>} parameter - Metadata map for the parameter.
-     * @param {Object.<string, Array<Parameter_field>>} datatypeDependencyMap - Stores the parameters which's datatype is dependent on other parameters.
-     * @param {Object.<string, Array<Parameter_field>>} activationDependencyMap Map of parameters that manages when a parameter is displayed.
+     * @param {Object.<string, Array<ParameterField>>} activationDependencyMap Map of parameters that manages when a parameter is displayed.
      * @throws {Error} If instantiated directly (abstract class).
      */
-    constructor(parameter, datatypeDependencyMap, activationDependencyMap) {
-        if (new.target === Parameter_field) throw new Error("Cannot instantiate abstract class ParameterField directly");
+    constructor(parameter, activationDependencyMap) {
+        if (new.target === ParameterField) throw new Error("Cannot instantiate abstract class ParameterField directly");
 
         this.parameter = parameter;
         this.field = null;
-        this.datatypeDependencyMap = datatypeDependencyMap;
+        this.datatypeDependencies = [];
         this.activationDependencyMap = activationDependencyMap;
-        datatypeDependencyMap[parameter['name']] = [];
     }
 
     // Info
@@ -28,7 +26,7 @@ class Parameter_field {
     /** Returns a list of all datatypes associated with this parameter. */
     getType() {
         const type = this.get('type');
-        return Array.isArray(type) ? type : [type];
+        return type;
     }
 
     /** Returns the internal name of this parameter. */
@@ -98,10 +96,10 @@ class Parameter_field {
      */
     checkTriggerResult(mapKey, parameterName, value, activateOnMatch = true) {
         const map = this.get(mapKey)?.[parameterName];
-        if (!map) return Parameter_field.ACTIVATION_RESULT.UNKNOWN;
+        if (!map) return ParameterField.ACTIVATION_RESULT.UNKNOWN;
         const isMatch = new RegExp(map, "i").test(value);
         return (isMatch === activateOnMatch ? this.showField() : this.hideField(),
-            isMatch === activateOnMatch ? Parameter_field.ACTIVATION_RESULT.ACTIVATE : Parameter_field.ACTIVATION_RESULT.DEACTIVATE);
+            isMatch === activateOnMatch ? ParameterField.ACTIVATION_RESULT.ACTIVATE : ParameterField.ACTIVATION_RESULT.DEACTIVATE);
     }
 
     /**
@@ -113,7 +111,7 @@ class Parameter_field {
         let currentStateRequiredIf = this.checkTriggerResult('required_if', parameterName, value, true);
         let currentStateForbiddenIf = this.checkTriggerResult('forbidden_if', parameterName, value, false);
 
-        return currentStateForbiddenIf === Parameter_field.ACTIVATION_RESULT.UNKNOWN ? currentStateRequiredIf : currentStateForbiddenIf;
+        return currentStateForbiddenIf === ParameterField.ACTIVATION_RESULT.UNKNOWN ? currentStateRequiredIf : currentStateForbiddenIf;
     }
 
     // Triggers
@@ -231,26 +229,11 @@ class Parameter_field {
         // check activation triggers
         // If for example this parameter is referenced in another parameter's required_if then this method call will handle it.
         this.get('activation_handler')?.();
-
-        // check for datatype dependency
-        // if for example this parameter's datatype uses value(other_parameter) than this is marked for further handling.
-        for (const datatype of this.getType()) {
-            const match = datatype.match(parameterDatatypeDependencyRegex); // value(target_field)
-            if (match) {
-                const dependentOn = match[1]; // value(target_field) -> target_field
-                try {
-                    this.getDatatypeDependencyMap()[dependentOn].push(this); // Mark itself dependent on read parameter
-                } catch (e) {
-                    throwException("Could not build Datatype dependencies for parameter " + this.get('name') + ". (maybe you mistyped a parameter name?)")
-                }
-            }
-        }
     }
 
     // Event Listeners
     /**
      * Attaches a callback to execute whenever the input value changes.
-     * If this field has a parent, input changes trigger onInternalChange() for the parent field.
      *
      * @param {function} callback - Function to run on input event.
      */
@@ -266,19 +249,30 @@ class Parameter_field {
         throw new Error("onFocus() must be implemented in subclass");
     }
 
+    // Badges
+    updateDatatypeBadges() {
+
+    }
+
     // Datatype
     /** Returns the datatypeDependencyMap associated with this Parameter */
-    getDatatypeDependencyMap() {
-        return this.datatypeDependencyMap;
+    getDatatypeDependencies() {
+        return this.datatypeDependencies;
+    }
+
+    /**
+     * Called by foreign datatypes to mark their parameter as dependent on this parameter.
+     * @param parameter The parameter whose datatype is dependent on this parameter.
+     */
+    insertDependentParameter(parameter) {
+        this.datatypeDependencies.push(parameter);
     }
 
     /** Updates the displayed Badges when a datatype validation has happened. */
     updateBadgesForParametersDependentOnThis() {
-        const name = this.get('name');
-        for (const dependentField of this.getDatatypeDependencyMap()[name]) {
-            if (dependentField instanceof SingleLineInputField) {
-                dependentField.updateDatatypeBadges();
-            }
+        for (const dependentField of this.getDatatypeDependencies()) {
+            dependentField.updateDatatypeBadges();
+            dependentField.triggerInputValidation();
         }
     }
 
@@ -312,5 +306,16 @@ class Parameter_field {
      */
     checkFieldSubmitValidity() {
         return true;
+    }
+
+    // Info
+
+    /**
+     * Returns an HTMLElement that contains Information describing this parameter.
+     * @param {string} globalTestClass The global TestClass that has been selected.
+     * @returns {HTMLElement} Container encapsulation the information that covers this parameter.
+     */
+    getInfo(globalTestClass) {
+        throw new Error("getInfo() must be implemented in subclass");
     }
 }

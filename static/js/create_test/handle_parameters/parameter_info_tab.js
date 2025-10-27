@@ -3,7 +3,6 @@ const parameterInfoContainer = document.getElementById('parameterInfoContainer')
 
 // Templates
 const listParameterInfo = document.getElementById('ListParameterInfo');
-const defaultParameterInfo = document.getElementById('RegularParameterInfo');
 const listItemSmallInfo = document.getElementById('ListItemSmallInfo');
 const listItemPageInfo = document.getElementById('ListItemPageInfo');
 
@@ -14,7 +13,7 @@ const indexCounter = document.getElementById('IndexCounter');
 
 /**
  * Displays Info about the current Parameter in the info tab.
- * @param {Parameter_field|ListField} parameter
+ * @param {ParameterField|ListField} parameter
  */
 function displayParameterInfo(parameter) {
     parameterInfoContainer.classList.remove('hidden');
@@ -137,7 +136,7 @@ function displayDefaultItemInfo(name, value) {
 
 /**
  * Displays Info about a given Parameter.
- * @param {Parameter_field} parameter The Parameter
+ * @param {ParameterField} parameter The Parameter
  */
 function displayDefaultParameterInfo(parameter) {
     const container = defaultParameterInfo.content.cloneNode(true).querySelector('div');
@@ -155,10 +154,10 @@ function displayDefaultParameterInfo(parameter) {
 /**
  * Displays Info about a Field's Parent
  * @param {HTMLElement} container The Container where to change the parent values.
- * @param {Parameter_field} parameter The parameter which's parent is being displayed.
+ * @param {ParameterField} parameter The parameter which's parent is being displayed.
  */
 function displayParentInfo(container, parameter) {
-    let parentName = parameter.parameter['parent_name'];
+    let parentName = parameter.parameter['parent'];
     let parentType;
     if (!parentName) {
         parentName = previousTestClass;

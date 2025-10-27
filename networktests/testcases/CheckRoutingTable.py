@@ -18,7 +18,7 @@ class CheckRoutingTable(DiagNetTest):
         {
             "name": "target_device",
             "display_name": "Target Device",
-            "type": "Device",
+            "type": ["Device", "IPv4"],
             "description": "The device from which to test the routes"
         },
         {
@@ -62,27 +62,30 @@ class CheckRoutingTable(DiagNetTest):
                 {
                     "name": "prefix",
                     "display_name": "Prefix - Network Destination",
-                    "type": "CIDR-value(address_family)",
+                    "type":
+                        {"name": "IPv4","condition": {"address_family": "IPv4"}}
+                    ,
+                    "required_if": {"address_family": "IPv4"},
                     "description": "Destination network in CIDR notation",
                 },
                 {
                     "name": "administrative distance",
                     "display_name": "Administrative Distance",
-                    "type": "Device",
+                    "type": ["Device", {"name": "IPv4", "condition": {"address_family": "IPv4"}}],
                     "description": "[AD (trust level)/metric (cost to reach)]",
                     "requirement": "optional",
                 },
                 {
                     "name": "next_hop",
                     "display_name": "Next Hop",
-                    "type": "value(address_family)",
+                    "type": "IPv4",
                     "description": "Next device used to reach the network",
                     "requirement": "optional",
                 },
                 {
                     "name": "outgoing_interface",
                     "display_name": "Outgoing Interface",
-                    "type": "Interface",
+                    "type": "IPv4",
                     "description": "Interface used to reach the next hop",
                     "requirement": "optional",
                 },

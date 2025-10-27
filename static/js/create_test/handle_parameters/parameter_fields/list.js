@@ -1,7 +1,7 @@
 const listInputTemplate = document.getElementById('listInputTemplate');
 
 /** Displays a list input field. */
-class ListField extends Parameter_field {
+class ListField extends ParameterField {
     async createField() {
         this.container = this.loadTemplateContainer();
 
@@ -29,7 +29,6 @@ class ListField extends Parameter_field {
             mutually_exclusive_bindings,
             this.container,
             this.addButton,
-            this.getDatatypeDependencyMap(),
             this.activationDependencyMap,
             false,
             () => this.checkGlobalSubmitValidity(this)

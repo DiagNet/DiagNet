@@ -1,7 +1,10 @@
 const singleLineInputTemplate = document.getElementById('parameterInputTemplate');
 
+// Info Template
+const defaultParameterInfo = document.getElementById('RegularParameterInfo');
+
 /** Displays a single line input field. */
-class SingleLineInputField extends Parameter_field {
+class SingleLineInputField extends ParameterField {
     async createField() {
         this.container = this.loadTemplateContainer();
         this.field = this.container.querySelector('.param-input');
@@ -44,7 +47,13 @@ class SingleLineInputField extends Parameter_field {
     updateDatatypeBadges() {
         const parameterDatatypes = this.getType();
         for (let i = 0; i < parameterDatatypes.length; i++) {
-            this.datatypeBadges[i].textContent = fetchDatatypeValueInfo(parameterDatatypes[i]);
+            const datatype = parameterDatatypes[i];
+            if (datatype.checkValidity()) {
+                this.datatypeBadges[i].style.display = "";
+                this.datatypeBadges[i].textContent = datatype.displayName();
+            } else {
+                this.datatypeBadges[i].style.display = "none";
+            }
         }
     }
 
@@ -91,9 +100,23 @@ class SingleLineInputField extends Parameter_field {
 
     // Datatype
     async checkDatatype() {
-        const result = handleCheckDataType(this, this.parameter['type']); // handle_datatypes.js
+        const value = this.getValue();
         this.updateBadgesForParametersDependentOnThis();
-        return result;
+
+        if (value.length === 0) {
+            this.unknownDatatype();
+            return DATATYPE_RESULT.UNKNOWN;
+        }
+
+        for (const datatype of this.getType()) {
+            if (datatype.checkValidity() && datatype.check(value)) {
+                this.correctDatatype();
+                return DATATYPE_RESULT.SUCCESS;
+            }
+        }
+
+        this.wrongDatatype();
+        return DATATYPE_RESULT.FAIL;
     }
 
     unknownDatatype() {
@@ -118,7 +141,55 @@ class SingleLineInputField extends Parameter_field {
     }
 
     onChange(callback) {
-        if (this.field) this.field.addEventListener('input',callback);
+        if (this.field) this.field.addEventListener('input', callback);
     }
 
+    // Info
+    getInfo(globalTestClass) {
+        const container = defaultParameterInfo.content.cloneNode(true).querySelector('div');
+
+        // Parent
+        const parent = this.getParent();
+        container.querySelector('#infoTabParentName').textContent = parent ? parent.getDisplayName() : globalTestClass;
+        container.querySelector('#infoTabParentType').textContent = parent ? "List" : "TestCase";
+
+        // Datatypes
+        const datatypeTemplateContainer = this.container.querySelector('.datatypeContainer');
+        const datatypeContainers = this.getDatatypeInfo(this.getType(), datatypeTemplateContainer);
+
+
+        return container;
+    }
+
+    /**
+     * Creates a Container for each given datatype.
+     * @param {Array<string>} datatypes An array of datatypes.
+     * @param {HTMLElement} templateContainer The container that defines a datatype.
+     * @returns {Array<HTMLElement>} An array of containers for each datatype.
+     */
+    getDatatypeInfo(datatypes, templateContainer) {
+        const containers = [templateContainer];
+        for (let i = 1; i < datatypes.length; i++) {
+            containers.push(templateContainer.cloneNode(true));
+        }
+
+        for (let i = 0; i < datatypes.length; i++) {
+            const datatype = datatypes[i];
+            const container = containers[i];
+
+
+        }
+
+        return containers;
+    }
+
+    /**
+     * Puts datatype info into the given container.
+     * @param container The container to "decorate".
+     * @param datatype The name of the datatype.
+     */
+    decorateDatatypeContainer(container, datatype) {
+        container.querySelector('.infoTabDatatypeName').textContent = datatype;
+
+    }
 }
