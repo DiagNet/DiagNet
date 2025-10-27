@@ -445,6 +445,7 @@ async function selectTestClass(testClass) {
     let allParameters = [...parameters.requiredParams, ...parameters.optionalParams];
 
     allParametersDisplayed = [];
+    activationDependencyMap = {};
     await showParameters(
         allParameters,
         parameters.mul,
