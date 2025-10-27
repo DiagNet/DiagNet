@@ -313,9 +313,10 @@ class ParameterField {
     /**
      * Returns an HTMLElement that contains Information describing this parameter.
      * @param {string} globalTestClass The global TestClass that has been selected.
+     * @param {HTMLElement} infoContainer The container holding the info box.
      * @returns {HTMLElement} Container encapsulation the information that covers this parameter.
      */
-    getInfo(globalTestClass) {
+    getInfo(globalTestClass, infoContainer) {
         throw new Error("getInfo() must be implemented in subclass");
     }
 }

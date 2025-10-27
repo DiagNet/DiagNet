@@ -2,6 +2,7 @@
 
 const chooseParametersContainer = document.getElementById("chooseParametersContainer");
 const submitParametersButton = document.getElementById("submitParameters");
+const parameterInfoContainer = document.getElementById('parameterInfoContainer');
 
 /**
  * Checks if all parameters are valid and updates the submit button state.
@@ -276,7 +277,7 @@ function createDatatypeHandler(parameters, validInputMap) {
 function displayParameterInfo(parameter, container) {
     container.classList.remove('hidden');
     container.innerHTML = "";
-    container.appendChild(parameter.getInfo(previousTestClass));
+    parameter.getInfo(previousTestClass, container);
 }
 
 /**

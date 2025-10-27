@@ -1,5 +1,15 @@
 const listInputTemplate = document.getElementById('listInputTemplate');
 
+const listParameterInfo = document.getElementById('ListParameterInfo');
+const listItemSmallInfo = document.getElementById('ListItemSmallInfo');
+const listItemPageInfo = document.getElementById('ListItemPageInfo');
+
+// Templates - List-Item Info-Page
+const defaultItem = document.getElementById('DefaultItem');
+const listItem = document.getElementById('ListItem');
+const indexCounter = document.getElementById('IndexCounter');
+
+
 /** Displays a list input field. */
 class ListField extends ParameterField {
     async createField() {
@@ -288,4 +298,146 @@ class ListField extends ParameterField {
         let firstChild = [...this.children][0];
         if (firstChild) firstChild.triggerInputValidation();
     }
+
+    // Info
+    getInfo(globalTestClass, infoContainer) {
+        infoContainer.classList.remove('hidden');
+        infoContainer.innerHTML = "";
+
+        const container = listParameterInfo.content.cloneNode(true).querySelector('div');
+
+        // Parent
+        const parent = this.getParent();
+        container.querySelector('#infoTabParentName').textContent = parent ? parent.getDisplayName() : globalTestClass;
+        container.querySelector('#infoTabParentType').textContent = parent ? "List" : "TestCase";
+
+        // Datatypes
+        container.querySelector('.infoTabDatatypeName').textContent = "List";
+        container.querySelector('.infoTabDatatypeDescription').textContent = "A list of entries, each defining its child parameters";
+
+        // List Entries
+        const emptyEntries = container.querySelector('.entryEmpty');
+        const entryContainer = container.querySelector('.entryContainer');
+
+        const entries = this.getValue();
+        if (entries.length === 0) {
+            infoContainer.appendChild(container);
+            return;
+        }
+
+        emptyEntries.classList.add('d-none');
+
+        for (const entry of entries) {
+            entryContainer.appendChild(this.getEntrySingleLineInfoContainer(entry, emptyEntries, infoContainer, globalTestClass));
+        }
+
+        infoContainer.appendChild(container);
+    }
+
+    /**
+     * Builds a Single-Line Info Container for an entry of the list.
+     * @param {Array<Object.<string, any>>} entry The entry to display.
+     * @param {HTMLElement} emptyEntriesLabel The Label signifying that there are not entries.
+     * @param {HTMLElement} container The container holding the info box.
+     * @param {string} globalTestClass The global TestClass that has been selected.
+     * @returns A container holding the single line info box.
+     */
+    getEntrySingleLineInfoContainer(entry, emptyEntriesLabel, container, globalTestClass) {
+        const listItemViewContainer = listItemSmallInfo.content.cloneNode(true).querySelector('div');
+
+        const paramName = Object.keys(entry)[0];
+        const paramValue = entry[paramName];
+
+        const infoText = listItemViewContainer.querySelector('#infoText');
+
+        infoText.textContent = `${paramName} = ${paramValue} ...`;
+        infoText.title = `${paramName} = ${paramValue}`;
+
+        // Info Button
+        listItemViewContainer.querySelector('#getInfoForItem').addEventListener("click", () => {
+            this.showListItemInfo(entry, container, globalTestClass);
+        });
+
+        // Delete Button
+        listItemViewContainer.querySelector('#deleteItem').addEventListener("click", () => {
+            this.removeValue(entry);
+            if (this.getValue().length === 0) emptyEntriesLabel.classList.remove('d-none');
+            listItemViewContainer.remove();
+        });
+
+        return listItemViewContainer;
+    }
+
+    /**
+     *
+     * @param {Array<Object.<string, any>>} entry The chosen entry that is contained in this list.
+     * @param {HTMLElement} container
+     * @param {string} globalTestClass The global TestClass that has been selected.
+     */
+    showListItemInfo(entry, container, globalTestClass) {
+        container.classList.remove('hidden');
+        container.innerHTML = "";
+        const templateContainer = listItemPageInfo.content.cloneNode(true).querySelector('div');
+
+        templateContainer.querySelector('#returnToListView').addEventListener("click", () => {
+            this.getInfo(globalTestClass, container);
+        });
+
+        templateContainer.querySelector('#deleteItem').addEventListener("click", () => {
+            this.removeValue(entry);
+            this.getInfo(globalTestClass, container);
+        });
+
+        this.displayListItemInfo([entry], templateContainer);
+
+        container.appendChild(templateContainer);
+    }
+
+    /**
+     * Creates the List Item View for the Info Page
+     * @param {Array<Object.<string, any>>} entry The Array of Values that store the List Items.
+     * @param {HTMLElement} containerToAddTo The Container to add the List Info to.
+     */
+    displayListItemInfo(entry, containerToAddTo) {
+        for (const [index, collection] of entry.entries()) {
+            if (entry.length > 1 && index !== 0) {
+                const indexCounterContainer = indexCounter.content.cloneNode(true).querySelector('div');
+                containerToAddTo.appendChild(indexCounterContainer);
+            }
+            for (const [key, value] of Object.entries(collection)) {
+                if (Array.isArray(value)) {
+                    // List View
+                    const templateContainer = listItem.content.cloneNode(true).querySelector('div');
+                    const itemContainer = templateContainer.querySelector("#listItemContainer");
+
+                    templateContainer.querySelector("#listTitle").textContent = key;
+                    this.displayListItemInfo(value, itemContainer);
+
+                    containerToAddTo.appendChild(templateContainer);
+                } else {
+                    // Default View
+                    containerToAddTo.appendChild(this.displayDefaultItemInfo(key, value));
+                }
+            }
+
+        }
+    }
+
+    /**
+     * Creates default Item views for the Info Page
+     * @param {string} name the name of the item
+     * @param {string} value the value of the item
+     * @returns {HTMLElement} the container containing the info-block.
+     */
+    displayDefaultItemInfo(name, value) {
+        const container = defaultItem.content.cloneNode(true).querySelector('div');
+        container.querySelector("#name").textContent = name;
+        const valueField = container.querySelector("#value");
+        valueField.textContent = value;
+        valueField.setAttribute('title', value);
+
+        if (value) container.querySelector(".emptyBadge").remove();
+        return container;
+    }
+
 }

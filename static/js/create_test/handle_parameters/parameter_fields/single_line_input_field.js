@@ -145,7 +145,7 @@ class SingleLineInputField extends ParameterField {
     }
 
     // Info
-    getInfo(globalTestClass) {
+    getInfo(globalTestClass, infoContainer) {
         const container = defaultParameterInfo.content.cloneNode(true).querySelector('div');
 
         // Parent
@@ -154,16 +154,21 @@ class SingleLineInputField extends ParameterField {
         container.querySelector('#infoTabParentType').textContent = parent ? "List" : "TestCase";
 
         // Datatypes
-        const datatypeTemplateContainer = this.container.querySelector('.datatypeContainer');
-        const datatypeContainers = this.getDatatypeInfo(this.getType(), datatypeTemplateContainer);
+        const legalDatatypes = this.getType().filter(type => type.checkValidity());
+        if (legalDatatypes.length === 0) return container;
 
+        const datatypeTemplateContainer = container.querySelector('.datatypeContainer');
+        const datatypeContainers = this.getDatatypeInfo(legalDatatypes, datatypeTemplateContainer);
+        for (let i = 1; i < datatypeContainers.length; i++) {
+            datatypeTemplateContainer.after(datatypeContainers[i]);
+        }
 
-        return container;
+        infoContainer.appendChild(container);
     }
 
     /**
      * Creates a Container for each given datatype.
-     * @param {Array<string>} datatypes An array of datatypes.
+     * @param {Array<Datatype>} datatypes An array of datatypes.
      * @param {HTMLElement} templateContainer The container that defines a datatype.
      * @returns {Array<HTMLElement>} An array of containers for each datatype.
      */
@@ -177,19 +182,10 @@ class SingleLineInputField extends ParameterField {
             const datatype = datatypes[i];
             const container = containers[i];
 
-
+            container.querySelector('.infoTabDatatypeName').textContent = datatype.displayName();
+            container.querySelector('.infoTabDatatypeDescription').textContent = datatype.getDescription();
         }
 
         return containers;
-    }
-
-    /**
-     * Puts datatype info into the given container.
-     * @param container The container to "decorate".
-     * @param datatype The name of the datatype.
-     */
-    decorateDatatypeContainer(container, datatype) {
-        container.querySelector('.infoTabDatatypeName').textContent = datatype;
-
     }
 }

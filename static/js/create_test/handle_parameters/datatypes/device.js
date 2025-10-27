@@ -1,25 +1,11 @@
-/**
- * Simulates an Enum. Displays Datatype-checking-results.
- * @type {{UNKNOWN: string, SUCCESS: string, FAIL: string}}
- */
-const DATATYPE_RESULT = {
-    UNKNOWN: "unknown",
-    SUCCESS: "success",
-    FAIL: "fail"
-};
-
 /** Device Datatype */
 class Device extends Datatype {
-    /**
-     * Checks if the given value matches the datatype.
-     * @param value The value to be checked.
-     */
     check(value) {
         return allDevices.includes(value);
     }
 
     getDescription() {
-        return "Device Datatype - Work in Progress";
+        return "Devices are machines that are created using the device page";
     }
 
     toString() {
