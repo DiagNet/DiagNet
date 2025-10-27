@@ -1,27 +1,17 @@
-const createTestButton = document.getElementById('createTest')
-const labelInput = document.getElementById('labelInput');
-const expectedResult = document.getElementById('expectedResult');
 const infoTab = document.getElementById('info-tab');
 
-
-labelInput.addEventListener("input", checkTestValueInputs);
-
-let setupParams = false;
-let currentRequiredParams = []
-let currentOptionalParams = []
-let allDevicesParameters = []
-
+// Create Test
+const createTestButton = document.getElementById('createTest')
 createTestButton.addEventListener("click", async () => {
-    if (setupParams) {
+    if (setupParams || params === undefined) {
         return;
     }
     await createTest(
         previousTestClass,
-        currentRequiredParams,
-        currentOptionalParams,
-        allDevicesParameters,
+        params.values,
+        params.device_parameters,
         labelInput.value,
-        expectedResult.value === "PASS"
+        document.querySelector('input[name="expectedResult"]:checked').value === "PASS"
     );
 
     // Hide the popup
@@ -29,40 +19,16 @@ createTestButton.addEventListener("click", async () => {
     popupWindowBootstrap.hide();
 });
 
-/**
- * Collects selected parameters from required and optional containers,
- * enables the info tab, and sets up the create test button to submit the test.
- * @async
- */
-async function selectParameters(selectedRequiredParams, selectedOptionalParameters) {
-    const allParameters = new Map([...selectedRequiredParams, ...selectedOptionalParameters]);
 
-    setupParams = true;
-    const requiredParams = readInputs(selectedRequiredParams);
-    const optionalParams = readInputs(selectedOptionalParameters);
+// Label Input
+const labelInput = document.getElementById('labelInput');
 
-    const allDeviceParameters = [...requiredParams.device_parameters, ...optionalParams.device_parameters];
-
-    infoTab.disabled = false;
-    infoTab.click();
-    updateTabContentAccessibility();
-
-    currentRequiredParams = requiredParams.values;
-    currentOptionalParams = optionalParams.values;
-    allDevicesParameters = allDeviceParameters;
-    setupParams = false;
-}
-
-/**
- * Enables the "Create Test" button.
- */
+/** Enables the "Create Test" button. */
 function enableCreateTest() {
     createTestButton.disabled = false;
 }
 
-/**
- * Disables the "Create Test" button.
- */
+/** Disables the "Create Test" button. */
 function disableCreateTest() {
     createTestButton.disabled = true;
 }
@@ -78,29 +44,48 @@ function checkTestValueInputs() {
     }
 }
 
+labelInput.addEventListener("input", checkTestValueInputs);
+
+// Select Parameters
+
+let setupParams = false;
+let params = undefined;
+/**
+ * Collects selected parameters from required and optional containers,
+ * enables the info tab, and sets up the create test button to submit the test.
+ * @async
+ */
+async function selectParameters(selectedParameters) {
+    setupParams = true;
+
+    params = readInputs(selectedParameters);
+
+    infoTab.disabled = false;
+    infoTab.click();
+    updateTabContentAccessibility();
+
+    setupParams = false;
+}
+
 /**
  * Read non-empty inputs from a container and collect device-type inputs separately.
  *
- * @param parameter_values - oh nooooo
+ * @param parameters all given Parameters.
  * @returns {{values: Object, device_parameters: string[]}} Map of input names to values and list of device values.
  */
-function readInputs(parameter_values) {
+function readInputs(parameters) {
     const values = {};
     const device_parameters = [];
 
-    for (const params of parameter_values) {
+    for (const params of parameters) {
         let field = params['parameter_info'];
         if (!field.isEmpty()) {
             let name = params['name'];
             let value = field.getValue();
-            let type = params['type'];
 
-            console.log("ADDING OUTPUT FROM PARAM");
-            console.log(field);
-            console.log(value);
             values[name] = value;
 
-            if (type.trim().toLowerCase() === "device") {
+            if (field.getType().some(type => type instanceof Device) && allDevices.includes(value)) {
                 device_parameters.push(name);
             }
         }
