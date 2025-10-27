@@ -1,5 +1,4 @@
 /* Handles Parameters */
-
 const chooseParametersContainer = document.getElementById("chooseParametersContainer");
 const submitParametersButton = document.getElementById("submitParameters");
 const parameterInfoContainer = document.getElementById('parameterInfoContainer');
@@ -13,11 +12,10 @@ const parameterInfoContainer = document.getElementById('parameterInfoContainer')
  * @param {Array<Object.<string, any>>} parameters - Map of parameters
  * @param {Object.<string, boolean>} validInputMap - Tracks each parameter's validity.
  * @param {Object.<string, boolean>} currentlyBlockedMap - Tracks which parameters are currently blocked/disabled.
- * @param {Object.<string, Array<ParameterField>|Object.<string, boolean>>} activationMap Maps what parameters are effected when changing one specific Parameter
  * @param {HTMLElement} submitButton that "finishes" the parameter selection.
  * @param {function} extraSubmitValidity Function that is called for validating further submit requirements.
  */
-function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity) {
+function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity) {
     if (extraSubmitValidity && !extraSubmitValidity()) {
         disableSubmit(submitButton);
         return;
@@ -27,8 +25,8 @@ function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, act
         const valueA = validInputMap[key];
         const valueB = currentlyBlockedMap[key] || false;
         let valueC = true; // default is true
-        if (activationMap["ACTIVATION_STATE"]) {
-            let activationState = activationMap["ACTIVATION_STATE"][key];
+        if (activationDependencyMap["ACTIVATION_STATE"]) {
+            let activationState = activationDependencyMap["ACTIVATION_STATE"][key];
             if (activationState === undefined) activationState = ParameterField.ACTIVATION_RESULT.ACTIVATE;
             else valueC = (activationState === ParameterField.ACTIVATION_RESULT.ACTIVATE) || (activationState === ParameterField.ACTIVATION_RESULT.UNKNOWN);
         }
@@ -56,15 +54,14 @@ function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, act
  * @param {Array<Object.<string, any>>} parameters - Map of parameters to attach the handler to.
  * @param {Object.<string, boolean>} validInputMap - Tracks current validity of each parameter.
  * @param {Object.<string, boolean>} currentlyBlockedMap - Tracks which parameters are currently blocked/disabled.
- * @param {Object.<string, Array<ParameterField>|Object.<string, boolean>>} activationMap Maps what parameters are effected when changing one specific Parameter
  * @param {HTMLElement} submitButton that "finishes" the parameter selection
  * @param {function} extraSubmitValidity Function that is called for validating further submit requirements.
  */
-function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity) {
+function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity) {
     for (const parameterInfo of parameters) {
         parameterInfo['valid_submit_handler'] = (e) => {
             //if ((parameterInfo['requirement'] === "optional") || (parameterInfo['type'] === "list") || e.validInputChanged || (e && e.detail && e.detail.calledByInputValidation)) {
-            checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, activationMap, submitButton, extraSubmitValidity);
+            checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity);
             //}
         };
     }
@@ -101,29 +98,26 @@ function loadParameterFieldsIntoDocument(parameters, container) {
  * 3. List Views (type === "list")
  *
  * @param parameter The parameter Object mapping.
- * @param dependencyMap The Object-Map describing what datatypes are linked with what parameter values.
- * @param activationDependencyMap Map of parameters that manages when a parameter is displayed.
  * @returns {ParameterField} The created ParameterField
  */
-function createParameterFields(parameter, dependencyMap, activationDependencyMap) {
+function createParameterFields(parameter) {
     const datatypes = (Array.isArray(parameter['type']) ? parameter['type'] : [parameter['type']])
         .map(d => typeof d === "string" ? d.trim().toLowerCase() : d);
 
-    if (datatypes.includes("choice")) return new ChoiceField(parameter, dependencyMap, activationDependencyMap);
-    else if (datatypes.includes("list")) return new ListField(parameter, dependencyMap, activationDependencyMap);
-    else if (datatypes.includes("device")) return new SingleLineDeviceField(parameter, dependencyMap, activationDependencyMap);
-    else return new SingleLineInputField(parameter, dependencyMap, activationDependencyMap);
+    if (datatypes.includes("choice")) return new ChoiceField(parameter);
+    else if (datatypes.includes("list")) return new ListField(parameter);
+    else if (datatypes.includes("device")) return new SingleLineDeviceField(parameter);
+    else return new SingleLineInputField(parameter);
 }
 
 /**
  * Creates DOM input fields for parameters and stores them in each parameter's map.
  *
  * @param {Array<Object.<string, any>>} parameters - Map of parameters.
- * @param {Object.<string, Array<ParameterField>>} activationDependencyMap Map of parameters that manages when a parameter is displayed.
  * */
-async function createAndSaveParameterFields(parameters, activationDependencyMap) {
+async function createAndSaveParameterFields(parameters) {
     for (const parameterInfo of parameters) {
-        let inputField = createParameterFields(parameterInfo, activationDependencyMap);
+        let inputField = createParameterFields(parameterInfo);
         await inputField.createField();
         parameterInfo['parameter_info'] = inputField;
         if (parameterInfo['requirement'] !== "optional") {
@@ -318,39 +312,34 @@ function createInputListeners(parameters) {
  * This covers required_if and forbidden_if keywords.
  *
  * @param allParameters Map of parameters.
- * @param {Object.<string, Array<ParameterField>|Object.<string, boolean>>} activationMap Maps what parameters are effected when changing one specific Parameter
- * @param {boolean} createActivationDependencyHandlers decides if the handler should be assigned. (Should only be true if the global layer is reached)
  */
-function createActivationHandler(allParameters, activationMap, createActivationDependencyHandlers) {
+function createActivationHandler(allParameters) {
     for (const parameter of allParameters) {
         const field = parameter['parameter_info'];
         const paramTriggers = field.getActivationTriggers();
         for (const trigger of paramTriggers) {
-            if (trigger in activationMap) {
-                activationMap[trigger].push(field);
+            if (trigger in activationDependencyMap) {
+                activationDependencyMap[trigger].push(field);
             } else {
-                activationMap[trigger] = [field];
+                activationDependencyMap[trigger] = [field];
             }
         }
     }
 
-    if (createActivationDependencyHandlers) {
-        activationMap["ACTIVATION_STATE"] = {}; // Store what parameters are considered "active"
-        for (const parameter of allParametersDisplayed) {
-            const parameterName = parameter['name'];
-            const toTrigger = activationMap[parameterName];
-            const field = parameter['parameter_info'];
-            if (toTrigger) {
-                parameter['activation_handler'] = async () => {
-                    toTrigger.forEach(item => {
-                        let isShownBefore = item.isShown();
-                        activationMap["ACTIVATION_STATE"][item.parameter['name']] = item.handleActivationTrigger(parameterName, field.getValue());
-                        if (isShownBefore !== item.isShown()) item.refreshSubmitValidity();
-                    });
-                };
-            }
+    activationDependencyMap["ACTIVATION_STATE"] = {}; // Store what parameters are considered "active"
+    for (const parameter of allParametersDisplayed) {
+        const parameterName = parameter['name'];
+        const toTrigger = activationDependencyMap[parameterName];
+        const field = parameter['parameter_info'];
+        if (toTrigger) {
+            parameter['activation_handler'] = async () => {
+                toTrigger.forEach(item => {
+                    let isShownBefore = item.isShown();
+                    activationDependencyMap["ACTIVATION_STATE"][item.parameter['name']] = item.handleActivationTrigger(parameterName, field.getValue());
+                    if (isShownBefore !== item.isShown()) item.refreshSubmitValidity();
+                });
+            };
         }
-        createInputListeners(allParametersDisplayed);
     }
 }
 
@@ -383,11 +372,9 @@ function loadDatatypes(parameters) {
  * @param {Array<Array<string>>} mutually_exclusive_bindings List of mutually exclusive bindings
  * @param {HTMLElement} parameterContainer - The DOM element to append parameter fields into.
  * @param {HTMLElement} submitButton button that "finishes" the parameter selection
- * @param {Object.<string, Array<ParameterField>>} activationDependencyMap Map of parameters that manages when a parameter is displayed.
- * @param {boolean} createActivationDependencyHandlers decides if the handler should be assigned. (Should only be true if the global layer is reached)
  * @param {function} extraSubmitValidity Function that is called for validating further submit requirements.
  */
-async function showParameters(parameters, mutually_exclusive_bindings, parameterContainer, submitButton, activationDependencyMap, createActivationDependencyHandlers, extraSubmitValidity) {
+async function showParameters(parameters, mutually_exclusive_bindings, parameterContainer, submitButton, extraSubmitValidity) {
     allParametersDisplayed.push(...parameters);
 
     /**
@@ -399,13 +386,10 @@ async function showParameters(parameters, mutually_exclusive_bindings, parameter
     /** Marks if a parameter's field is currently blocked (unable to change value) */
     let currentlyBlockedMap = {};
 
-    await createAndSaveParameterFields(parameters, activationDependencyMap);
-    //loadDatatypes(parameters);
+    await createAndSaveParameterFields(parameters);
     createMutuallyExclusiveHandler(parameters, mutually_exclusive_bindings, currentlyBlockedMap);
     createDatatypeHandler(parameters, validInputMap);
-    createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, activationDependencyMap, submitButton, extraSubmitValidity);
-    createActivationHandler(parameters, activationDependencyMap, createActivationDependencyHandlers);
-    //createInputListeners(parameters);
+    createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity);
 
     for (const parameterInfo of parameters.values()) {
         parameterInfo['mutually_exclusive_handler']?.();
@@ -414,12 +398,12 @@ async function showParameters(parameters, mutually_exclusive_bindings, parameter
 
     loadParameterFieldsIntoDocument(parameters, parameterContainer);
 
-
-    checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, activationDependencyMap, submitButton, extraSubmitValidity);
+    checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity);
 }
 
 
 // Initialization
+let activationDependencyMap = {};
 let allParametersDisplayed = [];
 let previousTestClass = ""; // Store last TestClass to avoid recreating same parameter-fields
 let settingUp = false; // Locks up TestClass selection while fields are being created
@@ -466,10 +450,14 @@ async function selectTestClass(testClass) {
         parameters.mul,
         chooseParametersContainer,
         submitParametersButton,
-        {},
-        true,
         undefined
     );
+
+    // Creates Activation listeners for all Parameters
+    createActivationHandler(allParametersDisplayed);
+
+    // Creates the input listeners for all Parameters
+    createInputListeners(allParametersDisplayed);
 
     // Convert string-datatypes into Datatypes
     loadDatatypes(allParametersDisplayed);
