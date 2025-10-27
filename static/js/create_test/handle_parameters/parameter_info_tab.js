@@ -1,15 +1,9 @@
 // Main Container
-const parameterInfoContainer = document.getElementById('parameterInfoContainer');
-
 // Templates
-const listParameterInfo = document.getElementById('ListParameterInfo');
-const listItemSmallInfo = document.getElementById('ListItemSmallInfo');
-const listItemPageInfo = document.getElementById('ListItemPageInfo');
+const listPa2rameterInfo = document.getElementById('ListParameterInfo');
+const listfItemSmallInfo = document.getElementById('ListItemSmallInfo');
+const listItfemPageInfo = document.getElementById('ListItemPageInfo');
 
-// Templates - List-Item Info-Page
-const defaultItem = document.getElementById('DefaultItem');
-const listItem = document.getElementById('ListItem');
-const indexCounter = document.getElementById('IndexCounter');
 
 /**
  * Displays Info about the current Parameter in the info tab.
