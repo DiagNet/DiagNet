@@ -1,7 +1,7 @@
 const choiceInputTemplate = document.getElementById('choiceInputTemplate');
 
 /** Displays a multiple choice input field. */
-class ChoiceField extends Parameter_field {
+class ChoiceField extends ParameterField {
     async createField() {
         this.container = this.loadTemplateContainer();
         this.field = this.container.querySelector('.choice-select');
@@ -85,12 +85,10 @@ class ChoiceField extends Parameter_field {
         let value = this.getValue().trim();
         if (value.length === 0) {
             this.unknownDatatype();
-            await uncacheValue(this);
             this.updateBadgesForParametersDependentOnThis();
             return DATATYPE_RESULT.UNKNOWN;
         } else {
             this.correctDatatype();
-            await cacheValue(this, value);
             this.updateBadgesForParametersDependentOnThis();
             return DATATYPE_RESULT.SUCCESS;
         }
@@ -127,6 +125,10 @@ class ChoiceField extends Parameter_field {
 
     onChange(callback) {
         if (this.field) this.field.addEventListener('change', callback);
+    }
+
+    getInfo(globalTestClass) {
+        return document.createElement("li");
     }
 
 }
