@@ -7,6 +7,11 @@ urlpatterns = [
     path("create-testgroup/", views.create_testgroup, name="create-testgroup"),
     path("delete-testgroup/", views.delete_testgroup, name="delete-testgroup"),
     path(
+        "testgroup-filter-testcases/",
+        views.get_filtered_testcases,
+        name="testgroup-filter-testcases",
+    ),
+    path(
         route="testcase-add/",
         view=views.add_testcases_to_testgroup,
         name="testgroup-add-testcase",

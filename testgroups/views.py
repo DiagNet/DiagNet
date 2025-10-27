@@ -195,12 +195,48 @@ def run_testcase(request, group, pk):
     return list_testcases(request, group)
 
 
+def get_aval_testcases_for_testgroup(testgroup: TestGroup) -> set:
+    already_added = set(testgroup.testcases.get_queryset())
+    return set(TestCase.objects.all()) - already_added
+
+
 @require_http_methods(["GET"])
 def get_testcase_search_popup(request, testgroup_name):
     testgroup = get_object_or_404(TestGroup, name=testgroup_name)
-    already_added = set(testgroup.testcases.get_queryset())
+    testcases = get_aval_testcases_for_testgroup(testgroup)
 
-    testcases = set(TestCase.objects.all()) - already_added
     context = {"testcases": testcases, "testgroup": testgroup}
 
     return render(request, "testcase_search_popup.html", context)
+
+
+@require_http_methods(["POST"])
+def get_filtered_testcases(request):
+    testgroup_pk = request.POST.get("testgroup")
+    search = request.POST.get("search").strip()
+    if not testgroup_pk:
+        return HttpResponseBadRequest()
+    if not search:
+        search = ""
+
+    try:
+        testgroup = TestGroup.objects.get(pk=testgroup_pk)
+    except TestGroup.DoesNotExist:
+        return HttpResponseBadRequest("Test group does not exist")
+
+    aval_testcases = get_aval_testcases_for_testgroup(testgroup)
+
+    startingwith_testcases: set[TestCase] = set(
+        filter(lambda t: t.label.startswith(search), aval_testcases)
+    )
+    matching_testcases: set[TestCase] = (
+        set(filter(lambda t: search in t.label, aval_testcases))
+        - startingwith_testcases
+    )
+
+    filtered_testcases = list(startingwith_testcases)
+    filtered_testcases.extend(matching_testcases)
+
+    return render(
+        request, "popup_testcases_tbody.html", context={"testcases": filtered_testcases}
+    )
