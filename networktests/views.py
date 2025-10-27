@@ -152,8 +152,7 @@ def create_test(request):
     print(data)
 
     test_class: str = data.get("test_class")
-    required_params = data.get("required_parameters", {})
-    optional_params = data.get("optional_parameters", {})
+    params = data.get("parameters", {})
     device_params = data.get("device_parameters", {})
     label = data.get("label", {})
     expected_result = data.get("expected_result", {})
@@ -162,10 +161,9 @@ def create_test(request):
 
     # Check if parsed parameters are valid
     class_reference = get_class_reference_for_test_class_string(test_class)
-    parseable_parameters = {**required_params, **optional_params}
 
     try:
-        class_reference().check_parameter_validity(**parseable_parameters)
+        class_reference().check_parameter_validity(**params)
     except Exception as e:
         return JsonResponse({"status": "fail", "message": str(e)}, status=500)
 
@@ -178,10 +176,10 @@ def create_test(request):
     except Exception as e:
         return JsonResponse({"status": "fail", "message": str(e)}, status=500)
 
-    for param, value in {**required_params, **optional_params}.items():
+    for param, value in params.items():
         out = store_test_parameter(new_test, param, value, device_params)
         if out:
-            return out;
+            return out
 
     return JsonResponse({"status": "success"}, status=201)
 
