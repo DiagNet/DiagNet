@@ -79,7 +79,6 @@ function showInfoForTestClass(testCase, data) {
  */
 const fetchTestClassInfoDebounced = debounce(async (testClassName) => {
     let results = await fetchTestClassInfoAPI(testClassName);
-    console.log(results);
     if (results.length === 0 || Object.keys(results).length === 0) results = emptyDocumentation;
     showInfoForTestClass(testClassName, results);
 }, 300);
@@ -185,6 +184,12 @@ function createResultItem(name) {
         updateActive(items)
         fetchTestClassInfoDebounced(items[currentIndex].dataset.name)
         searchInput.focus()
+    });
+
+    li.addEventListener("dblclick", async (e) => {
+        popupWindow.removeEventListener("keydown", onPopUpClickHandler); // remove focus from search Element in template tab
+        await selectTestClass(name);
+        updateTabContentAccessibility();
     });
 
 
