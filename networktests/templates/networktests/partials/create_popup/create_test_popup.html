@@ -47,21 +47,33 @@
 
 
 {% block modal_header %}
-<div class="modal-header justify-content-center">
-    <ul class="nav nav-pills" id="popupTabs" role="tablist">
+<div class="modal-header justify-content-center bg-light border-bottom">
+    <ul class="nav nav-pills gap-2" id="popupTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link create-popup-nav active" id="template-tab" type="button" aria-disabled="true">Template</button>
+            <button class="nav-link create-popup-nav active px-4 py-2 rounded-pill"
+                    id="template-tab" type="button" aria-disabled="true">
+                Template
+            </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link create-popup-nav disabled" id="parameters-tab" type="button" tabindex="-1" aria-disabled="true">Parameters</button>
+            <button class="nav-link create-popup-nav disabled px-4 py-2 rounded-pill"
+                    id="parameters-tab" type="button" tabindex="-1" aria-disabled="true">
+                Parameters
+            </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link create-popup-nav disabled" id="info-tab" type="button" tabindex="-1" aria-disabled="true">Info</button>
+            <button class="nav-link create-popup-nav disabled px-4 py-2 rounded-pill"
+                    id="info-tab" type="button" tabindex="-1" aria-disabled="true">
+                Info
+            </button>
         </li>
     </ul>
-    <button type="button" class="btn-close position-absolute end-0 me-3" onclick="closeModel()"
-            aria-label="Close"></button>
+
+
+    <button type="button" class="btn-close position-absolute end-0 me-3"
+            onclick="closeModel()" aria-label="Close"></button>
 </div>
+
 {% endblock %}
 
 {% block modal_body %}

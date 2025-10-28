@@ -110,3 +110,14 @@
     border-color: #0d6efd;
     box-shadow: 0 0 5px rgba(13, 110, 253, 0.3);
 }
+
+
+/* Parameter Tabs */
+.create-popup-nav {
+    transition: background-color .2s, color .2s, box-shadow .2s;
+}
+
+.create-popup-nav:not(.disabled):hover {
+    background-color: #e9ecef;
+    color: #212529;
+}
