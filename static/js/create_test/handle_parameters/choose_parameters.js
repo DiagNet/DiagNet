@@ -434,13 +434,11 @@ async function selectTestClass(testClass) {
     try {
         parameters = await fetchTestParameters(testClass);
     } catch (error) {
-        settingUp = false;
-        previousTestClass = "";
+        reset();
         throw new Error("Could not fetch test parameters: " + error.message);
     }
     if (!Array.isArray(parameters.requiredParams) || !Array.isArray(parameters.optionalParams)) {
-        settingUp = false;
-        previousTestClass = "";
+        reset();
         throw new Error("Given parameters have to be contained in a list: Consider adding a valid test definition");
     }
 
@@ -448,8 +446,7 @@ async function selectTestClass(testClass) {
     let allParameters = [...parameters.requiredParams, ...parameters.optionalParams];
 
     if (allParameters.length === 0) {
-        settingUp = false;
-        previousTestClass = "";
+        reset();
         throw new Error("Test-Class needs to contain at least 1 parameter");
     }
 
@@ -474,8 +471,7 @@ async function selectTestClass(testClass) {
         // Convert string-datatypes into Datatypes
         loadDatatypes(allParametersDisplayed);
     } catch (e) {
-        settingUp = false;
-        previousTestClass = "";
+        reset();
         throw e;
     }
 
@@ -495,6 +491,15 @@ async function selectTestClass(testClass) {
     paramTab.setAttribute('tabindex', '0');
 
     settingUp = false;
+}
+
+/** Function called upon Error. */
+function reset() {
+    settingUp = false;
+    previousTestClass = "";
+    paramTab.classList.add('disabled');
+    paramTab.disabled = true;
+    paramTab.setAttribute('tabindex', '-1');
 }
 
 /** Enables the given button */

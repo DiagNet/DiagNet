@@ -1,9 +1,9 @@
 /* Handles Search-Inputs and displays available testcases */
-
-
 const searchInput = document.getElementById("searchInput");
 const resultsList = document.getElementById("resultsList");
 const popupWindow = document.getElementById("largeModal");
+let popupWindowModel = undefined;
+
 const docWindow = document.getElementById("doc");
 const templateTab = document.getElementById('template-tab');
 const paramTab = document.getElementById('parameters-tab');
@@ -308,3 +308,17 @@ async function init() {
 }
 
 _ = init()
+
+/** Opens/Shows the popup */
+function openModel() {
+    if (!window.bootstrap) return;
+
+    if (popupWindowModel === undefined) popupWindowModel = new bootstrap.Modal(popupWindow);
+    popupWindowModel.show();
+}
+
+/** Closes the popup */
+function closeModel() {
+    popupWindowModel.hide();
+    //popupWindowModel.dispose();
+}

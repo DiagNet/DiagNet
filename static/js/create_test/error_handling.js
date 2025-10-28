@@ -32,3 +32,19 @@ function throwException(message) {
         toastEl.remove();
     });
 }
+
+
+const successToastEl = document.getElementById("successToast");
+const successToastBody = document.getElementById("successToastBody");
+
+/**
+ * Shows a Success globally on the page.
+ * @param message Message to display
+ * @param duration the display duration
+ */
+function showSuccess(message, duration = 3000) {
+    successToastBody.textContent = message;
+
+    const toast = new bootstrap.Toast(successToastEl, { delay: duration });
+    toast.show();
+}
