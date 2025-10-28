@@ -59,10 +59,8 @@ function checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, sub
  */
 function createSubmitHandler(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity) {
     for (const parameterInfo of parameters) {
-        parameterInfo['valid_submit_handler'] = (e) => {
-            //if ((parameterInfo['requirement'] === "optional") || (parameterInfo['type'] === "list") || e.validInputChanged || (e && e.detail && e.detail.calledByInputValidation)) {
+        parameterInfo['valid_submit_handler'] = () => {
             checkSubmitValidity(parameters, validInputMap, currentlyBlockedMap, submitButton, extraSubmitValidity);
-            //}
         };
     }
 }
@@ -83,10 +81,6 @@ function loadParameterFieldsIntoDocument(parameters, container) {
     });
 
     container.appendChild(fragment);
-
-    //parameters.forEach(param => {
-    //    param['parameter_info'].afterCreatingField();
-    //});
 }
 
 /**
@@ -117,6 +111,9 @@ function createParameterFields(parameter) {
  * */
 async function createAndSaveParameterFields(parameters) {
     for (const parameterInfo of parameters) {
+        if (parameterInfo === null || typeof parameterInfo !== "object" || Array.isArray(parameterInfo)) {
+            throw new Error("Parameters can only be defined as a map like structure: Consider changing the test definition");
+        }
         let inputField = createParameterFields(parameterInfo);
         await inputField.createField();
         parameterInfo['parameter_info'] = inputField;
@@ -191,13 +188,15 @@ function createMutuallyExclusiveHandler(parameters, mutually_exclusive_bindings,
         let foundNamesCount = 0;
         for (const param of allParameterFields) {
             const paramName = param['name'];
+            if (!paramName) throw new Error("No name found for given parameter: Consider adding the 'name' field in the test definition");
+            if (typeof paramName !== "string") throw new Error("Parameter name has to be a string: Consider adding a valid 'name' field in the test definition");
             if (searchNames.has(paramName)) {
                 output[paramName] = param;
                 foundNamesCount += 1;
             }
         }
         if (foundNamesCount !== searchNames.size) {
-            throwException("Mutually-Exclusive-Binding Parameter not found as an actual Parameter");
+            throw new Error("Mutually-Exclusive-Binding parameter not found as an actual Parameter");
         }
         return output;
     }
@@ -243,10 +242,10 @@ function createDatatypeHandler(parameters, validInputMap) {
         validInputMap[parameterName] = requirement === "optional";
 
         if (!parameterName) {
-            throwException(`No name found for given parameter - Consider adding the 'name' field in the test definition`);
+            throw new Error("No name found for given parameter: Consider adding the 'name' field in the test definition");
         }
         if (!parameterType) {
-            throwException(`No datatype found for parameter ${parameterName} - Consider adding the 'type' field in the test definition`);
+            throw new Error(`No datatype found for parameter ${parameterName}: Consider adding the 'type' field in the test definition`);
         }
 
         const validateResultBasedOnRequirement = {
@@ -359,6 +358,8 @@ function loadDatatypes(parameters) {
                 datatypeObjects.push(Datatype.toDatatype(datatype['name'], parameter['parameter_info'], datatype['condition'], parameters));
             } else if (typeof datatype === 'string') {
                 datatypeObjects.push(Datatype.toDatatype(datatype));
+            } else {
+                throw new Error("Unknown datatype format. (Class definition seems to be wrong?) " + datatype);
             }
         }
         parameter['type'] = datatypeObjects;
@@ -428,40 +429,55 @@ async function selectTestClass(testClass) {
     // Remove all previous parameter fields
     chooseParametersContainer.innerHTML = "";
 
-    // Activate navigation towards parameter tab
-    paramTab.classList.remove('disabled');
-    paramTab.disabled = false;
-    paramTab.click();
-    paramTab.setAttribute('tabindex', '0');
-
     // Fetch needed parameters
     let parameters;
     try {
         parameters = await fetchTestParameters(testClass);
     } catch (error) {
-        throwException(error.message);
+        settingUp = false;
+        previousTestClass = "";
+        throw new Error("Could not fetch test parameters: " + error.message);
     }
+    if (!Array.isArray(parameters.requiredParams) || !Array.isArray(parameters.optionalParams)) {
+        settingUp = false;
+        previousTestClass = "";
+        throw new Error("Given parameters have to be contained in a list: Consider adding a valid test definition");
+    }
+
 
     let allParameters = [...parameters.requiredParams, ...parameters.optionalParams];
 
+    if (allParameters.length === 0) {
+        settingUp = false;
+        previousTestClass = "";
+        throw new Error("Test-Class needs to contain at least 1 parameter");
+    }
+
+
     allParametersDisplayed = [];
     activationDependencyMap = {};
-    await showParameters(
-        allParameters,
-        parameters.mul,
-        chooseParametersContainer,
-        submitParametersButton,
-        undefined
-    );
+    try {
+        await showParameters(
+            allParameters,
+            parameters.mul,
+            chooseParametersContainer,
+            submitParametersButton,
+            undefined
+        );
 
-    // Creates Activation listeners for all Parameters
-    createActivationHandler(allParametersDisplayed);
+        // Creates Activation listeners for all Parameters
+        createActivationHandler(allParametersDisplayed);
 
-    // Creates the input listeners for all Parameters
-    createInputListeners(allParametersDisplayed);
+        // Creates the input listeners for all Parameters
+        createInputListeners(allParametersDisplayed);
 
-    // Convert string-datatypes into Datatypes
-    loadDatatypes(allParametersDisplayed);
+        // Convert string-datatypes into Datatypes
+        loadDatatypes(allParametersDisplayed);
+    } catch (e) {
+        settingUp = false;
+        previousTestClass = "";
+        throw e;
+    }
 
     allParametersDisplayed.forEach(parameter => {
         parameter['parameter_info'].afterCreatingField();
@@ -471,16 +487,14 @@ async function selectTestClass(testClass) {
         selectParameters(allParameters);
     });
 
+    console.log("got here");
+    // Activate navigation towards parameter tab
+    paramTab.classList.remove('disabled');
+    paramTab.disabled = false;
+    paramTab.click();
+    paramTab.setAttribute('tabindex', '0');
+
     settingUp = false;
-}
-
-
-/**
- * Throws an Exception
- * @param message The message to display
- */
-function throwException(message) {
-    throw new Error(message);
 }
 
 /** Enables the given button */

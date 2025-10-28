@@ -212,7 +212,7 @@ def get_parameters_of_specific_testcase(request):
 
         return JsonResponse(
             {
-                "result": "SUCCESS",
+                "status": "SUCCESS",
                 "required": cls._required_params,
                 "optional": cls._optional_params,
                 "mul_exclusive": cls._mutually_exclusive_parameters,
@@ -221,7 +221,8 @@ def get_parameters_of_specific_testcase(request):
     except Exception:
         return JsonResponse(
             {
-                "result": "UNKNOWN",
+                "status": "FAIL",
+                "message": "Testcase does not exist",
                 "required": [],
                 "optional": [],
                 "mul_exclusive": []
@@ -262,8 +263,12 @@ def get_doc_of_testcase(request):
         JsonResponse: A JSON object containing:
             - docstring (str): The docstring of the given test_class
     """
-    cls = get_class_reference_for_test_class_string(request.GET.get("name", ""))
-    return JsonResponse({"results": cls.__doc__ or ""})
+    try:
+        cls = get_class_reference_for_test_class_string(request.GET.get("name", ""))
+    except (ImportError, AttributeError):
+        return JsonResponse({"status": "fail", "message": "Testcase does not exist"}, status=500)
+
+    return JsonResponse({"status": "success", "results": cls.__doc__ or ""})
 
 
 def test_list(request):
