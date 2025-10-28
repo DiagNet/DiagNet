@@ -8,9 +8,13 @@ createTestButton.addEventListener("click", async () => {
         return;
     }
 
+    if (labelInput.value.length === 0) {
+        throwException("Please Enter a valid testcase name");
+        return;
+    }
+
     let expectedResult = document.querySelector('input[name="expectedResult"]:checked').value;
     try {
-
         await createTest(
             previousTestClass,
             params,
@@ -23,9 +27,9 @@ createTestButton.addEventListener("click", async () => {
         return;
     }
 
+    showSuccess("TestCase created successfully!");
     // Hide the popup
-    const popupWindowBootstrap = bootstrap.Modal.getInstance(popupWindow) || new bootstrap.Modal(popupWindow);
-    popupWindowBootstrap.hide();
+    closeModel();
 });
 
 // Label Input

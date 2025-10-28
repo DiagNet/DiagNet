@@ -86,10 +86,11 @@ async function createTest(testClass, params, label, description, expectedResult)
         });
 
         const result = await response.json();
-
         if (response.ok && result.status === "success") {
             // Testcase created
-        } else errorMessage = "Error when creating testcase: ", result.message || "Unknown error";
+        } else {
+            errorMessage = "Error when creating testcase: " + (result.message || "Unknown error");
+        }
     } catch (err) {
         throw new Error("Error sending parameters: " + err.message);
     }
