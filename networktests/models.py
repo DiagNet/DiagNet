@@ -23,11 +23,39 @@ class TestCase(models.Model):
         null=True,
     )
 
+    def getListParameter(self, list_parameter):
+        output = []
+        list_items = list_parameter.parent_parameter.all()
+
+        for list_item in list_items:
+            normal_parameters = list_item.parent_parameter.all()
+            device_parameters = list_item.device_parent_parameter.all()
+
+            curr_map = {}
+            for p in normal_parameters:
+                if p.value == "list":
+                    curr_map[p.name] = self.getListParameter(p)
+                else:
+                    curr_map[p.name] = p.value
+
+            curr_map = curr_map | {p.name: p.device for p in device_parameters}
+
+            output.append(curr_map)
+
+        return output
+
+
     def run(self):
         module = importlib.import_module(f"networktests.testcases.{self.test_module}")
         cls = getattr(module, self.test_module)
 
-        params = {p.name: p.value for p in self.parameters.all()}
+        params = {}
+        for p in self.parameters.all():
+            if p.value == "list":
+                params[p.name] = self.getListParameter(p)
+            else:
+                params[p.name] = p.value
+
         params = params | {p.name: p.device for p in self.devices.all()}
 
         start = timezone.now()
