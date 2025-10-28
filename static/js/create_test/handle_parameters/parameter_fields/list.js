@@ -309,6 +309,14 @@ class ListField extends ParameterField {
         container.querySelector('#infoTabParentName').textContent = parent ? parent.getDisplayName() : globalTestClass;
         container.querySelector('#infoTabParentType').textContent = parent ? "List" : "TestCase";
 
+        // Description
+        const description = this.getDescription();
+        const paramDescriptionContainer = container.querySelector('.paramDescriptionContainer');
+        if (description.length === 0) { paramDescriptionContainer.remove(); }
+        else {
+            paramDescriptionContainer.querySelector('.paramDescription').textContent = description;
+        }
+
         // Datatypes
         container.querySelector('.infoTabDatatypeName').textContent = "List";
         container.querySelector('.infoTabDatatypeDescription').textContent = "A list of entries, each defining its child parameters";
