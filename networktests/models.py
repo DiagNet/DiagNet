@@ -18,6 +18,10 @@ class TestCase(models.Model):
     expected_result = models.BooleanField()
     label = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(
+        blank=True,
+        null=True,
+    )
 
     def run(self):
         module = importlib.import_module(f"networktests.testcases.{self.test_module}")
