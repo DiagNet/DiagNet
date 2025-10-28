@@ -7,7 +7,11 @@ const popupWindow = document.getElementById("largeModal");
 const docWindow = document.getElementById("doc");
 const templateTab = document.getElementById('template-tab');
 const paramTab = document.getElementById('parameters-tab');
+const chooseTestClassBtn = document.getElementById('chooseTestclassBtn');
+// Templates
+const inlineTestTemplate = document.getElementById("inlineTestTemplate");
 
+// Empty Result
 const emptyItem = document.createElement("li");
 emptyItem.textContent = "No testcases found";
 emptyItem.classList.add("list-group-item", "text-muted", "text-center");
@@ -33,6 +37,18 @@ paramTab.addEventListener("click", (e) => {
 });
 
 // Test-Info
+const emptyDocumentation = `
+<div class="p-4 bg-white rounded shadow-sm text-center" style="font-family:Arial,sans-serif; line-height:1.5; max-width:800px;">
+  <h4 class="text-muted mb-3"><i class="bi bi-exclamation-circle"></i> Documentation Not Found</h4>
+  <p class="text-secondary">
+    No documentation is available for this test class at the moment.
+    Please select another test class or ensure that the class has an associated docstring.
+  </p>
+  <p class="text-muted small">
+    Tip: Docstrings are required for proper documentation display.
+  </p>
+</div>
+`;
 /**
  * Displays the provided documentation data for a test class in the documentation window.
  *
@@ -43,7 +59,7 @@ function showInfoForTestClass(testCase, data) {
     docWindow.innerHTML = data;
 
     if (docClickHandler) {
-        docWindow.removeEventListener("click", docClickHandler);
+        chooseTestClassBtn.removeEventListener("click", docClickHandler);
     }
 
     docClickHandler = async () => {
@@ -52,7 +68,7 @@ function showInfoForTestClass(testCase, data) {
         updateTabContentAccessibility();
     };
 
-    docWindow.addEventListener("click", docClickHandler);
+    chooseTestClassBtn.addEventListener("click", docClickHandler);
 }
 
 /**
@@ -62,7 +78,9 @@ function showInfoForTestClass(testCase, data) {
  * @param {string} testClassName - The name of the test class to fetch and display info for.
  */
 const fetchTestClassInfoDebounced = debounce(async (testClassName) => {
-    const results = await fetchTestClassInfoAPI(testClassName);
+    let results = await fetchTestClassInfoAPI(testClassName);
+    console.log(results);
+    if (results.length === 0 || Object.keys(results).length === 0) results = emptyDocumentation;
     showInfoForTestClass(testClassName, results);
 }, 300);
 
@@ -154,10 +172,12 @@ function renderResults(results) {
  * @returns <li> element representing the test class.
  */
 function createResultItem(name) {
-    const li = document.createElement("li");
-    li.textContent = name;
-    li.classList.add("list-group-item"); // optional styling
+    const li = inlineTestTemplate.content.cloneNode(true).querySelector("li");
     li.dataset.name = name;
+
+    const text = li.querySelector(".item-name");
+    text.textContent = name;
+
 
     li.addEventListener("click", () => {
         const items = Array.from(resultsList.querySelectorAll("li:not([data-empty])"));
@@ -178,7 +198,7 @@ function createResultItem(name) {
  * @param {HTMLElement[]} items Array of list item elements.
  */
 function updateActive(items) {
-    items.forEach((li, i) => li.classList.toggle("active", i === currentIndex));
+    items.forEach((li, i) => li.classList.toggle("selectedTestCase", i === currentIndex));
     if (currentIndex >= 0) items[currentIndex].scrollIntoView({block: "nearest"});
 }
 
