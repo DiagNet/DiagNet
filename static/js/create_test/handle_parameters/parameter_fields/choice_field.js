@@ -136,6 +136,14 @@ class ChoiceField extends ParameterField {
         container.querySelector('#infoTabParentName').textContent = parent ? parent.getDisplayName() : globalTestClass;
         container.querySelector('#infoTabParentType').textContent = parent ? "List" : "TestCase";
 
+        // Description
+        const description = this.getDescription();
+        const paramDescriptionContainer = container.querySelector('.paramDescriptionContainer');
+        if (description.length === 0) { paramDescriptionContainer.remove(); }
+        else {
+            paramDescriptionContainer.querySelector('.paramDescription').textContent = description;
+        }
+
         // Datatypes
         container.querySelector('.infoTabDatatypeName').textContent = "Choice Field";
         container.querySelector('.infoTabDatatypeDescription').textContent = `Pick from a set of predefined choices for this parameter`;

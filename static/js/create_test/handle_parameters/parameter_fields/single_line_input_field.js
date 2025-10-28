@@ -153,6 +153,14 @@ class SingleLineInputField extends ParameterField {
         container.querySelector('#infoTabParentName').textContent = parent ? parent.getDisplayName() : globalTestClass;
         container.querySelector('#infoTabParentType').textContent = parent ? "List" : "TestCase";
 
+        // Description
+        const description = this.getDescription();
+        const paramDescriptionContainer = container.querySelector('.paramDescriptionContainer');
+        if (description.length === 0) { paramDescriptionContainer.remove(); }
+        else {
+            paramDescriptionContainer.querySelector('.paramDescription').textContent = description;
+        }
+
         // Datatypes
         const legalDatatypes = this.getType().filter(type => type.checkValidity());
         if (legalDatatypes.length === 0) return container;
