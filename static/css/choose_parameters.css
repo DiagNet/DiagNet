@@ -1,8 +1,25 @@
-.hidden { display: none !important; }
+.hidden {
+    display: none !important;
+}
 
 .hoverable:hover {
-  border: 2px solid #000;
+    border: 2px solid #000;
     cursor: pointer;
+}
+
+#resultsList .list-group-item.active {
+    background: transparent !important;
+    color: inherit !important;
+    border-color: transparent !important;
+}
+
+.selectedTestCase {
+    background-color: blue;
+}
+
+#resultsList .list-group-item.active > div {
+    box-shadow: 0 0 0 3px #0d6efd inset;
+    background: inherit;
 }
 
 .tab-btn {
@@ -44,7 +61,7 @@
 }
 
 .param-tab-pane::-webkit-scrollbar-thumb {
-    background-color: rgba(0,0,0,0.2);
+    background-color: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
 }
 
@@ -91,5 +108,5 @@
 
 .choice-select:focus {
     border-color: #0d6efd;
-    box-shadow: 0 0 5px rgba(13,110,253,0.3);
+    box-shadow: 0 0 5px rgba(13, 110, 253, 0.3);
 }

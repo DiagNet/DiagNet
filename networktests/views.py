@@ -254,8 +254,8 @@ def get_doc_of_testcase(request):
         JsonResponse: A JSON object containing:
             - docstring (str): The docstring of the given test_class
     """
-
-    return JsonResponse({"results": "work in progress"})
+    cls = get_class_reference_for_test_class_string(request.GET.get("name", ""))
+    return JsonResponse({"results": cls.__doc__ or ""})
 
 
 def test_list(request):
