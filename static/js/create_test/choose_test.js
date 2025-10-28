@@ -49,6 +49,7 @@ const emptyDocumentation = `
   </p>
 </div>
 `;
+
 /**
  * Displays the provided documentation data for a test class in the documentation window.
  *
@@ -64,8 +65,13 @@ function showInfoForTestClass(testCase, data) {
 
     docClickHandler = async () => {
         popupWindow.removeEventListener("keydown", onPopUpClickHandler); // remove focus from search Element in template tab
-        await selectTestClass(testCase);
-        updateTabContentAccessibility();
+        try {
+            await selectTestClass(testCase);
+            updateTabContentAccessibility();
+        } catch (e) {
+            throwException(e.message);
+            return;
+        }
     };
 
     chooseTestClassBtn.addEventListener("click", docClickHandler);
@@ -78,7 +84,14 @@ function showInfoForTestClass(testCase, data) {
  * @param {string} testClassName - The name of the test class to fetch and display info for.
  */
 const fetchTestClassInfoDebounced = debounce(async (testClassName) => {
-    let results = await fetchTestClassInfoAPI(testClassName);
+    let results;
+    try {
+        results = await fetchTestClassInfoAPI(testClassName);
+    } catch (e) {
+        showInfoForTestClass(testClassName, emptyDocumentation);
+        throwException(e.message);
+        return;
+    }
     if (results.length === 0 || Object.keys(results).length === 0) results = emptyDocumentation;
     showInfoForTestClass(testClassName, results);
 }, 300);
@@ -188,8 +201,13 @@ function createResultItem(name) {
 
     li.addEventListener("dblclick", async (e) => {
         popupWindow.removeEventListener("keydown", onPopUpClickHandler); // remove focus from search Element in template tab
-        await selectTestClass(name);
-        updateTabContentAccessibility();
+        try {
+            await selectTestClass(name);
+                updateTabContentAccessibility();
+        } catch (e) {
+            throwException(e.message);
+            return;
+        }
     });
 
 
@@ -234,8 +252,13 @@ async function handleKeyboardNavigation(e) {
             e.preventDefault();
             if (currentIndex >= 0 && currentIndex < items.length) {
                 popupWindow.removeEventListener("keydown", onPopUpClickHandler); // remove focus from search Element in template tab
-                await selectTestClass(items[currentIndex].dataset.name);
-                updateTabContentAccessibility();
+                try {
+                    await selectTestClass(items[currentIndex].dataset.name);
+                    updateTabContentAccessibility();
+                } catch (e) {
+                    throwException(e.message);
+                    return;
+                }
             }
             break;
 

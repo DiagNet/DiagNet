@@ -9,13 +9,19 @@ createTestButton.addEventListener("click", async () => {
     }
 
     let expectedResult = document.querySelector('input[name="expectedResult"]:checked').value;
-    await createTest(
-        previousTestClass,
-        params,
-        labelInput.value,
-        description.value,
-        expectedResult === "PASS"
-    );
+    try {
+
+        await createTest(
+            previousTestClass,
+            params,
+            labelInput.value,
+            description.value,
+            expectedResult === "PASS"
+        );
+    } catch (e) {
+        throwException(e.message);
+        return;
+    }
 
     // Hide the popup
     const popupWindowBootstrap = bootstrap.Modal.getInstance(popupWindow) || new bootstrap.Modal(popupWindow);

@@ -15,6 +15,8 @@ async function fetchTestParameters(testClass) {
     const res = await fetch(`/networktests/api/search/test/parameters?test_class=${encodeURIComponent(testClass)}`);
     const data = await res.json();
 
+    if (data.status === "FAIL") throw Error(data.message);
+
     return {
         requiredParams: data.required,
         optionalParams: data.optional,
@@ -32,8 +34,7 @@ async function fetchAllTestClasses() {
         const data = await res.json();
         allTestClasses = data.results || [];
     } catch (err) {
-        console.error("Search API error:", err);
-        return [];
+        throw new Error("Search API error: " + err.message);
     }
 }
 
@@ -50,28 +51,8 @@ async function fetchAllDevices() {
 
         return data.results || []
     } catch (err) {
-        console.error("Search API error:", err);
-        return []
+        throw new Error("Search API error: " + err.message);
     }
-}
-
-function mapToObj(input) {
-    if (input instanceof Map) {
-        const obj = {};
-        for (const [k, v] of input) {
-            obj[k] = mapToObj(v); // recursive
-        }
-        return obj;
-    } else if (Array.isArray(input)) {
-        return input.map(mapToObj);
-    } else if (input && input.constructor === Object) {
-        const obj = {};
-        for (const key in input) {
-            obj[key] = mapToObj(input[key]);
-        }
-        return obj;
-    }
-    return input;
 }
 
 /**
@@ -107,14 +88,12 @@ async function createTest(testClass, params, label, description, expectedResult)
         const result = await response.json();
 
         if (response.ok && result.status === "success") {
-            alert("Submission successful!");
+            // Testcase created
         } else errorMessage = "Error when creating testcase: ", result.message || "Unknown error";
     } catch (err) {
-        console.error("Error sending parameters:", err);
-        throw err;
+        throw new Error("Error sending parameters: " + err.message);
     }
     if (errorMessage.length) {
-        console.error(errorMessage);
         throw new Error(errorMessage);
     }
 }
@@ -131,10 +110,10 @@ async function fetchTestClassInfoAPI(testClassName) {
     try {
         const res = await fetch(`/networktests/api/get/test/info?name=${encodeURIComponent(testClassName)}`);
         const data = await res.json();
+        if (data.status === "fail") throw new Error(data.message);
         return data.results || {};
     } catch (err) {
-        console.error("Failed to fetch test class info:", err);
-        return {};
+        throw new Error("Failed to fetch test class info: " + err.message);
     }
 }
 

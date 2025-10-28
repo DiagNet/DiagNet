@@ -55,6 +55,14 @@ class Datatype {
             case "string":
             case "text":
                 return new Text(conditions);
+
+            case "list":
+            case "choice":
+                // do nothing
+                break;
+
+            default:
+                throw new Error("Datatype not found. (Class Definition seems to be wrong?) " + datatype.trim().toLowerCase());
         }
     }
 
