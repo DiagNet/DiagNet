@@ -80,19 +80,20 @@ function mapToObj(input) {
  * @async
  * @param {string} testClass The name of the test class.
  * @param {Object.<string, string>} params Map of parameter names to values.
- * @param {string[]} deviceParams List of device parameter names.
- * @param {string} label The label associated with the test class.
- * @param {boolean} expectedResult If the test class is supposed to pass (true) or fail (false).
+ * @param {string} label The label associated with the test case.
+ * @param {string} description The description associated with the test case.
+ * @param {boolean} expectedResult If the test case is supposed to pass (true) or fail (false).
  */
-async function createTest(testClass, params, deviceParams, label, expectedResult) {
+async function createTest(testClass, params, label, description, expectedResult) {
     const payload = {
         test_class: testClass,
         parameters: params,
-        device_parameters: deviceParams,
         label: label,
+        description: description,
         expected_result: expectedResult
     };
 
+    let errorMessage = "";
     try {
         const response = await fetch("/networktests/api/create/test", {
             method: "POST",
@@ -107,11 +108,14 @@ async function createTest(testClass, params, deviceParams, label, expectedResult
 
         if (response.ok && result.status === "success") {
             alert("Submission successful!");
-        } else {
-            console.error("Error:", result.message || "Unknown error");
-        }
+        } else errorMessage = "Error when creating testcase: ", result.message || "Unknown error";
     } catch (err) {
         console.error("Error sending parameters:", err);
+        throw err;
+    }
+    if (errorMessage.length) {
+        console.error(errorMessage);
+        throw new Error(errorMessage);
     }
 }
 

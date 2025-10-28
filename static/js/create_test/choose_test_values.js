@@ -1,24 +1,26 @@
 const infoTab = document.getElementById('info-tab');
 
+const description = document.getElementById('descriptionInput');
 // Create Test
 const createTestButton = document.getElementById('createTest')
 createTestButton.addEventListener("click", async () => {
     if (setupParams || params === undefined) {
         return;
     }
+
+    let expectedResult = document.querySelector('input[name="expectedResult"]:checked').value;
     await createTest(
         previousTestClass,
-        params.values,
-        params.device_parameters,
+        params,
         labelInput.value,
-        document.querySelector('input[name="expectedResult"]:checked').value === "PASS"
+        description.value,
+        expectedResult === "PASS"
     );
 
     // Hide the popup
     const popupWindowBootstrap = bootstrap.Modal.getInstance(popupWindow) || new bootstrap.Modal(popupWindow);
     popupWindowBootstrap.hide();
 });
-
 
 // Label Input
 const labelInput = document.getElementById('labelInput');
@@ -50,6 +52,7 @@ labelInput.addEventListener("input", checkTestValueInputs);
 
 let setupParams = false;
 let params = undefined;
+
 /**
  * Collects selected parameters from required and optional containers,
  * enables the info tab, and sets up the create test button to submit the test.
@@ -71,11 +74,10 @@ async function selectParameters(selectedParameters) {
  * Read non-empty inputs from a container and collect device-type inputs separately.
  *
  * @param parameters all given Parameters.
- * @returns {{values: Object, device_parameters: string[]}} Map of input names to values and list of device values.
+ * @returns {Object<string, Object.<string, boolean>|[]>} Map of input names to values and list of device values.
  */
 function readInputs(parameters) {
     const values = {};
-    const device_parameters = [];
 
     for (const params of parameters) {
         let field = params['parameter_info'];
@@ -83,14 +85,15 @@ function readInputs(parameters) {
             let name = params['name'];
             let value = field.getValue();
 
-            values[name] = value;
-
-            if (field.getType().some(type => type instanceof Device) && allDevices.includes(value)) {
-                device_parameters.push(name);
+            if (field instanceof ListField) {
+                values[name] = value;
+            } else {
+                values[name] = {
+                    'value': value,
+                    "isDevice": field instanceof SingleLineDeviceField && allDevices.includes(value)
+                };
             }
         }
     }
-
-    return {values, device_parameters};
+    return values;
 }
-

@@ -137,6 +137,11 @@ class ListField extends ParameterField {
         }
     }
 
+    /** Returns the child elements of this list. */
+    getChildren() {
+        return this.children;
+    }
+
     // Datatype
     async checkDatatype() {
         if (this.isEmpty()) {
@@ -265,7 +270,12 @@ class ListField extends ParameterField {
     receiveValuesFromChildren() {
         let output = {};
         for (const value of this.parameters) {
-            output[value['name']] = value['parameter_info'].getValue();
+            const field = value['parameter_info'];
+            const fieldValue = field.getValue();
+            output[value['name']] = {
+                "value": fieldValue,
+                "isDevice": field instanceof SingleLineDeviceField && allDevices.includes(fieldValue)
+            };
         }
         return output;
     }
@@ -356,7 +366,7 @@ class ListField extends ParameterField {
         const listItemViewContainer = listItemSmallInfo.content.cloneNode(true).querySelector('div');
 
         const paramName = Object.keys(entry)[0];
-        const paramValue = entry[paramName];
+        const paramValue = entry[paramName]['value'];
 
         const infoText = listItemViewContainer.querySelector('#infoText');
 
@@ -414,7 +424,9 @@ class ListField extends ParameterField {
                 const indexCounterContainer = indexCounter.content.cloneNode(true).querySelector('div');
                 containerToAddTo.appendChild(indexCounterContainer);
             }
-            for (const [key, value] of Object.entries(collection)) {
+            for (let [key, value] of Object.entries(collection)) {
+                const isDevice = value['isDevice'];
+                value = value['value'];
                 if (Array.isArray(value)) {
                     // List View
                     const templateContainer = listItem.content.cloneNode(true).querySelector('div');
@@ -426,19 +438,20 @@ class ListField extends ParameterField {
                     containerToAddTo.appendChild(templateContainer);
                 } else {
                     // Default View
-                    containerToAddTo.appendChild(this.displayDefaultItemInfo(key, value));
+                    containerToAddTo.appendChild(this.displayDefaultItemInfo(key, value, isDevice));
                 }
             }
         }
     }
 
     /**
-     * Creates default Item views for the Info Page
-     * @param {string} name the name of the item
-     * @param {string} value the value of the item
+     * Creates default Item views for the Info Page.
+     * @param {string} name the name of the item.
+     * @param {string} value the value of the item.
+     * @param {boolean} isDevice Marks if this item is a device.
      * @returns {HTMLElement} the container containing the info-block.
      */
-    displayDefaultItemInfo(name, value) {
+    displayDefaultItemInfo(name, value, isDevice) {
         const container = defaultItem.content.cloneNode(true).querySelector('div');
         container.querySelector("#name").textContent = name;
         const valueField = container.querySelector("#value");
@@ -446,6 +459,7 @@ class ListField extends ParameterField {
         valueField.setAttribute('title', value);
 
         if (value) container.querySelector(".emptyBadge").remove();
+        if (!isDevice) container.querySelector(".deviceBadge").remove();
         return container;
     }
 

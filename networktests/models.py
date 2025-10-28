@@ -78,10 +78,25 @@ class TestParameter(models.Model):
 class TestDevice(models.Model):
     name = models.TextField()
     test_case = models.ForeignKey(
-        TestCase, related_name="devices", on_delete=models.CASCADE
+        TestCase,
+        related_name="devices",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
     )
     device = models.ForeignKey(
-        to=Device, related_name="device", on_delete=models.CASCADE
+        to=Device,
+        related_name="device",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    parent_test_parameter = models.ForeignKey(
+        'TestParameter',
+        related_name="device_parent_parameter",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
     )
 
     def __str__(self):
