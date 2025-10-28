@@ -64,6 +64,7 @@ function showInfoForTestClass(testCase, data) {
     }
 
     docClickHandler = async () => {
+        if (testCase === undefined) return;
         popupWindow.removeEventListener("keydown", onPopUpClickHandler); // remove focus from search Element in template tab
         try {
             await selectTestClass(testCase);
@@ -88,7 +89,7 @@ const fetchTestClassInfoDebounced = debounce(async (testClassName) => {
     try {
         results = await fetchTestClassInfoAPI(testClassName);
     } catch (e) {
-        showInfoForTestClass(testClassName, emptyDocumentation);
+        showInfoForTestClass(undefined, emptyDocumentation);
         throwException(e.message);
         return;
     }
@@ -290,6 +291,7 @@ async function handleInput() {
     currentIndex = -1
     const query = searchInput.value.trim();
     renderResults(searchForTestClass(query));
+    hideInfoForTestClass();
 }
 
 /**
