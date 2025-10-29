@@ -30,6 +30,21 @@
         </td>
 
         <td>
+          <button id="{{ testgroup.name }}-runall" class="btn btn-sm btn-primary" title="Run testcases in this group">
+						<i class="bi bi-play-fill"></i>
+					</button>
+          <script>
+            document.getElementById("{{ testgroup.name }}-runall").addEventListener("click", () => {
+              console.log("heheheha")
+              document.querySelectorAll(".{{ testgroup.name }}-runner").forEach(btn => {
+                btn.click(); // löst den htmx-Request des Buttons aus
+                console.log(btn)
+              });
+            });
+          </script>
+        </td>
+
+        <td>
           <a href="detail/{{ testgroup.name }}/"> {{ testgroup.name }} </a>
         </td>
 

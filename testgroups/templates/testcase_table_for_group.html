@@ -16,28 +16,32 @@
 			<tr class="testcase-tr" id="testcase-{{ testcase.id }}">
 				<td>
 					<button hx-get="{% url 'testgroup-testcase-run' testgroup_name testcase.id %}"
-                  hx-target="closest .testcase-tr"
+                  hx-target="#status-{{ testcase.id }}"
                   hx-swap="outerHTML"
-                  class="btn btn-sm btn-primary" title="Run test case">
+                  class="btn btn-sm btn-primary {{ testgroup_name }}-runner" title="Run test case">
 						<i class="bi bi-play-fill"></i>
 					</button>
 				</td>
 				<td>{{testcase.label}}</td>
 				<td>{{testcase.test_module}}</td>
-				<td title="{{ testcase.results.last.finished_at|date:'Y-m-d H:i' }}">
-					{{ testcase.results.last.finished_at|relative_or_absolute }}
-				</td>
-				<td>
-					{% if testcase.results.last %}
-					{% if testcase.expected_result == testcase.results.last.result %}
-					<span class="badge rounded-pill bg-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-					{% else %}
-					<span class="badge rounded-pill bg-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-					{% endif %}
-					{% else %}
-					<span class="badge rounded-pill bg-secondary">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-					{% endif %}
-				</td>
+        <div id="run-status-{{ testcase.id }}">
+          
+          <td id="last-run-{{ testcase.id }}" title="{{ testcase.results.last.finished_at|date:'Y-m-d H:i' }}">
+            {{ testcase.results.last.finished_at|relative_or_absolute }}
+          </td>
+          <td id="status-{{ testcase.id }}">
+            {% if testcase.results.last %}
+            {% if testcase.expected_result == testcase.results.last.result %}
+            <span class="badge rounded-pill bg-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            {% else %}
+            <span class="badge rounded-pill bg-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            {% endif %}
+            {% else %}
+            <span class="badge rounded-pill bg-secondary">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            {% endif %}
+          </td>
+
+        </div>
         <td class="text-end">
           <button 
             hx-vals='{"testgroup": "{{ testgroup_name }}", "testcase": "{{ testcase.label }}"}'
