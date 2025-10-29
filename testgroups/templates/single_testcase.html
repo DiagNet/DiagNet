@@ -1,0 +1,33 @@
+{% load datetime_helpers %}
+
+<tr hx-swap-oob="true" id="testcase-{{ testcase.id }}">
+  <td>
+    <button hx-get="{% url 'testgroup-testcase-run' testgroup_name testcase.id %}"
+      hx-target=".testcase-{{ testcase.id }}" hx-swap="outerHTML" class="btn btn-sm btn-primary" title="Run test case">
+      <i class="bi bi-play-fill"></i>
+    </button>
+  </td>
+  <td>{{testcase.label}}</td>
+  <td>{{testcase.test_module}}</td>
+  <td title="{{ testcase.results.last.finished_at|date:'Y-m-d H:i' }}">
+    {{ testcase.results.last.finished_at|relative_or_absolute }}
+  </td>
+  <td>
+    {% if testcase.results.last %}
+    {% if testcase.expected_result == testcase.results.last.result %}
+    <span class="badge rounded-pill bg-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    {% else %}
+    <span class="badge rounded-pill bg-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    {% endif %}
+    {% else %}
+    <span class="badge rounded-pill bg-secondary">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    {% endif %}
+  </td>
+  <td class="text-end">
+    <button hx-vals='{"testgroup": "{{ testgroup_name }}", "testcase": "{{ testcase.label }}"}'
+      hx-post="{% url 'testcase-remove' %}" hx-target="#td-coll-{{ testgroup_name }}"
+      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' class="btn btn-sm btn-danger" title="Remove from group">
+      <i class="bi bi-x"></i>
+    </button>
+  </td>
+</tr>

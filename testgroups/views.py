@@ -192,7 +192,10 @@ def run_testcase(request, group, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     _ = testcase.run()
 
-    return list_testcases(request, group)
+    context = {"testcase": testcase, "testgroup_name": group}
+
+    # return list_testcases(request, group)
+    return render(request, "single_testcase.html", context)
 
 
 def get_aval_testcases_for_testgroup(testgroup: TestGroup) -> set:
