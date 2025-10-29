@@ -13,10 +13,10 @@
 		<tbody>
 			{% if testcase_list %}
 			{% for testcase in testcase_list %}
-			<tr id="testcase-{{ testcase.id }}">
+			<tr class="testcase-tr" id="testcase-{{ testcase.id }}">
 				<td>
 					<button hx-get="{% url 'testgroup-testcase-run' testgroup_name testcase.id %}"
-                  hx-target="#testcases-{{ testgroup_name }}"
+                  hx-target="closest .testcase-tr"
                   hx-swap="outerHTML"
                   class="btn btn-sm btn-primary" title="Run test case">
 						<i class="bi bi-play-fill"></i>
