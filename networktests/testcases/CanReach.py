@@ -1,21 +1,13 @@
 from .base import DiagNetTest
-from genie.testbed import load
+from devices.models import Device
 
 
 class CanReach(DiagNetTest):
-    _required_params = ["device", "to"]
+    _required_params = ["from_device:Device", "to_ip:IPv4"]
 
     def test_reachability(self) -> bool:
-        response: dict = self.device.parse(f"ping {self.to}")
+        device = Device.objects.get(name=self.from_device)
+        response: dict = device.get_genie_device_object().parse(f"ping {self.to_ip}")
         success_rate: float = response["ping"]["statistics"]["success_rate_percent"]
 
         return success_rate >= 60.0
-
-
-if __name__ == "__main__":
-    inventory = load("testbed.yaml")
-    device = inventory.devices["R1"]
-    device.connect(log_stdout=False)
-
-    canreach = CanReach()
-    print(canreach.run(device=device, ping_host="10.0.0.2"))
