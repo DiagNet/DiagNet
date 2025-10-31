@@ -1,0 +1,15 @@
+<div>
+	{% for field, value in device.get_fields_display %}
+	<div class="form-floating mb-2">
+		<input type="text" readonly class="form-control-plaintext" value="{{ value }}">
+		<label>{{ field }}</label>
+	</div>
+	{% endfor %}
+	<button hx-get="{% url 'device-edit' device.name %}" class="btn btn-primary">
+		Edit
+	</button>
+</div>
+
+<hr>
+
+<h2 class="fs-5">Associated tests</h2>
