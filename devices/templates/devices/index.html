@@ -4,9 +4,28 @@
 
 {% block content %}
 <h1>Devices</h1>
-<a class="btn btn-primary mb-3" href="{% url 'device-create' %}">
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#deviceCreationModal">
 	<i class="bi bi-database-add"></i> Add Device
-</a>
+</button>
+<div class="modal fade" id="deviceCreationModal" tabindex="-1" aria-labelledby="deviceCreationModalLabel">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="deviceCreationModalLabel">
+					Create A Device</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body" hx-get="{% url 'device-create' %}" hx-trigger="load" hx-target="this"
+				hx-swap="innerHTML">
+				<div class="text-center">
+					<div class="spinner-border" role="status">
+						<span class="visually-hidden">Loading form...</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 <a class="btn btn-success mb-3" id="check-all-devices">
 	<i class="bi bi-check2-all"></i> Check All Devices
 </a>
@@ -22,4 +41,12 @@
 {% block scripts %}
 {% load static %}
 <script src="{% static 'devices/device_status.js' %}"></script>
+<script>
+	document.body.addEventListener('deviceCreated', () => {
+		const modalEl = document.getElementById('deviceCreationModal');
+		const modal = bootstrap.Modal.getInstance(modalEl);
+		if (modal) modal.hide();
+		htmx.trigger('#device-table', 'refresh');
+	});
+</script>
 {% endblock %}
