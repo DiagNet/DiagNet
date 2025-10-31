@@ -41,12 +41,9 @@ class DeviceListView(generic.ListView):
 class DeviceCreate(CreateView):
     model = Device
     form_class = DeviceForm
+    template_name = "devices/partials/device_form.html"
 
     def get(self, request, *args, **kwargs):
-        if request.headers.get("HX-Request") == "true":
-            return render(
-                request, "devices/device_form.html", {"form": self.get_form()}
-            )
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -64,6 +61,7 @@ class DeviceCreate(CreateView):
 class DeviceUpdate(UpdateView):
     model = Device
     form_class = DeviceForm
+    template_name = "devices/partials/device_form.html"
 
     def get_success_url(self):
         return reverse("device-edit", kwargs={"pk": self.object.pk})
