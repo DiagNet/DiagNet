@@ -1,4 +1,5 @@
 from django.http import HttpResponseRedirect
+from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
@@ -40,6 +41,21 @@ class DeviceListView(generic.ListView):
 class DeviceCreate(CreateView):
     model = Device
     form_class = DeviceForm
+
+    def get(self, request, *args, **kwargs):
+        if request.headers.get("HX-Request") == "true":
+            return render(
+                request, "devices/device_form.html", {"form": self.get_form()}
+            )
+        return super().get(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.object = form.save()
+        if self.request.headers.get("HX-Request") == "true":
+            response = HttpResponse(status=204)
+            response["HX-Trigger"] = "deviceCreated"
+            return response
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse_lazy("devices-page")

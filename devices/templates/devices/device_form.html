@@ -1,4 +1,5 @@
-<form method="post" hx-post="{% url 'device-edit' object.name %}">
+<form method="post"
+    hx-post="{% if object %}{% url 'device-edit' object.name %}{% else %}{% url 'device-create' %}{% endif %}">
     {% csrf_token %}
     {% for field in form %}
     <div class="form-floating mb-3">
@@ -11,5 +12,7 @@
         {% endif %}
     </div>
     {% endfor %}
-    <button class="btn btn-success" type="submit">Save</button>
+    <button class="btn btn-success" type="submit">
+        {% if object %}Save{% else %}Create{% endif %}
+    </button>
 </form>
