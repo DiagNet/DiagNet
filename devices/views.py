@@ -90,14 +90,13 @@ class DeviceDelete(DeleteView):
     model = Device
     success_url = reverse_lazy("devices-page")
 
-    def form_valid(self, form):
-        try:
-            self.object.delete()
-            return HttpResponseRedirect(self.success_url)
-        except Exception:
-            return HttpResponseRedirect(
-                reverse("device-delete", kwargs={"pk": self.object.pk})
-            )
+    def delete(self, request, *args, **kwargs):
+        self.get_object().delete()
+        if request.headers.get("HX-Request") == "true":
+            response = HttpResponse(status=204)
+            response["HX-Trigger"] = "devicesRefresh"
+            return response
+        return HttpResponseRedirect(self.success_url)
 
 
 def device_check(request, pk):

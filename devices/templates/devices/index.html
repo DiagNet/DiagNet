@@ -41,5 +41,9 @@
 		const modal = bootstrap.Modal.getInstance(modalEl);
 		if (modal) modal.hide();
 	});
+
+	document.body.addEventListener('devicesRefresh', () => {
+		htmx.trigger('#device-table', 'refresh');
+	});
 </script>
 {% endblock %}
