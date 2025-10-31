@@ -50,7 +50,26 @@ class DeviceUpdate(UpdateView):
     form_class = DeviceForm
 
     def get_success_url(self):
-        return reverse_lazy("devices-page")
+        return reverse("device-edit", kwargs={"pk": self.object.pk})
+
+    def form_valid(self, form):
+        self.object = form.save()
+        if self.request.headers.get("HX-Request") == "true":
+            return render(
+                self.request,
+                "devices/partials/device_details.html",
+                {"device": self.object},
+            )
+        return HttpResponseRedirect(self.get_success_url())
+
+    def form_invalid(self, form):
+        if self.request.headers.get("HX-Request") == "true":
+            return render(
+                self.request,
+                "devices/partials/device_form.html",
+                {"form": form, "object": self.object},
+            )
+        return super().form_invalid(form)
 
 
 class DeviceDelete(DeleteView):
