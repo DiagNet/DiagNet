@@ -10,8 +10,7 @@
 <a class="btn btn-success mb-3" id="check-all-devices">
 	<i class="bi bi-check2-all"></i> Check All Devices
 </a>
-<div hx-get="{% url 'devices-table' %}" hx-trigger="load, refresh from:body delay:1s" hx-swap="innerHTML"
-	id="device-table">
+<div hx-get="{% url 'devices-table' %}" hx-trigger="load, refresh from:body" hx-swap="innerHTML" id="device-table">
 	<div class="text-center">
 		<div class="spinner-border" role="status">
 			<span class="visually-hidden">Loading devices...</span>

@@ -18,6 +18,30 @@
                 <td class="align-middle">
                     <button class="btn btn-link" data-bs-toggle="modal"
                         data-bs-target="#deviceDetailModal-{{ device.name }}">{{ device.name }}</button>
+                    <div class="modal fade" id="deviceDetailModal-{{ device.name}}" tabindex="-1"
+                        aria-labelledby="deviceDetailModalLabel-{{ device.name }}">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="deviceDetailModalLabel-{{ device.name }}">
+                                        Device Details: {{device.name}}</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body" hx-target="this" hx-swap="innerHTML">
+                                    {% include "devices/partials/device_details.html" with device=device %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger"
+                                        hx-delete="{% url 'device-delete' device.name %}"
+                                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                        hx-confirm="Are you sure you want to delete this device?" hx-trigger="click"
+                                        hx-on:click="htmx.trigger('#device-table', 'refresh')" data-bs-dismiss="modal">
+                                        <i class="bi bi-trash"></i> Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </td>
                 <td class="align-middle">{{ device.ip_address }}:{{ device.port }}</td>
                 <td class="align-middle">{{ device.get_protocol_display }}</td>
@@ -40,30 +64,6 @@
                     </a>
                 </td>
             </tr>
-
-            <div class="modal fade" id="deviceDetailModal-{{ device.name}}" tabindex="-1"
-                aria-labelledby="deviceDetailModalLabel-{{ device.name }}">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="deviceDetailModalLabel-{{ device.name }}">
-                                Details: {{device.name}}</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            {% include "devices/partials/device_details.html" with device=device %}
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-danger"
-                                hx-delete="{% url 'device-delete' device.name %}"
-                                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                hx-confirm="Are you sure you want to delete this device?" hx-trigger="click"
-                                hx-on:click="htmx.trigger('#device-table', 'refresh')" data-bs-dismiss="modal">
-                                <i class="bi bi-trash"></i> Delete</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
             {% endfor %}
             {% else %}
             <tr>
