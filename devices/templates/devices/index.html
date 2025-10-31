@@ -22,11 +22,16 @@
 {% load static %}
 <script src="{% static 'devices/device_status.js' %}"></script>
 <script>
+	document.addEventListener('DOMContentLoaded', () => {
+		document.body.addEventListener('hidden.bs.modal', (event) => {
+			htmx.trigger('#device-table', 'refresh');
+		});
+	});
+
 	document.body.addEventListener('deviceCreated', () => {
 		const modalEl = document.getElementById('deviceCreationModal');
 		const modal = bootstrap.Modal.getInstance(modalEl);
 		if (modal) modal.hide();
-		htmx.trigger('#device-table', 'refresh');
 	});
 </script>
 {% endblock %}
