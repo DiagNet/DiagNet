@@ -67,8 +67,28 @@ class Device(models.Model):
         return f"{self.name} ({self.ip_address})"
 
     def get_absolute_url(self):
-        """Returns the url to access a particular book record."""
+        """Returns the url to access a particular device record."""
         return reverse("device-detail", args=[str(self.name)])
+
+    def get_fields_display(self) -> list[tuple[str, str]]:
+        """
+        Return a list of (label, value) tuples for UI display.
+        Passwords are always masked, choice fields use their display values.
+        """
+        display_fields = []
+        for field in self._meta.fields:
+            label = field.verbose_name.title()
+            value = getattr(self, field.name)
+
+            # Mask password for display
+            if field.name == "password":
+                value = "*******"
+            # Use human-readable labels for choice fields
+            elif field.choices:
+                value = getattr(self, f"get_{field.name}_display")()
+
+            display_fields.append((label, value))
+        return display_fields
 
     def get_genie_device_dict(self) -> dict[str, dict[str, Any]]:
         return {

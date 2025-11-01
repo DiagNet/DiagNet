@@ -1,15 +1,3 @@
-{% extends "base.html" %}
-
-{% block title %}Devices - DiagNet{% endblock %}
-
-{% block content %}
-<h1>Devices</h1>
-<a class="btn btn-primary mb-3" href="{% url 'device-create' %}">
-    <i class="bi bi-database-add"></i> Add Device
-</a>
-<a class="btn btn-success mb-3" id="check-all-devices">
-    <i class="bi bi-check2-all"></i> Check All Devices
-</a>
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
@@ -27,26 +15,57 @@
             {% if device_list %}
             {% for device in device_list %}
             <tr id="device-{{ device.name }}">
-                <td><a href="{{ device.get_absolute_url }}">{{ device.name }}</a></td>
-                <td>{{ device.ip_address }}:{{ device.port }}</td>
-                <td>{{ device.get_protocol_display }}</td>
-                <td>{{ device.get_device_type_display }}</td>
-                <td>{{ device.username }}</td>
-                <td class="status">
+                <td class="align-middle">
+                    <button class="btn btn-link" data-bs-toggle="modal"
+                        data-bs-target="#deviceDetailModal-{{ device.name }}">{{ device.name }}</button>
+                    <div class="modal fade" id="deviceDetailModal-{{ device.name}}" tabindex="-1"
+                        aria-labelledby="deviceDetailModalLabel-{{ device.name }}">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="deviceDetailModalLabel-{{ device.name }}">
+                                        Device Details: {{device.name}}</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body" hx-target="this" hx-swap="innerHTML">
+                                    {% include "devices/partials/device_details.html" with device=device %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger"
+                                        hx-delete="{% url 'device-delete' device.name %}"
+                                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                        hx-confirm="Are you sure you want to delete this device?"
+                                        data-bs-dismiss="modal">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td class="align-middle">{{ device.ip_address }}:{{ device.port }}</td>
+                <td class="align-middle">{{ device.get_protocol_display }}</td>
+                <td class="align-middle">{{ device.get_device_type_display }}</td>
+                <td class="align-middle">{{ device.username }}</td>
+                <td class="align-middle status">
                     <span class="connection-status">{{ device.session_status }}</span>
                     <span id="{{ device.name }}-spinner" class="htmx-indicator">
                         <span class="spinner-grow spinner-grow-sm" role="status"></span>
                     </span>
                 </td>
-                <td>
+                <td class="align-middle">
                     <button title="Check status" hx-get="{% url 'device-check' device.name %}"
                         hx-target="#device-{{ device.name }} .connection-status" hx-swap="innerHTML"
                         hx-indicator="#{{ device.name }}-spinner" class="btn btn-sm btn-info device-check">
                         <i class="bi bi-check2"></i>
                     </button>
-                    <a href="{% url 'device-delete' device.name %}" class="btn btn-sm btn-danger" title="Delete">
+                    <button title="Delete" class="btn btn-sm btn-danger"
+                        hx-delete="{% url 'device-delete' device.name %}"
+                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                        hx-confirm="Are you sure you want to delete this device?" data-bs-dismiss="modal">
                         <i class="bi bi-trash"></i>
-                    </a>
+                    </button>
                 </td>
             </tr>
             {% endfor %}
@@ -58,9 +77,3 @@
         </tbody>
     </table>
 </div>
-{% endblock %}
-
-{% block scripts %}
-{% load static %}
-<script src="{% static 'devices/device_status.js' %}"></script>
-{% endblock %}
