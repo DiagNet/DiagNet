@@ -1,10 +1,8 @@
-from django.http import HttpResponseRedirect
-from django.http.response import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from django.http import JsonResponse
 
 from devices.forms import DeviceForm
 
@@ -42,9 +40,6 @@ class DeviceCreate(CreateView):
     model = Device
     form_class = DeviceForm
     template_name = "devices/partials/device_form.html"
-
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
         self.object = form.save()

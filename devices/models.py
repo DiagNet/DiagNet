@@ -67,7 +67,7 @@ class Device(models.Model):
         return f"{self.name} ({self.ip_address})"
 
     def get_absolute_url(self):
-        """Returns the url to access a particular book record."""
+        """Returns the url to access a particular device record."""
         return reverse("device-detail", args=[str(self.name)])
 
     def get_fields_display(self) -> list[tuple[str, str]]:
