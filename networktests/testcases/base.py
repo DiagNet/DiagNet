@@ -18,6 +18,7 @@ import time
 PARAMETER_DELIMITER = ","
 """The Delimiter used to separate parameters"""
 
+
 # Exceptions
 class DependencyException(Exception):
     """Exception raised when a declared dependency test method is not found."""
@@ -169,7 +170,10 @@ def filter_out_skipped(test_methods, skipped, results, status_map):
     amount_skipped: int = 0
     # mark skipped tests immediately
     for name, method in test_methods:
-        if getattr(method, "_skip", False) or getattr(method, "_depends_on", None) in skipped:
+        if (
+            getattr(method, "_skip", False)
+            or getattr(method, "_depends_on", None) in skipped
+        ):
             amount_skipped += 1
             skipped.add(name)
             results[name] = {
@@ -187,7 +191,10 @@ def filter_out_skipped(test_methods, skipped, results, status_map):
 
     return results, status_map
 
-def get_parameter_names(required_params_input: list[dict], optional_params_input: list[dict]):
+
+def get_parameter_names(
+    required_params_input: list[dict], optional_params_input: list[dict]
+):
     """
     Extracts the required parameters, optional parameters, and mutually exclusive bindings
     from a given parameter definition.
@@ -206,11 +213,15 @@ def get_parameter_names(required_params_input: list[dict], optional_params_input
     optional_params: List[str] = []
 
     # Splits Parameters
-    for definition, container in [(required_params_input, required_params),(optional_params_input, optional_params)]:
+    for definition, container in [
+        (required_params_input, required_params),
+        (optional_params_input, optional_params),
+    ]:
         for param in definition:
-            container.append(param['name'])
+            container.append(param["name"])
 
     return required_params, optional_params
+
 
 class DiagNetTest:
     """
@@ -226,11 +237,8 @@ class DiagNetTest:
     and defining test methods.
     """
 
-    _required_params: str|List[str] = []
-    """ Saves the required parameters needed for this Test """
-
-    _optional_params: str|List[str] = []
-    """ Saves the optional parameters needed for this Test """
+    _params: List[Dict[str, ...]] = {}
+    """ Saves the parameters needed for this Test """
 
     _mutually_exclusive_parameters: List[List[str]] = []
     """ Saves which pairs of parameters are mutually exclusive. """
@@ -248,6 +256,18 @@ class DiagNetTest:
         This method functions as a teardown space, allowing datastructures, network connections, file interactions ... to be handled!
         """
         pass
+
+    def _get_required_params(self):
+        """Returns the parameters that are associated with being required."""
+        return [
+            param for param in self._params if (param.get("requirement") != "optional")
+        ]
+
+    def _get_optional_params(self):
+        """Returns the parameters that are associated with being optional."""
+        return [
+            param for param in self._params if (param.get("requirement") == "optional")
+        ]
 
     def run(self, test_method_prefix="test_", verbose=False, **kwargs) -> Dict:
         """
@@ -432,11 +452,7 @@ class DiagNetTest:
         total = len(results)
         passed = sum(1 for r in results.values() if r["status"] == "PASS")
         failed = sum(1 for r in results.values() if r["status"] == "FAIL")
-        skipped = sum(
-            1
-            for r in results.values()
-            if r["status"].startswith("SKIPPED")
-        )
+        skipped = sum(1 for r in results.values() if r["status"].startswith("SKIPPED"))
 
         # run teardown
         try:
@@ -478,7 +494,9 @@ class DiagNetTest:
 
         # --- 1.1 Extract parameters and strip datatype from parameters ---
 
-        required_params, optional_params = get_parameter_names(self._required_params, self._optional_params)
+        required_params, optional_params = get_parameter_names(
+            self._get_required_params(), self._get_optional_params()
+        )
         mutually_exclusive_groups = self._mutually_exclusive_parameters
 
         # --- 1.2 Check mutually exclusive validity ---
@@ -494,10 +512,7 @@ class DiagNetTest:
 
             # elements of the mutually exclusive pair have to exist as actual parameters.
             for e in mutually_exclusive_pairs:
-                if (
-                        e not in required_params
-                        and e not in optional_params
-                ):
+                if e not in required_params and e not in optional_params:
                     raise ParameterMissingException(
                         f'Element "{e}" in mutually exclusive group "{mutually_exclusive_pairs}" is not a defined parameter.'
                     )
@@ -507,7 +522,7 @@ class DiagNetTest:
                 1 for e in mutually_exclusive_pairs if e in required_params
             )
             if required_count != 0 and required_count is not len(
-                    mutually_exclusive_pairs
+                mutually_exclusive_pairs
             ):
                 raise IllegalGroupFormingException(
                     f"Unable to mix required and optional parameters in the mutually exclusive group: {mutually_exclusive_pairs}"
@@ -553,8 +568,7 @@ class DiagNetTest:
         unknown = [
             k
             for k in parsed_arguments
-            if k not in required_params
-               and k not in optional_params
+            if k not in required_params and k not in optional_params
         ]
         if unknown:
             raise UnknownParameterException(f"Unknown parameters passed: {unknown}")
