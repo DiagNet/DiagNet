@@ -138,10 +138,14 @@ def get_all_devices(request):
     return JsonResponse({"results": names})
 
 
-def handle_uploaded_file(f):
+def handle_uploaded_file(f, overwrite_existing_files: bool):
     device_list_yaml: dict = yaml.safe_load(f)
+    devices: list[Device] = []
+    print(overwrite_existing_files)
+
     for name, params in device_list_yaml.items():
-        print(name)
+        if not overwrite_existing_files and Device.objects.filter(name=name).exists():
+            raise Exception(f'Device "{name}" already exists')
         try:
             device = Device(
                 name=name,
@@ -152,10 +156,9 @@ def handle_uploaded_file(f):
                 username=params["username"],
                 password=params["password"],
             )
-            device.save()
+            devices.append(device)
         except Exception as e:
-            print(e)
-            return False
+            raise Exception("at device" + name)
 
     return True
 
@@ -165,7 +168,10 @@ def import_devices_from_yaml(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             try:
-                handle_uploaded_file(request.FILES["file"])
+                handle_uploaded_file(
+                    form.cleaned_data.get("yaml_file"),
+                    form.cleaned_data.get("overwrite_existing_devices"),
+                )
                 return HttpResponseRedirect("/devices/")
             except Exception as e:
                 return render(request, "upload.html", {"form": form, "error": e})
