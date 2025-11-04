@@ -138,14 +138,13 @@ def get_all_devices(request):
     return JsonResponse({"results": names})
 
 
-def handle_uploaded_file(f, overwrite_existing_files: bool):
+def handle_uploaded_file(f, overwrite_existing_devices: bool):
     device_list_yaml: dict = yaml.safe_load(f)
     devices: list[Device] = []
-    print(overwrite_existing_files)
 
     for name, params in device_list_yaml.items():
-        if not overwrite_existing_files and Device.objects.filter(name=name).exists():
-            raise Exception(f'Device "{name}" already exists')
+        if not overwrite_existing_devices and Device.objects.filter(name=name).exists():
+            raise Exception(f'device "{name}" already exists')
         try:
             device = Device(
                 name=name,
@@ -157,8 +156,11 @@ def handle_uploaded_file(f, overwrite_existing_files: bool):
                 password=params["password"],
             )
             devices.append(device)
-        except Exception as e:
+        except Exception:
             raise Exception("at device" + name)
+
+    for device in devices:
+        device.save()
 
     return True
 
