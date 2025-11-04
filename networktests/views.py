@@ -14,7 +14,6 @@ from devices.models import Device
 
 from .models import TestCase, TestDevice, TestParameter
 
-from networktests.testcases.base import get_parameter_names
 
 package = "networktests.testcases"
 
@@ -31,9 +30,9 @@ def get_all_testcases(request):
     package = "networktests.testcases"
     for resource in importlib.resources.files(package).iterdir():
         if (
-                resource.suffix == ".py"
-                and resource.is_file()
-                and resource.name not in ["__init__.py", "base.py"]
+            resource.suffix == ".py"
+            and resource.is_file()
+            and resource.name not in ["__init__.py", "base.py"]
         ):
             class_name = resource.stem
             module_name = f"{package}.{class_name}"
@@ -94,9 +93,9 @@ def store_test_parameter(parent, parameter, value):
         JsonResponse: Returned only when a mistake happens, otherwise nothing is returned.
     """
     try:
-        if not isinstance(value, list) and value['isDevice']:
+        if not isinstance(value, list) and value["isDevice"]:
             new_param = TestDevice()
-            new_param.device = Device.objects.get(name=value['value'])
+            new_param.device = Device.objects.get(name=value["value"])
         else:
             new_param = TestParameter()
             if isinstance(value, list):
@@ -114,7 +113,7 @@ def store_test_parameter(parent, parameter, value):
                         if out:
                             return out
             else:
-                new_param.value = value['value']
+                new_param.value = value["value"]
 
         new_param.name = parameter
         if type(parent) == TestCase:
@@ -202,8 +201,7 @@ def get_parameters_of_specific_testcase(request):
 
     Returns:
         JsonResponse: A JSON object containing:
-            - required (list[str]): List of required parameters, with type appended if missing.
-            - optional (list[str]): List of optional parameters, with type appended if missing.
+            - parameters (list[str]): List of parameters.
             - mul_exclusive (list[str]): List of mutually exclusive parameters defined in the class.
     """
     try:
@@ -213,8 +211,7 @@ def get_parameters_of_specific_testcase(request):
         return JsonResponse(
             {
                 "status": "SUCCESS",
-                "required": cls._required_params,
-                "optional": cls._optional_params,
+                "parameters": cls._params,
                 "mul_exclusive": cls._mutually_exclusive_parameters,
             }
         )
@@ -223,9 +220,8 @@ def get_parameters_of_specific_testcase(request):
             {
                 "status": "FAIL",
                 "message": "Testcase does not exist",
-                "required": [],
-                "optional": [],
-                "mul_exclusive": []
+                "parameters": [],
+                "mul_exclusive": [],
             }
         )
 
@@ -241,9 +237,9 @@ def get_all_available_testcases(request):
     package = "networktests.testcases"
     for resource in importlib.resources.files(package).iterdir():
         if (
-                resource.suffix == ".py"
-                and resource.is_file()
-                and resource.name not in ["__init__.py", "base.py"]
+            resource.suffix == ".py"
+            and resource.is_file()
+            and resource.name not in ["__init__.py", "base.py"]
         ):
             class_name = resource.stem
             testcases.append(class_name)
@@ -266,7 +262,9 @@ def get_doc_of_testcase(request):
     try:
         cls = get_class_reference_for_test_class_string(request.GET.get("name", ""))
     except (ImportError, AttributeError):
-        return JsonResponse({"status": "fail", "message": "Testcase does not exist"}, status=500)
+        return JsonResponse(
+            {"status": "fail", "message": "Testcase does not exist"}, status=500
+        )
 
     return JsonResponse({"status": "success", "results": cls.__doc__ or ""})
 

@@ -437,13 +437,13 @@ async function selectTestClass(testClass) {
         reset();
         throw new Error("Could not fetch test parameters: " + error.message);
     }
-    if (!Array.isArray(parameters.requiredParams) || !Array.isArray(parameters.optionalParams)) {
+    if (!Array.isArray(parameters.parameters)) {
         reset();
         throw new Error("Given parameters have to be contained in a list: Consider adding a valid test definition");
     }
 
 
-    let allParameters = [...parameters.requiredParams, ...parameters.optionalParams];
+    let allParameters = parameters.parameters;
 
     if (allParameters.length === 0) {
         reset();
@@ -483,7 +483,6 @@ async function selectTestClass(testClass) {
         selectParameters(allParameters);
     });
 
-    console.log("got here");
     // Activate navigation towards parameter tab
     paramTab.classList.remove('disabled');
     paramTab.disabled = false;

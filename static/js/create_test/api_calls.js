@@ -18,8 +18,7 @@ async function fetchTestParameters(testClass) {
     if (data.status === "FAIL") throw Error(data.message);
 
     return {
-        requiredParams: data.required,
-        optionalParams: data.optional,
+        parameters: data.parameters,
         mul: data.mul_exclusive || []
     };
 }
