@@ -1,6 +1,6 @@
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
@@ -59,7 +59,7 @@ class DeviceUpdate(UpdateView):
     template_name = "devices/partials/device_form.html"
 
     def get_success_url(self):
-        return reverse("device-update", kwargs={"pk": self.object.pk})
+        return reverse_lazy("device-update", kwargs={"pk": self.object.pk})
 
     def form_valid(self, form):
         self.object = form.save()
