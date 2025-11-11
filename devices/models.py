@@ -138,8 +138,8 @@ class Device(models.Model):
 
     def get_genie_device_object(self):
         if (
-                self.name in device_connections
-                and device_connections[self.name].is_connected()
+            self.name in device_connections
+            and device_connections[self.name].is_connected()
         ):
             return device_connections[self.name]
 
@@ -173,7 +173,8 @@ class Device(models.Model):
         data = {
             self.name: {
                 field.name: getattr(self, field.name)
-                for field in self._meta.fields if field.name != "name"
+                for field in self._meta.fields
+                if field.name != "name"
             }
         }
 
