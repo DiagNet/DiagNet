@@ -24,7 +24,7 @@
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="deviceDetailModalLabel-{{ device.name }}">
-                                        Device Details: {{device.name}}</h1>
+                                        Device Details: {{ device.name }}</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                         aria-label="Close"></button>
                                 </div>
@@ -63,7 +63,7 @@
                     <button title="Delete" class="btn btn-sm btn-danger"
                         hx-delete="{% url 'device-delete' device.name %}"
                         hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                        hx-confirm="Are you sure you want to delete this device?" data-bs-dismiss="modal">
+                        hx-confirm="Are you sure you want to delete this device?">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
