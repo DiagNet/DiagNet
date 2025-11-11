@@ -59,7 +59,7 @@ class DeviceUpdate(UpdateView):
     template_name = "devices/partials/device_form.html"
 
     def get_success_url(self):
-        return reverse("device-edit", kwargs={"pk": self.object.pk})
+        return reverse("device-update", kwargs={"pk": self.object.pk})
 
     def form_valid(self, form):
         self.object = form.save()

@@ -1,5 +1,5 @@
 <form method="post"
-    hx-post="{% if object %}{% url 'device-edit' object.name %}{% else %}{% url 'device-create' %}{% endif %}">
+    hx-post="{% if object %}{% url 'device-update' object.name %}{% else %}{% url 'device-create' %}{% endif %}">
     {% csrf_token %}
     {% for field in form %}
     <div class="form-floating mb-3">
