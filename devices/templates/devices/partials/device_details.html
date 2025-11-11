@@ -5,7 +5,7 @@
 		<label>{{ field }}</label>
 	</div>
 	{% endfor %}
-	<button hx-get="{% url 'device-edit' device.name %}" class="btn btn-primary">
+	<button hx-get="{% url 'device-update' device.name %}" class="btn btn-primary">
 		Edit
 	</button>
 </div>
