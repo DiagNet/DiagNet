@@ -156,8 +156,8 @@ def handle_uploaded_file(f, overwrite_existing_devices: bool):
                 password=params["password"],
             )
             devices.append(device)
-        except Exception:
-            raise Exception("at device" + name)
+        except Exception as e:
+            raise Exception("at device" + name + ", " + str(e))
 
     for device in devices:
         device.save()
