@@ -12,22 +12,22 @@ def create_superuser_if_none(sender, **kwargs):
     if not User.objects.filter(is_superuser=True).exists():
         print("⚠️ No superuser found. Creating one...")
 
-        password_pattern = (
-            r"^(?=.*\S)(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)[A-Za-z\d\W\S]{6,20}$"
-        )
+        password_pattern = r"^(?=\S{6,20}$)(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).+$"
 
         username = input("Enter admin username: ")
 
         while True:
             password = getpass("Enter admin password: ")
-            password_verify = getpass("Verify admin password: ")
-            if password == password_verify:
-                break
-            elif not re.match(password_pattern, password):
+            if not re.match(password_pattern, password):
                 print(
                     "❌ Password must be 6-20 characters long, contain at least one lowercase letter, "
                     "one uppercase letter, one digit, one special character, and have no spaces. Please try again."
                 )
+                continue
+
+            password_verify = getpass("Verify admin password: ")
+            if password == password_verify:
+                break
             else:
                 print("❌ Passwords do not match. Please try again.")
 
