@@ -13,7 +13,7 @@ def create_superuser_if_none(sender, **kwargs):
         print("⚠️ No superuser found. Creating one...")
 
         password_pattern = (
-            r"^(?!.*\s)(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)[A-Za-z\d\W]{6,20}$"
+            r"^(?=.*\S)(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)[A-Za-z\d\W\S]{6,20}$"
         )
 
         username = input("Enter admin username: ")
