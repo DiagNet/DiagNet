@@ -11,6 +11,14 @@ def create_superuser_if_none(sender, **kwargs):
     if not User.objects.filter(is_superuser=True).exists():
         print("⚠️ No superuser found. Creating one...")
         username = input("Enter admin username: ")
-        password = getpass("Enter admin password: ")
+
+        while True:
+            password = getpass("Enter admin password: ")
+            password_verify = getpass("Verify admin password: ")
+            if password == password_verify:
+                break
+            else:
+                print("❌ Passwords do not match. Please try again.")
+
         User.objects.create_superuser(username=username, password=password)
         print("✅ Superuser created!")
