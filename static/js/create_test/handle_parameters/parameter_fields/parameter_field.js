@@ -27,7 +27,7 @@ class ParameterField {
         return type;
     }
 
-    /** Returns the descripion associated with this parameter. */
+    /** Returns the description associated with this parameter. */
     getDescription() {
         return this.get('description') ? this.get('description') : "";
     }
