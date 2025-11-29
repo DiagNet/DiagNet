@@ -10,7 +10,7 @@ Description: Parent-Class for defining Tests.
 __author__ = "Luka Pacar"
 __version__ = "1.2.4"
 
-from typing import List, Dict
+from typing import Any, Dict, List
 from collections import defaultdict, deque
 import time
 
@@ -237,7 +237,7 @@ class DiagNetTest:
     and defining test methods.
     """
 
-    _params: List[Dict[str, ...]] = {}
+    _params: List[Dict[str, Any]] = {}
     """ Saves the parameters needed for this Test """
 
     _mutually_exclusive_parameters: List[List[str]] = []
