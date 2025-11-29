@@ -322,11 +322,6 @@ class ListField extends ParameterField {
 
         const container = listParameterInfo.content.cloneNode(true).querySelector('div');
 
-        // Parent
-        const parent = this.getParent();
-        container.querySelector('#infoTabParentName').textContent = parent ? parent.getDisplayName() : globalTestClass;
-        container.querySelector('#infoTabParentType').textContent = parent ? "List" : "TestCase";
-
         // Description
         const description = this.getDescription();
         const paramDescriptionContainer = container.querySelector('.paramDescriptionContainer');
