@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="devices-page"),
+    path("api/get-devices/", views.get_all_devices, name="devices-all"),
     path("api/get-table/", views.DeviceListView.as_view(), name="devices-table"),
     path("api/create/", views.DeviceCreate.as_view(), name="device-create"),
     path("api/update/<str:pk>/", views.DeviceUpdate.as_view(), name="device-update"),

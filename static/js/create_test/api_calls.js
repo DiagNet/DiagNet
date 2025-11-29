@@ -45,7 +45,7 @@ async function fetchAllTestClasses() {
  */
 async function fetchAllDevices() {
     try {
-        const res = await fetch(`/devices/all`);
+        const res = await fetch(`/devices/api/get-devices`);
         const data = await res.json();
 
         return data.results || []
@@ -133,4 +133,3 @@ function debounce(fn, delay) {
         timeout = setTimeout(() => fn(...args), delay);
     };
 }
-
