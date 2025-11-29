@@ -194,13 +194,13 @@ class ListField extends ParameterField {
         this.badgeInfoUpdate();
     }
 
-    /** Increases the Count Badge signifying the amount of items in this list. */
+    /** Decreases the Count Badge signifying the amount of items in this list. */
     decreaseCountBadge() {
         this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) - 1) + "";
         this.badgeInfoUpdate();
     }
 
-    /** Decreases the Count Badge signifying the amount of items in this list. */
+    /** Increases the Count Badge signifying the amount of items in this list. */
     increaseCountBadge() {
         this.countBadge.innerHTML = (Number(this.countBadge.innerHTML) + 1) + "";
         this.badgeInfoUpdate();
