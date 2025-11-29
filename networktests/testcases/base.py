@@ -237,7 +237,7 @@ class DiagNetTest:
     and defining test methods.
     """
 
-    _params: List[Dict[str, Any]] = {}
+    _params: List[Dict[str, Any]] = []
     """ Saves the parameters needed for this Test """
 
     _mutually_exclusive_parameters: List[List[str]] = []
