@@ -238,12 +238,6 @@ class TestTest(unittest.TestCase):
         test_class = TestClass()
         result = test_class.run()
         assert result["tests"]["test_dependent_2"]["status"] == "SKIPPED"
-        assert (
-            result["tests"]["test_dependent_3"]["status"]
-            == "SKIPPED"
-        )
+        assert result["tests"]["test_dependent_3"]["status"] == "SKIPPED"
         assert result["tests"]["test_dependent_4"]["status"] == "FAIL"
-        assert (
-            result["tests"]["test_dependent_5"]["status"]
-            == "SKIPPED"
-        )
+        assert result["tests"]["test_dependent_5"]["status"] == "SKIPPED"

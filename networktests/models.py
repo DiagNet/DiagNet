@@ -44,7 +44,6 @@ class TestCase(models.Model):
 
         return output
 
-
     def run(self):
         module = importlib.import_module(f"networktests.testcases.{self.test_module}")
         cls = getattr(module, self.test_module)
@@ -85,18 +84,18 @@ class TestParameter(models.Model):
         related_name="parameters",
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
     )
     value = models.TextField(
         blank=True,
         null=True,
     )
     parent_test_parameter = models.ForeignKey(
-        'TestParameter',
+        "TestParameter",
         related_name="parent_parameter",
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
     )
 
     def __str__(self):
@@ -110,21 +109,21 @@ class TestDevice(models.Model):
         related_name="devices",
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
     )
     device = models.ForeignKey(
         to=Device,
         related_name="device",
         on_delete=models.SET_NULL,
         null=True,
-        blank=True
+        blank=True,
     )
     parent_test_parameter = models.ForeignKey(
-        'TestParameter',
+        "TestParameter",
         related_name="device_parent_parameter",
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
     )
 
     def __str__(self):

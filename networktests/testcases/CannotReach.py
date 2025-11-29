@@ -19,20 +19,20 @@ class CannotReach(DiagNetTest):
             "type": "choice",
             "choices": ["IPv4", "IPv6"],
             "description": "Choose IPv4 or IPv6",
-        }
+        },
     ]
 
     _optional_params = [
         {
             "name": "device2",
             "type": "device",
-            "description": "Secondary device (optional)"
+            "description": "Secondary device (optional)",
         },
         {
             "name": "hugo",
             "type": "string",
-            "description": "Optional parameter named hugo"
-        }
+            "description": "Optional parameter named hugo",
+        },
     ]
     _mutually_exclusive_parameters = [("device", "ping_host", "address-type")]
 
