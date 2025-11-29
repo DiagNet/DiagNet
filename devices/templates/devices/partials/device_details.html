@@ -1,12 +1,14 @@
 <div>
 	{% for field, value in device.get_fields_display %}
+	{% if field != "Id" %}
 	<div class="form-floating mb-2">
 		<input type="text" readonly class="form-control-plaintext" id="device-field-{{ forloop.counter }}"
 			value="{{ value }}">
 		<label for="device-field-{{ forloop.counter }}">{{ field }}</label>
 	</div>
+	{% endif %}
 	{% endfor %}
-	<button hx-get="{% url 'device-update' device.name %}" class="btn btn-primary">
+	<button hx-get="{% url 'device-update' device.pk %}" class="btn btn-primary">
 		Edit
 	</button>
 </div>
