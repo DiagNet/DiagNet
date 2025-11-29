@@ -19,20 +19,37 @@ class Device extends Datatype {
 
 let allDevices = [];
 let deviceIdAndName = {};
-let devicesAreBeingUpdated = false;
+
+let devicesAreUpdated = false;
+let updateDevicesPromise = null;
 
 /** Fetches the available devices. */
 async function updateDevices() {
-    if (!devicesAreBeingUpdated && allDevices.length === 0) {
-        devicesAreBeingUpdated = true;
+    if (devicesAreUpdated) {
+        return; // already updated
+    }
+
+    if (updateDevicesPromise) {
+        // fetch in progress, return the same promise
+        return updateDevicesPromise;
+    }
+
+    // Start fetching
+    updateDevicesPromise = (async () => {
         try {
             allDevices.length = 0;
             deviceIdAndName = await fetchAllDevices();
             deviceIdAndName.forEach(d => allDevices.push(d[0]));
             deviceIdAndName = Object.fromEntries(deviceIdAndName);
+            devicesAreUpdated = true;
         } catch (error) {
             throwException(error.message);
+            devicesAreUpdated = false;
+        } finally {
+            // clear the promise so future calls can refetch if needed
+            updateDevicesPromise = null;
         }
-        devicesAreBeingUpdated = false;
-    }
+    })();
+
+    return updateDevicesPromise;
 }
