@@ -2,12 +2,16 @@ from networktests.testcases.base import DiagNetTest
 
 
 class CheckRoutes(DiagNetTest):
-    _optional_params = [
-        {"name": "optional_ip", "type": "IPv4"},
-    ]
-
     _mutually_exclusive_parameters = [("target", "target_ip")]
-    _required_params = [
+
+    _params = [
+        {
+            "name": "optional_ip",
+            "display_name": "Optional IP",
+            "type": "IPv4",
+            "description": "An optional IPv4 address",
+            "requirement": "optional",
+        },
         {
             "name": "type",
             "display_name": "Address-Family",
@@ -16,21 +20,24 @@ class CheckRoutes(DiagNetTest):
             "empty_choice": "true",
             "description": "Selects if IPv4 or IPv6 Routes are checked",
         },
-        {"name": "target", "type": "device"},
-        {"name": "target_ip", "type": "IPv4"},
+        {"name": "target", "display_name": "Target Device", "type": "device"},
+        {"name": "target_ip", "display_name": "Target IP", "type": "IPv4"},
         {
             "name": "routes",
+            "display_name": "Routes",
             "type": "list",
             "description": "The routes to check",
             "parameters": [
                 {
                     "name": "destination_prefix",
+                    "display_name": "Destination Prefix",
                     "type": "IPv4",
                     "forbidden_if": {"type": "IPv4"},
                     "description": "The destination network in CIDR notation",
                 },
                 {
                     "name": "route_source",
+                    "display_name": "Route Source",
                     "type": "choice",
                     "choices": ["ANY", "CONNECTED (C)"],
                     "default_choice": "ANY",
@@ -38,17 +45,20 @@ class CheckRoutes(DiagNetTest):
                 },
                 {
                     "name": "routes2",
+                    "display_name": "Nested Routes",
                     "type": "list",
                     "description": "The routes to check",
                     "parameters": [
                         {
                             "name": "destination_prefix2",
+                            "display_name": "Destination Prefix",
                             "type": "IPv4",
                             "forbidden_if": {"type": "IPv4"},
                             "description": "The destination network in CIDR notation",
                         },
                         {
                             "name": "route_source2",
+                            "display_name": "Route Source",
                             "type": "choice",
                             "choices": ["ANY", "CONNECTED (C)"],
                             "default_choice": "ANY",
@@ -56,136 +66,44 @@ class CheckRoutes(DiagNetTest):
                         },
                         {
                             "name": "routes3",
+                            "display_name": "Deep Nested Routes",
                             "type": "list",
                             "description": "The routes to check",
                             "parameters": [
                                 {
                                     "name": "destination_prefix3",
+                                    "display_name": "Destination Prefix",
                                     "type": "IPv4",
                                     "required_if": {"type": "IPv4"},
                                     "description": "The destination network in CIDR notation",
                                 },
                                 {
                                     "name": "route_source3",
+                                    "display_name": "Route Source",
                                     "type": "choice",
                                     "choices": ["ANY", "CONNECTED (C)"],
                                     "empty_choice": "true",
                                     "default_choice": "ANY",
                                     "description": "The origin or protocol through which a route was learned",
                                 },
-                            ],
-                            "optional": [
                                 {
                                     "name": "test_param",
+                                    "display_name": "Test Parameter",
                                     "type": "IPv4",
+                                    "requirement": "optional",
                                 },
                             ],
                             "mutually_exclusive": [],
                             "constraints": ["min_length=3", "unique=true"],
                         },
                     ],
-                    "optional": [],
                     "mutually_exclusive": [],
                     "constraints": ["max_length=1", "unique=true"],
                 },
             ],
-            "optional": [],
             "mutually_exclusive": [],
             "constraints": ["min_length=1", "unique=true"],
         },
-    ]
-
-    _required_params4 = [
-        "type:choices[IPv4,IPv6]{description=Selects if IPv4 or IPv6 Routes are checked}",
-        "target:device",
-        [  # List
-            """routes:list{description=The routes to check}""",
-            [  # Required Parameters
-                """destination_prefix:CIDR-value(type){description="The destination network in CIDR notation"}""",
-                [  # Choice
-                    "route_source:choices{description='The origin or protocol through which a route was learned'}",
-                    [
-                        "ANY",
-                        "CONNECTED (C)",
-                        "LOCAL (L)",
-                        "STATIC (S)",
-                        "STATIC* (S*)",
-                        "RIP (R)",
-                        "OSPF",
-                        "OSPF IA",
-                        "OSPF E1",
-                        "OSPF E2",
-                        "OSPF N1",
-                        "OSPF N2",
-                        "EIGRP (D)",
-                        "EIGRP EX (D EX)",
-                        "BGP (B)",
-                        "BGP IGP (B)",
-                        "BGP EGP (B)",
-                        "IS-IS (i)",
-                        "IS-IS L1 (i L1)",
-                        "IS-IS L2 (i L2)",
-                        "IS-IS L1/L2 (i L1/L2)",
-                        "IS-IS * (i *)",
-                    ],
-                    "ANY",  # Default Selection
-                ],
-            ],
-            [  # Optional Parameters
-                "local_preference:number[min=0, max=1000000]{description='Local Preference of the BGP Route', required_if={route_source=r'BGP.*'}}",
-                "message_for_non_ospf:str{forbidden_if={route_source=r'OSPF.*'}}",
-            ],
-            [  # Mutually Exclusive Bindings
-            ],
-            [  # Constraints
-                "min_length=1",
-                "unique=true",
-            ],
-        ],
-    ]
-    _required_params2 = [
-        """
-        type:choices["IPv4","IPv6"]{description="Selects if IPv4 or IPv6 Routes are checked"},
-        target:device,
-        routes:list[
-            required={
-                destination_prefix:CIDR-value(type){description="The destination network in CIDR notation"} ,
-                route_source:choices[
-                        *ANY*, 
-                        CONNECTED (C), 
-                        LOCAL (L), 
-                        STATIC (S), 
-                        STATIC* (S*), 
-                        RIP (R), 
-                        OSPF, 
-                        OSPF IA, 
-                        OSPF E1, 
-                        OSPF E2, 
-                        OSPF N1, 
-                        OSPF N2, 
-                        EIGRP (D), 
-                        EIGRP EX (D EX), 
-                        BGP (B), 
-                        BGP IGP (B), 
-                        BGP EGP (B), 
-                        IS-IS (i),
-                        IS-IS L1 (i L1),
-                        IS-IS L2 (i L2),
-                        IS-IS L1/L2 (i L1/L2),
-                        IS-IS * (i *)
-                ]{description="The origin or protocol through which a route was learned"}, 
-            }
-            optional={
-                local_preference:number[min=0, max=1000000]{description="Local Preference of the BGP Route", required_if={route_source=r"BGP.*"}}
-                message_for_non_ospf:str{forbidden_if={route_source=r"OSPF.*"}}
-            }
-            mutually_exclusive={}
-            constraints={
-                min_length=1,
-                unique=true
-            }
-        ]{description="The routes to check"}
-        """
     ]
 
     def test_reachability(self) -> bool:
