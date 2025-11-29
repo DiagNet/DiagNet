@@ -18,7 +18,7 @@ function updateTabContentAccessibility() {
 
         focusable.forEach(el => {
             if (isActive) {
-                el.setAttribute('tabindex', '0'); // skip tabbing
+                el.setAttribute('tabindex', '0'); // allow tabbing
             } else {
                 el.setAttribute('tabindex', '-1'); // skip tabbing
             }
