@@ -133,7 +133,7 @@ def export_devices_from_yaml(request):
 
 def get_all_devices(request):
     devices = Device.objects.all()
-    names = [obj.name for obj in devices]
+    names = [(obj.name, obj.id) for obj in devices]
     return JsonResponse({"results": names})
 
 

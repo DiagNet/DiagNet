@@ -28,7 +28,6 @@ class Device(models.Model):
 
     name = models.CharField(
         "Hostname",
-        primary_key=True,
         max_length=100,
         unique=True,
     )

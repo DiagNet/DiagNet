@@ -95,7 +95,7 @@ def store_test_parameter(parent, parameter, value):
     try:
         if not isinstance(value, list) and value["isDevice"]:
             new_param = TestDevice()
-            new_param.device = Device.objects.get(name=value["value"])
+            new_param.device = Device.objects.get(id=value["value"])
         else:
             new_param = TestParameter()
             if isinstance(value, list):
@@ -116,9 +116,9 @@ def store_test_parameter(parent, parameter, value):
                 new_param.value = value["value"]
 
         new_param.name = parameter
-        if type(parent) == TestCase:
+        if isinstance(parent, TestCase):
             new_param.test_case = parent
-        elif type(parent) == TestParameter:
+        elif isinstance(parent, TestParameter):
             new_param.parent_test_parameter = parent
 
         new_param.save()

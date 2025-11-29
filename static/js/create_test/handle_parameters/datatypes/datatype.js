@@ -50,6 +50,16 @@ class Datatype {
                 return new Device(conditions);
             case "ipv4":
                 return new IPv4(conditions);
+            case "ipv4-cidr":
+                return new IPv4CIDR(conditions);
+
+            case "ipv6":
+                return new IPv6(conditions);
+            case "ipv6-cidr":
+                return new IPv6CIDR(conditions);
+
+            case "cisco-interface":
+                return new CiscoInterface(conditions);
 
             case "str":
             case "string":

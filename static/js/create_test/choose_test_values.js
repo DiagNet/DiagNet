@@ -14,6 +14,7 @@ createTestButton.addEventListener("click", async () => {
     }
 
     let expectedResult = document.querySelector('input[name="expectedResult"]:checked').value;
+
     try {
         await createTest(
             previousTestClass,
@@ -98,10 +99,18 @@ function readInputs(parameters) {
             if (field instanceof ListField) {
                 values[name] = value;
             } else {
-                values[name] = {
-                    'value': value,
-                    "isDevice": field instanceof SingleLineDeviceField && allDevices.includes(value)
-                };
+                const isDevice = field instanceof SingleLineDeviceField && allDevices.includes(value);
+                if (isDevice) {
+                    values[name] = {
+                        'value': deviceIdAndName[value],
+                        "isDevice": true
+                    };
+                } else {
+                    values[name] = {
+                        'value': value,
+                        "isDevice": false
+                    };
+                }
             }
         }
     }

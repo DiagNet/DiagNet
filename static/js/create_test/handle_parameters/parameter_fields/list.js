@@ -272,10 +272,18 @@ class ListField extends ParameterField {
         for (const value of this.parameters) {
             const field = value['parameter_info'];
             const fieldValue = field.getValue();
-            output[value['name']] = {
-                "value": fieldValue,
-                "isDevice": field instanceof SingleLineDeviceField && allDevices.includes(fieldValue)
-            };
+            const isDevice = field instanceof SingleLineDeviceField && allDevices.includes(fieldValue)
+            if (isDevice) {
+                 output[value['name']] = {
+                    "value": deviceIdAndName[fieldValue],
+                    "isDevice": true
+                };
+            } else {
+                output[value['name']] = {
+                    "value": fieldValue,
+                    "isDevice": false
+                };
+            }
         }
         return output;
     }
@@ -322,8 +330,9 @@ class ListField extends ParameterField {
         // Description
         const description = this.getDescription();
         const paramDescriptionContainer = container.querySelector('.paramDescriptionContainer');
-        if (description.length === 0) { paramDescriptionContainer.remove(); }
-        else {
+        if (description.length === 0) {
+            paramDescriptionContainer.remove();
+        } else {
             paramDescriptionContainer.querySelector('.paramDescription').textContent = description;
         }
 
@@ -332,7 +341,7 @@ class ListField extends ParameterField {
         container.querySelector('.infoTabDatatypeDescription').textContent = "A list of entries, each defining its child parameters";
 
         // Constraints
-        if (this.min_length) container.querySelector('.list-min-length').textContent = Math.max(1,this.min_length);
+        if (this.min_length) container.querySelector('.list-min-length').textContent = Math.max(1, this.min_length);
         if (this.max_length) container.querySelector('.list-max-length').textContent = this.max_length;
 
         // List Entries
