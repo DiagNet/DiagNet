@@ -9,7 +9,7 @@ class SingleLineDeviceField extends SingleLineInputField {
         this.dropdownMenu = this.container.querySelector('#dropdownMenu');
 
         this.searchResults = this.container.querySelector("#searchResults");
-        _ = this.insertDevicesIntoResults();
+        this.insertDevicesIntoResults();
         this.resetPointer();
 
         // Additional Handler for the device dropdown
