@@ -58,6 +58,9 @@ class Datatype {
             case "ipv6-cidr":
                 return new IPv6CIDR(conditions);
 
+            case "positive-number":
+                return new PositiveNumber(conditions);
+
             case "cisco-interface":
                 return new CiscoInterface(conditions);
 
