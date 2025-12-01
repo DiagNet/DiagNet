@@ -145,6 +145,17 @@ def handle_uploaded_file(f, overwrite_existing_devices: bool):
         if not overwrite_existing_devices and Device.objects.filter(name=name).exists():
             raise Exception(f'device "{name}" already exists')
         try:
+            if Device.objects.filter(name=name).exists():
+                device = Device.objects.get(name=name)
+                device.name = name
+                device.protocol = params["protocol"]
+                device.ip_address = params["ip_address"]
+                device.port = params["port"]
+                device.device_type = params["device_type"]
+                device.username = params["username"]
+                device.password = params["password"]
+                devices.append(device)
+                continue
             device = Device(
                 name=name,
                 protocol=params["protocol"],
