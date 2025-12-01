@@ -29,4 +29,5 @@ urlpatterns = [
         views.get_doc_of_testcase,
         name="get_doc_of_testcase",
     ),
+    path("export-report/", views.export_report_pdf, name="networktests-export-pdf"),
 ]
