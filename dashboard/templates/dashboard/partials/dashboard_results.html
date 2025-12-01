@@ -1,0 +1,98 @@
+<!-- html -->
+<div class="d-flex justify-content-end mb-2">
+    <input id="logFilter" type="text" class="form-control form-control-sm"
+           placeholder="Filter by testcase...">
+</div>
+
+<div class="row g-3 mb-3">
+
+    <div class="col-md-4">
+        <div class="card h-100 text-center">
+            <div class="card-body py-4">
+                <div class="text-muted">Total</div>
+                <div class="display-5 fw-bold kpi-total-number">{{ total }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 text-center">
+            <div class="card-body py-4">
+                <div class="fw-semibold kpi-pass">Passed</div>
+                <div class="display-5 fw-bold kpi-pass">{{ passes }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 text-center">
+            <div class="card-body py-4">
+                <div class="fw-semibold kpi-fail">Failed</div>
+                <div class="display-5 fw-bold kpi-fail">{{ fails }}</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header border-0">
+        <h5 class="fw-semibold mb-0">Recent Test Runs</h5>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Test Case</th>
+                    <th>Result</th>
+                    <th>Log Preview</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if recent %}
+                    {% for r in recent %}
+                        <tr class="{% if r.result %}table-success{% else %}table-danger{% endif %}"
+                            data-testcase="{{ r.test_case.label|lower }}">
+                            <td class="text-nowrap">{{ r.started_at|date:"Y-m-d H:i" }}</td>
+                            <td>{{ r.test_case.label }}</td>
+                            <td>
+                                {% if r.result %}
+                                    <span class="fw-semibold text-success">PASS</span>
+                                {% else %}
+                                    <span class="fw-semibold text-danger">FAIL</span>
+                                {% endif %}
+                            </td>
+                            <td class="small">
+                                {% if r.log %}
+                                    <pre style="white-space:pre-wrap;margin:0;">{{ r.log|truncatechars:120 }}</pre>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="text-muted">
+                            No test results found for this period.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.getElementById("logFilter")?.addEventListener("input", function () {
+        const filter = this.value.toLowerCase();
+        document
+            .querySelectorAll("#diagnet-dashboard table tbody tr[data-testcase]")
+            .forEach(row => {
+                const caseName = (row.dataset.testcase || "");
+                row.style.display = caseName.includes(filter) ? "" : "none";
+            });
+    });
+</script>
