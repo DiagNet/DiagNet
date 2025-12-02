@@ -91,15 +91,23 @@ class Ping(DiagNetTest):
     ]
 
     def test_reachability(self) -> bool:
-        try:
-            destination = self.destination
-            if isinstance(destination, Device):
-                destination = destination.ip_address
+        success_rate: float = 0.0
+        destination = self.destination
 
-            device = self.source.get_genie_device_object()
+        if isinstance(destination, Device):
+            destination = destination.ip_address
+
+        device = self.source.get_genie_device_object()
+        if device is None:
+            return False
+
+        try:
             response: dict = device.parse(f"ping {destination}")
-            success_rate: float = response["ping"]["statistics"]["success_rate_percent"]
-            device.destroy()
+            success_rate = response["ping"]["statistics"]["success_rate_percent"]
         except Exception as e:
             print(e)
+        finally:
+            if device:
+                device.destroy()
+
         return success_rate >= 60.0
