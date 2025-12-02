@@ -96,10 +96,10 @@ class Ping(DiagNetTest):
             if isinstance(destination, Device):
                 destination = destination.ip_address
 
-            response: dict = self.source.get_genie_device_object().parse(
-                f"ping {destination}"
-            )
+            device = self.source.get_genie_device_object()
+            response: dict = device.parse(f"ping {destination}")
             success_rate: float = response["ping"]["statistics"]["success_rate_percent"]
+            device.destroy()
         except Exception as e:
             print(e)
         return success_rate >= 60.0
