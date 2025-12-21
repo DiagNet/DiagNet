@@ -69,6 +69,48 @@ class Device(models.Model):
         """Returns the url to access a particular device record."""
         return reverse("device-detail", args=[str(self.name)])
 
+    def get_all_ips(self) -> list[str]:
+        """
+        Return all IP addresses (IPv4 + IPv6) from this device using pyATS/Genie.
+        Returns [] if unable to connect, no interfaces exist, or all IPs are unassigned.
+        """
+        genie_dev = self.get_genie_device_object()
+        if not genie_dev:
+            return []
+
+        ips = set()
+
+        # Safely parse IPv4 interfaces
+        try:
+            ipv4_data = genie_dev.parse("show ip interface brief") or {}
+            interfaces = ipv4_data.get("interface", {})
+            if interfaces:
+                for info in interfaces.values():
+                    ip_addr = info.get("ip_address") or info.get("ip")
+                    if ip_addr and ip_addr.lower() != "unassigned":
+                        ips.add(ip_addr)
+        except Exception:
+            # Fail-safe: ignore errors and continue
+            pass
+
+        # Safely parse IPv6 interfaces
+        try:
+            ipv6_data = genie_dev.parse("show ipv6 interface brief") or {}
+            interfaces = ipv6_data.get("interface", {})
+            if interfaces:
+                for info in interfaces.values():
+                    ipv6_list = info.get("ipv6", [])
+                    if isinstance(ipv6_list, str):
+                        ipv6_list = [ipv6_list]
+                    for ip in ipv6_list:
+                        if ip.lower() != "unassigned":
+                            ips.add(ip.split("/")[0])  # remove prefix length
+        except Exception:
+            # Fail-safe: ignore errors and continue
+            pass
+
+        return list(ips)
+
     def get_fields_display(self) -> list[tuple[str, str]]:
         """
         Return a list of (label, value) tuples for UI display.
