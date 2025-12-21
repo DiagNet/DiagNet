@@ -1,28 +1,36 @@
+{% load i18n %}
 <div class="modal fade" id="simpleModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Simple Popup</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h5 class="modal-title">{% trans "Simple Popup" %}</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="{% trans 'Close' %}">
+        </button>
       </div>
 
       <div class="modal-body">
-        <input type="search"
-          class="form-control mb-3" 
-          placeholder="Search for testcases..."
+        <input
+          type="search"
+          class="form-control mb-3"
+          placeholder="{% trans 'Search for testcases…' %}"
           name="search"
-          hx-post="{% url 'testgroup-filter-testcases' %}" 
+          hx-post="{% url 'testgroup-filter-testcases' %}"
           hx-target="#popup-testcase-table-body"
-          hx-trigger="keyup changed delay:300ms" 
+          hx-trigger="keyup changed delay:300ms"
           hx-swap="innerHTML"
           hx-headers='{"X-CSRFTOKEN": "{{ csrf_token }}"}'
           hx-vals='{"testgroup": "{{ testgroup.pk }}"}'>
       </div>
 
-      <form hx-post="{% url 'testgroup-add-testcase' %}"
-            hx-target="#td-coll-{{ testgroup.name }}"
-            hx-swap="innerHTML"
-            hx-vals='{"testgroup": "{{ testgroup.pk }}"}'>
+      <form
+        hx-post="{% url 'testgroup-add-testcase' %}"
+        hx-target="#td-coll-{{ testgroup.name }}"
+        hx-swap="innerHTML"
+        hx-vals='{"testgroup": "{{ testgroup.pk }}"}'>
 
         {% csrf_token %}
 
@@ -32,8 +40,8 @@
                 <thead class="table-light">
                   <tr>
                     <th>#</th>
-                    <th>Name</th>
-                    <th>Select</th>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Select" %}</th>
                   </tr>
                 </thead>
                 <tbody id="popup-testcase-table-body">
@@ -43,17 +51,17 @@
                     <td>{{ testcase.pk }}</td>
                     <td>{{ testcase.label }}</td>
                     <td>
-                      <input 
-                        type="checkbox" 
-                        name="selected_testcases" 
-                        value="{{ testcase.pk }}" 
+                      <input
+                        type="checkbox"
+                        name="selected_testcases"
+                        value="{{ testcase.pk }}"
                         class="form-check-input">
                     </td>
                   </tr>
                   {% endfor %}
                   {% else %}
                   <tr>
-                    <td colspan="100%">No Testcases to add.</td>
+                    <td colspan="100%">{% trans "No Testcases to add." %}</td>
                   </tr>
                   {% endif %}
                 </tbody>
@@ -62,8 +70,18 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Add</button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal">
+            {% trans "Cancel" %}
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            data-bs-dismiss="modal">
+            {% trans "Add" %}
+          </button>
         </div>
 
       </form>
@@ -73,12 +91,12 @@
 
 <script>
   (() => {
-    // Wenn htmx dieses HTML in die Seite lädt, öffne das Modal direkt
+    // When htmx loads this HTML into the page, open the modal immediately
     const modalEl = document.getElementById('simpleModal');
     const modal = new bootstrap.Modal(modalEl);
     modal.show();
 
-    // Optional: Modal aus DOM entfernen, wenn es geschlossen wurde
+    // Optional: remove modal from DOM once it is closed
     modalEl.addEventListener('hidden.bs.modal', () => modalEl.remove());
   })();
 </script>

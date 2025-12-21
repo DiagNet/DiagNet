@@ -1,3 +1,4 @@
+{% load i18n %}
 <template id="ListParameterInfo">
     <div>
         <!-- Header with close button -->
@@ -11,14 +12,14 @@
         <div class="mt-4 p-4 rounded"
              style="background: linear-gradient(135deg, #fefefe 0%, #f0f2f5 100%); border: 1px solid #e1e4ea;">
             <h4 class="mb-4 text-dark fw-bold" style="border-bottom: 2px solid #ced4da; padding-bottom: 0.5rem;">
-                Entries</h4>
+                {% trans "Entries" %}</h4>
 
 
             <div class="entryContainer">
                 <div style="background: #fff9f0; border: 1px dashed #ffb347; min-height: 80px;"
                      class="entryEmpty mb-4 p-4 rounded d-flex align-items-center justify-content-center">
                     <span class="text-warning fw-semibold" style="font-size: 1rem; font-style: italic; ">
-                        This List currently has no Entries
+                        {% trans "This List currently has no Entries" %}
                     </span>
                 </div>
             </div>
@@ -28,7 +29,7 @@
         <div class="mt-4 p-4 rounded paramDescriptionContainer"
              style="background: linear-gradient(120deg, #fefefe 0%, #f1f3f6 100%); border: 1px solid #d8dae0;">
             <h4 class="mb-3 text-dark fw-bold" style="border-bottom: 2px solid #ced4da; padding-bottom: 0.5rem;">
-                Parameter Description
+                {% trans "Parameter Description" %}
             </h4>
             <div class="paramDescription p-3 rounded"
                  style="
@@ -45,7 +46,7 @@
         <div class="mt-4 mb-4 p-4 rounded"
              style="background: linear-gradient(135deg, #fefefe 0%, #f0f2f5 100%); border: 1px solid #e1e4ea;">
             <h4 class="mb-4 text-dark fw-bold" style="border-bottom: 2px solid #ced4da; padding-bottom: 0.5rem;">
-                Datatypes</h4>
+                {% trans "Datatypes" %}</h4>
 
 
             <div class="datatypeContainer mb-4 p-3 rounded"
@@ -55,7 +56,7 @@
                     <div class="infoTabDatatypeName fw-bold fs-5"></div>
                 </div>
                 <div>
-                    <div class="text-uppercase text-secondary small mb-1">Description</div>
+                    <div class="text-uppercase text-secondary small mb-1">{% trans "Description" %}</div>
                     <div class="infoTabDatatypeDescription text-dark" style="line-height: 1.6;">
                     </div>
                 </div>
@@ -67,16 +68,16 @@
              style="background: linear-gradient(135deg, #fefefe 0%, #f8f9fa 100%); border: 1px solid #e1e4ea;">
             <h4 class="mb-3 text-dark fw-bold"
                 style="border-bottom: 2px solid #ced4da; padding-bottom: 0.5rem; font-size: 1.25rem;">
-                Constraints
+                {% trans "Constraints" %}
             </h4>
 
             <div class="mb-4 p-3 rounded"
                  style="background:#fefefe; border:1px solid #e1e4ea; display:flex; gap:1rem; justify-content:flex-start; flex-wrap:wrap;">
                 <div style="background:#e9f7ef; color:#155724; font-weight:600; padding:0.5rem 0.75rem; border-radius:6px; min-width:100px; text-align:center;">
-                    Min Length<br><span style="font-size:1.1rem;" class="list-min-length">1</span>
+                    {% trans "Min Length" %}<br><span style="font-size:1.1rem;" class="list-min-length">1</span>
                 </div>
                 <div style="background:#fff5f5; color:#721c24; font-weight:600; padding:0.5rem 0.75rem; border-radius:6px; min-width:100px; text-align:center;">
-                    Max Length<br><span style="font-size:1.1rem;" class="list-max-length">∞</span>
+                    {% trans "Max Length" %}<br><span style="font-size:1.1rem;" class="list-max-length">∞</span>
                 </div>
             </div>
 

@@ -1,32 +1,41 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Test Groups - DiagNet{% endblock %}
+{% block title %}{% trans "Test Groups" %} - DiagNet{% endblock %}
 
 {% block content %}
-<h1>Test Groups</h1>
-<form hx-post="create-testgroup/"
-      hx-target="#testgroup-table"
-      hx-swap="outerHTML"
-      hx-on::after-request="this.reset()">
+<h1>{% trans "Test Groups" %}</h1>
+
+<form
+  hx-post="create-testgroup/"
+  hx-target="#testgroup-table"
+  hx-swap="outerHTML"
+  hx-on::after-request="this.reset()">
   {% csrf_token %}
+
   <div class="from-group row">
     <div class="col-sm-8">
-      <input type="text" name="name" placeholder="Type group name here" class="form-control">
+      <input
+        type="text"
+        name="name"
+        placeholder="{% trans 'Type group name here' %}"
+        class="form-control"
+        aria-label="{% trans 'Test group name' %}">
     </div>
     <div class="col-sm-4">
       <button type="submit" name="submit" class="btn btn-primary mb-3">
         <i class="bi bi-database-add"></i>
-        Create Test Group
+        {% trans "Create Test Group" %}
       </button>
     </div>
   </div>
 </form>
 
-<div 
+<div
   hx-get="/testgroups/list-testgroups/"
   hx-trigger="load"
   hx-swap="outerHTML">
-  <p>Loading content…</p>
+  <p>{% trans "Loading content…" %}</p>
 </div>
 
 <div id="modal-container"></div>

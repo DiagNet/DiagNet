@@ -1,40 +1,45 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Test Group - DiagNet{% endblock %}
+{% block title %}{% trans "Test Group" %} - DiagNet{% endblock %}
 
 {% block content %}
 
 <div id="title-div" class="d-flex align-items-center justify-content-between mb-3">
-  <h1 class="mb-0">Test Group: {{ testgroup.name }}</h1>
+  <h1 class="mb-0">
+    {% trans "Test Group:" %} {{ testgroup.name }}
+  </h1>
   <button id="edit-btn" class="btn btn-outline-primary btn-sm">
-    <i class="bi bi-pencil"></i> Rename
+    <i class="bi bi-pencil"></i> {% trans "Rename" %}
   </button>
 </div>
 
 <div id="rename-form-div" hidden>
-  <form 
-     hx-post="/testgroups/rename/{{ testgroup.name }}/" 
+  <form
+     hx-post="/testgroups/rename/{{ testgroup.name }}/"
       hx-target="#title-div"
       hx-swap="outerHTML"
       class="d-flex align-items-center">
     {% csrf_token %}
-      
+
     <div class="d-flex align-items-center justify-content-between mb-3">
-      <input 
-          type="text" 
-          name="name" 
-          value="{{ testgroup.name }}" 
-          class="form-control me-2" 
-          style="max-width: 300px;">
-      
-      <button id="rename-submit" type="submit" class="btn btn-success btn-sm me-2">
+      <input
+          type="text"
+          name="name"
+          value="{{ testgroup.name }}"
+          class="form-control me-2"
+          style="max-width: 300px;"
+          aria-label="{% trans 'New name' %}">
+
+      <button id="rename-submit" type="submit" class="btn btn-success btn-sm me-2" title="{% trans 'Confirm rename' %}">
         <i class="bi bi-check"></i>
       </button>
-      
-      <button 
+
+      <button
           type="button"
-          id ="aboart"
-          class="btn btn-secondary btn-sm">
+          id="aboart"
+          class="btn btn-secondary btn-sm"
+          title="{% trans 'Cancel' %}">
         <i class="bi bi-x"></i>
       </button>
     </div>
@@ -42,16 +47,16 @@
 </div>
 
 <a href="/testgroups/" class="btn btn-outline-secondary mt-3">
-  <i class="bi bi-arrow-left"></i> Back
+  <i class="bi bi-arrow-left"></i> {% trans "Back" %}
 </a>
 <br>
 <br>
 
-<div 
+<div
   hx-get="/testgroups/list-testcases/{{ testgroup.name }}"
   hx-trigger="load"
   hx-swap="outerHTML">
-  <p>Loading content…</p>
+  <p>{% trans "Loading content…" %}</p>
 </div>
 
 <script>

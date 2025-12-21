@@ -1,3 +1,4 @@
+{% load i18n %}
 <template id="DefaultItem">
     <div class="d-flex flex-column p-2 bg-white border rounded shadow-sm mb-2"
          style="min-width: 200px; max-width: 350px; position: relative;">
@@ -15,8 +16,8 @@
             border-radius: 0.25rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;">
-            Device
-</span>
+            {% trans "Device" %}
+        </span>
         <span class="emptyBadge" style="
             position: absolute;
             top: 5px;
@@ -29,13 +30,13 @@
             border-radius: 0.25rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;">
-            Empty
+            {% trans "Empty" %}
         </span>
 
         <!-- Name on top-left, slightly bigger -->
         <span id="name"
               style="font-size: 0.85rem; font-weight: 500; color: #6c757d; margin-bottom: 0.15rem; line-height: 1.2;">
-            Name
+            {% trans "Name" %}
         </span>
 
         <!-- Value spans full width, handles long text -->

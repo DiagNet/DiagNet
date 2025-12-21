@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}Dashboard - DiagNet{% endblock %}
 
 {% block content %}
-<h1>Welcome to DiagNet</h1>
-<p>This is your network testing dashboard.</p>
+<h1>{% trans "Welcome to DiagNet" %}</h1>
+<p>{% trans "This is your network testing dashboard." %}</p>
 {% endblock %}

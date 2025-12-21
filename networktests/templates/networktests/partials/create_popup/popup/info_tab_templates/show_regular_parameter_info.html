@@ -1,3 +1,4 @@
+{% load i18n %}
 <template id="RegularParameterInfo">
     <div>
         <!-- Header with close button -->
@@ -11,7 +12,7 @@
         <div class="mt-4 p-4 rounded paramDescriptionContainer"
              style="background: linear-gradient(120deg, #fefefe 0%, #f1f3f6 100%); border: 1px solid #d8dae0;">
             <h4 class="mb-3 text-dark fw-bold" style="border-bottom: 2px solid #ced4da; padding-bottom: 0.5rem;">
-                Parameter Description
+                {% trans "Parameter Description" %}
             </h4>
             <div class="paramDescription p-3 rounded"
                  style="
@@ -28,7 +29,7 @@
         <div class="mt-4 p-4 rounded"
              style="background: linear-gradient(135deg, #fefefe 0%, #f0f2f5 100%); border: 1px solid #e1e4ea;">
             <h4 class="mb-4 text-dark fw-bold" style="border-bottom: 2px solid #ced4da; padding-bottom: 0.5rem;">
-                Datatypes</h4>
+                {% trans "Datatypes" %}</h4>
 
 
             <div class="datatypeContainer mb-4 p-3 rounded"
@@ -38,7 +39,7 @@
                     <div class="infoTabDatatypeName fw-bold fs-5"></div>
                 </div>
                 <div>
-                    <div class="text-uppercase text-secondary small mb-1">Description</div>
+                    <div class="text-uppercase text-secondary small mb-1">{% trans "Description" %}</div>
                     <div class="infoTabDatatypeDescription text-dark" style="line-height: 1.6;">
                     </div>
                 </div>
