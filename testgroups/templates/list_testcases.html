@@ -1,13 +1,14 @@
+{% load i18n %}
 <div class="table-responsive" id="testcase-table">
   {% if error %}
   <div class="alert alert-danger">
-    <strong>Error:</strong> {{ error }}
+    <strong>{% trans "Error:" %}</strong> {{ error }}
   </div>
   {% endif %}
   <table class="table table-striped">
       <thead>
       <tr>
-          <th>Testcases</th>
+          <th>{% trans "Testcases" %}</th>
       </tr>
       </thead>
       <tbody>
@@ -15,9 +16,15 @@
       {% for testcase in testcase_list %}
       <tr>
           <td>
-            <a href="detail/{{ testcase.label }}/"> {{ testcase.label }} </a>
+            <a href="detail/{{ testcase.label }}/">{{ testcase.label }}</a>
+          </td>
           <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
-            <a hx-vals='{"name": "{{ testcase.label }}"}' hx-post="delete-testcase/" hx-target="#testcase-table" class="btn btn-sm btn-danger" title="Delete">
+            <a
+              hx-vals='{"name": "{{ testcase.label }}"}'
+              hx-post="delete-testcase/"
+              hx-target="#testcase-table"
+              class="btn btn-sm btn-danger"
+              title="{% trans "Delete" %}">
                   <i class="bi bi-trash"></i>
               </a>
           </td>
@@ -25,7 +32,7 @@
       {% endfor %}
       {% else %}
       <tr>
-          <td colspan="100%">No Testcases yet.</td>
+          <td colspan="100%">{% trans "No Testcases yet." %}</td>
       </tr>
       {% endif %}
       </tbody>

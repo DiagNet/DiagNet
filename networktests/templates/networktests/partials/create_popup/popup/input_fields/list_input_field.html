@@ -1,3 +1,4 @@
+{% load i18n %}
 <!-- Template for a List Field -->
 <template id="listInputTemplate">
     <div class="list-field-container w-100 mb-3 p-3 border rounded shadow-sm ">
@@ -9,13 +10,13 @@
                 <label class="text-muted small fw-normal count-label"></label>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-icon btn-sm btn-outline-secondary info-btn" title="List Info">
+                <button type="button" class="btn btn-icon btn-sm btn-outline-secondary info-btn" title="{% trans "List Info" %}">
                     <i class="bi bi-info-circle"></i>
                 </button>
                 <button type="button" class="btn btn-primary btn-sm add-to-list-btn d-flex align-items-center gap-1"
                         style="border-radius: 0.25rem;">
                     <i class="bi bi-plus-lg"></i>
-                    Add to List
+                    {% trans "Add to List" %}
                 </button>
             </div>
         </div>

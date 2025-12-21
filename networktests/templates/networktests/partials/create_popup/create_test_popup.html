@@ -1,5 +1,6 @@
 {% extends "popup.html" %}
 {% load static %}
+{% load i18n %}
 
 {% block modal_title %}My First Popup{% endblock %}
 
@@ -49,19 +50,19 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link create-popup-nav active px-4 py-2 rounded-pill"
                     id="template-tab" type="button" aria-disabled="true">
-                Template
+                {% trans "Template" %}
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link create-popup-nav disabled px-4 py-2 rounded-pill"
                     id="parameters-tab" type="button" tabindex="-1" aria-disabled="true">
-                Parameters
+                {% trans "Parameters" %}
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link create-popup-nav disabled px-4 py-2 rounded-pill"
                     id="info-tab" type="button" tabindex="-1" aria-disabled="true">
-                Info
+                {% trans "Info" %}
             </button>
         </li>
     </ul>

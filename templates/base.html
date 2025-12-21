@@ -1,3 +1,4 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -34,9 +35,9 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                    <a class="nav-link d-inline text-light" href="{% url 'devices-page' %}">Devices</a>
-                    <a class="nav-link d-inline text-light" href="{% url 'networktests-page' %}">Network Tests</a>
-                    <a class="nav-link d-inline text-light" href="{% url 'testgroup-page' %}">Test Groups</a>
+                    <a class="nav-link d-inline text-light" href="{% url 'devices-page' %}">{% trans "Devices" %}</a>
+                    <a class="nav-link d-inline text-light" href="{% url 'networktests-page' %}">{% trans "Network Tests" %}</a>
+                    <a class="nav-link d-inline text-light" href="{% url 'testgroup-page' %}">{% trans "Test Groups" %}</a>
                 </div>
 
                 {% include "theme-switcher.html" %}

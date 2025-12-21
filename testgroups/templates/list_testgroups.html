@@ -1,16 +1,23 @@
+{% load i18n %}
 <div class="table-responsive" id="testgroup-table">
   <div id="placeholder">
     {% if error %}
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      <strong>Error:</strong> {{ error }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      <strong>{% trans "Error:" %}</strong> {{ error }}
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+        aria-label="{% trans 'Close' %}">
+      </button>
     </div>
     {% endif %}
   </div>
+
   <table class="table table-striped">
       <thead>
       <tr>
-          <th>Name</th>
+          <th>{% trans "Name" %}</th>
       </tr>
       </thead>
       <tbody>
@@ -18,27 +25,29 @@
       {% for testgroup in testgroup_list %}
       <tr id="testgroups-{{ testgroup.name }}">
         <td style="width: 2rem;">
-          <button 
-            class="btn btn-sm btn-outline-secondary" 
+          <button
+            class="btn btn-sm btn-outline-secondary"
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#collapse-{{ testgroup.name }}"
             aria-expanded="false"
-            aria-controls="collapse-{{ testgroup.name }}">
+            aria-controls="collapse-{{ testgroup.name }}"
+            title="{% trans 'Toggle testcases' %}">
             <i class="bi bi-chevron-down"></i>
           </button>
         </td>
 
         <td>
-          <button id="{{ testgroup.name }}-runall" class="btn btn-sm btn-primary" title="Run testcases in this group">
+          <button
+            id="{{ testgroup.name }}-runall"
+            class="btn btn-sm btn-primary"
+            title="{% trans 'Run testcases in this group' %}">
 						<i class="bi bi-play-fill"></i>
 					</button>
           <script>
             document.getElementById("{{ testgroup.name }}-runall").addEventListener("click", () => {
-              console.log("heheheha")
               document.querySelectorAll(".{{ testgroup.name }}-runner").forEach(btn => {
-                btn.click(); // löst den htmx-Request des Buttons aus
-                console.log(btn)
+                btn.click();
               });
             });
           </script>
@@ -49,21 +58,22 @@
         </td>
 
         <td class="text-end">
-          <button hx-get="popup/{{ testgroup.name }}"
+          <button
+            hx-get="popup/{{ testgroup.name }}"
             hx-target="#modal-container"
             hx-swap="innerHTML"
             class="btn btn-sm btn-outline-success">
-            <i class="bi bi-plus"></i> Add Testcase
+            <i class="bi bi-plus"></i> {% trans "Add Testcase" %}
           </button>
         </td>
 
         <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
-          <a 
+          <a
             hx-vals='{"name": "{{ testgroup.name }}"}'
             hx-post="delete-testgroup/"
             hx-target="#testgroup-table"
             class="btn btn-sm btn-danger"
-            title="Delete">
+            title="{% trans 'Delete' %}">
             <i class="bi bi-trash"></i>
           </a>
         </td>
@@ -72,11 +82,11 @@
       <!-- Collapsible row -->
       <tr class="collapse" id="collapse-{{ testgroup.name }}">
         <td colspan="3" class="bg-light" id="td-coll-{{ testgroup.name }}">
-          <div 
+          <div
             hx-get="list-testcases/{{ testgroup.name }}"
             hx-trigger="load"
             hx-swap="outerHTML">
-            <p>Loading content…</p>
+            <p>{% trans "Loading content…" %}</p>
           </div>
         </td>
       </tr>
@@ -84,7 +94,7 @@
       {% endfor %}
       {% else %}
       <tr>
-          <td colspan="100%">No Test Groups yet.</td>
+          <td colspan="100%">{% trans "No Test Groups yet." %}</td>
       </tr>
       {% endif %}
       </tbody>
@@ -92,16 +102,20 @@
 </div>
 
 <script>
-        document.body.addEventListener('htmx:responseError', function (event) {
-          // event.detail enthält Response-Daten
-          const errorBox = document.querySelector('#placeholder');
+  document.body.addEventListener('htmx:responseError', function (event) {
+    const errorBox = document.querySelector('#placeholder');
 
-          // Optional: Response-Text einfügen
-          errorBox.innerHTML = `
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-              <strong>Error:</strong> ${event.detail.xhr.responseText || 'Unknown Error'}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          `;
-        });
+    errorBox.innerHTML = `
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>{% trans "Error:" %}</strong>
+        ${event.detail.xhr.responseText || "{% trans 'Unknown Error' %}"}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="{% trans 'Close' %}">
+        </button>
+      </div>
+    `;
+  });
 </script>

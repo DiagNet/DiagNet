@@ -1,22 +1,22 @@
+{% load i18n %}
 <div tabindex="-1" class="overflow-auto modal-body d-flex flex-column gap-4 p-4 rounded shadow-sm">
     {% csrf_token %}
 
     <div class="mb-3">
-        <label for="labelInput" class="form-label fw-bold">Testcase Name</label>
-        <input id="labelInput" type="text" class="form-control form-control" placeholder="Enter a descriptive name">
+        <label for="labelInput" class="form-label fw-bold">{% trans "Testcase Name" %}</label>
+        <input id="labelInput" type="text" class="form-control form-control" placeholder="{% trans "Enter a descriptive name" %}">
         <small class="form-text text-muted mt-2">
-            Provide a clear and concise name for this testcase. Use descriptive keywords that summarize the scenario.
+            {% trans "Provide a clear and concise name for this testcase. Use descriptive keywords that summarize the scenario." %}
         </small>
     </div>
 
     <div class="mb-3">
-        <label for="descriptionInput" class="form-label fw-bold">Testcase Description</label>
+        <label for="descriptionInput" class="form-label fw-bold">{% trans "Testcase Description" %}</label>
         <textarea id="descriptionInput" class="form-control" rows="3"
-            placeholder="Write what this testcase does, its purpose and important details..."></textarea>
+            placeholder="{% trans "Write what this testcase does, its purpose and important details..." %}"></textarea>
 
         <small class="form-text text-muted mt-2">
-            Describe what this testcase does. Include the purpose, conditions, and any important details that help
-            understand the test scenario.
+            {% trans "Describe what this testcase does. Include the purpose, conditions, and any important details that help understand the test scenario." %}
         </small>
     </div>
 
@@ -26,12 +26,12 @@
             <input type="radio" class="btn-check" name="expectedResult" id="passBtn" value="PASS" autocomplete="off"
                 checked>
             <label class="btn btn-outline-success flex-fill fw-bold rounded-start" for="passBtn">
-                <i class="bi bi-check-circle-fill me-1"></i> PASS
+                <i class="bi bi-check-circle-fill me-1"></i> {% trans "PASS" %}
             </label>
 
             <input type="radio" class="btn-check" name="expectedResult" id="failBtn" value="FAIL" autocomplete="off">
             <label class="btn btn-outline-danger flex-fill fw-bold rounded-end" for="failBtn">
-                <i class="bi bi-x-circle-fill me-1"></i> FAIL
+                <i class="bi bi-x-circle-fill me-1"></i> {% trans "FAIL" %}
             </label>
         </div>
     </div>
@@ -43,7 +43,7 @@
                 transition: all 0.2s ease-in-out;
                 cursor: pointer;
             ">
-        Create Test
+        {% trans "Create Test" %}
     </button>
 </div>
 </div>

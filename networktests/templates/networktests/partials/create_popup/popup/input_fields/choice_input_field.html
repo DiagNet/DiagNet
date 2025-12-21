@@ -1,13 +1,14 @@
+{% load i18n %}
 <!-- Template for a Choice Field -->
 <template id="choiceInputTemplate">
     <div class="mb-3 p-3 shadow-sm rounded choice-container d-flex flex-column">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <label class="form-label choice-label fw-bold mb-0">Choice Label</label>
-            <span class="badge bg-secondary param-datatype">Choice-Field</span>
+            <label class="form-label choice-label fw-bold mb-0">{% trans "Choice Label" %}</label>
+            <span class="badge bg-secondary param-datatype">{% trans "Choice-Field" %}</span>
         </div>
 
         <select class="form-select choice-select mb-2"></select>
 
-        <small class="form-text text-muted choice-helper">Select an option</small>
+        <small class="form-text text-muted choice-helper">{% trans "Select an option" %}</small>
     </div>
 </template>

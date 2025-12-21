@@ -22,10 +22,16 @@ from django.urls import include, path
 
 from dashboard import views as dashboard_views
 
+from django.conf.urls.i18n import i18n_patterns
+
 urlpatterns = [
+    path("i18n/", include("django.conf.urls.i18n")),
+]
+
+urlpatterns += i18n_patterns(
     path("admin/", admin.site.urls),
     path("", dashboard_views.index, name="dashboard"),
     path("devices/", include("devices.urls")),
     path("networktests/", include("networktests.urls")),
     path("testgroups/", include("testgroups.urls")),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
