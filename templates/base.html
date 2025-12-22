@@ -26,13 +26,22 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav">
+                <div class="navbar-nav me-auto">
                     <a class="nav-link d-inline text-light" href="{% url 'devices-page' %}">Devices</a>
                     <a class="nav-link d-inline text-light" href="{% url 'networktests-page' %}">Network Tests</a>
                     <a class="nav-link d-inline text-light" href="{% url 'testgroup-page' %}">Test Groups</a>
                 </div>
-                <div>
+                {% if user.is_authenticated %}
+                <div class="d-flex align-items-center">
+                    <span class="navbar-text me-3 text-light">
+                        Hi, {{ user.username }}
+                    </span>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-light btn-sm">Sign Out</button>
+                    </form>
                 </div>
+                {% endif %}
             </div>
     </nav>
     <div class="container">{% block content %}{% endblock %}</div>
