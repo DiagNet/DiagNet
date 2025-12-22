@@ -43,6 +43,21 @@
                            href="{% url 'networktests-page' %}">Network Tests</a>
                         <a class="nav-link d-inline text-light"
                            href="{% url 'testgroup-page' %}">Test Groups</a>
+                        {% if user.is_superuser %}
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown">
+                                Management
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li><a class="dropdown-item" href="{% url 'user-list' %}">Users</a></li>
+                                <li><a class="dropdown-item" href="{% url 'group-list' %}">Groups</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="{% url 'admin:index' %}">Django Admin</a></li>
+                            </ul>
+                        </div>
+                        {% endif %}
                     </div>
                     {% if user.is_authenticated %}
                         <div class="d-flex align-items-center">
