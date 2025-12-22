@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+	<h2>User Management</h2>
+</div>
+<div class="container mt-4">
+	<div id="user-table-container" hx-get="{% url 'user-list' %}" hx-trigger="userListChanged from:body"
+		hx-target="#user-table-container" hx-select="#user-table-container">
+		<div class="card shadow">
+			<div class="card-body table-responsive p-2">
+				<table class="table table-hover align-middle mb-1">
+					<thead>
+						<tr>
+							<th>Username</th>
+							<th>Email</th>
+							<th>Status</th>
+							<th>Groups</th>
+							<th class="text-end">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for user in users %}
+						<tr>
+							<td><strong>{{ user.username }}</strong></td>
+							<td>{{ user.email|default:"-" }}</td>
+							<td>
+								{% if user.is_superuser %}
+								<span class="badge bg-danger">Superuser</span>
+								{% elif user.is_staff %}
+								<span class="badge bg-warning text-dark">Staff</span>
+								{% else %}
+								<span class="badge bg-secondary">User</span>
+								{% endif %}
+							</td>
+							<td>
+								{% for group in user.groups.all %}
+								<span class="badge border text-dark">{{ group.name }}</span>
+								{% empty %}
+								<small class="text-muted">No groups</small>
+								{% endfor %}
+							</td>
+							<td class="text-end">
+								<button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+								<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
