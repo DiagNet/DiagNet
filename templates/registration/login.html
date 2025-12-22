@@ -1,10 +1,46 @@
 {% extends "base.html" %}
 {% block title %}Log into your account{% endblock %}
+
 {% block content %}
-<h2>Log In</h2>
-<form method="post">
-	{% csrf_token %}
-	{{ form }}
-	<button type="submit">Log In</button>
-</form>
+<div class="row justify-content-center mt-5">
+	<div class="col-md-6 col-lg-4">
+		<div class="card shadow">
+			<div class="card-body p-4">
+				<div class="text-center mb-4">
+					<h2 class="fw-bold">Login</h2>
+					<p class="text-muted">Please enter your credentials</p>
+				</div>
+
+				<form method="post">
+					{% csrf_token %}
+
+					{% if form.errors %}
+					<div class="alert alert-danger" role="alert">
+						Invalid username or password.
+					</div>
+					{% endif %}
+
+					<div class="mb-3">
+						<label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+						<input type="text" name="username" class="form-control" id="{{ form.username.id_for_label }}"
+							required autofocus>
+					</div>
+
+					<div class="mb-4">
+						<label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+						<input type="password" name="password" class="form-control"
+							id="{{ form.password.id_for_label }}" required>
+					</div>
+
+					<div class="d-grid">
+						<button type="submit" class="btn btn-primary btn-lg">Login</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="text-center mt-3">
+			<small class="text-muted">DiagNet</small>
+		</div>
+	</div>
+</div>
 {% endblock %}
