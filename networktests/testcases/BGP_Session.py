@@ -1,7 +1,10 @@
+import re
+
 from devices.models import Device
-from networktests.testcases.base import DiagNetTest
-from genie.conf.base.device import Device as GenieDevice
+from networktests.testcases.base import DiagNetTest, depends_on
 from typing import Union
+
+__author__ = "Luka Pacar"
 
 
 class BGP_Session(DiagNetTest):
@@ -122,13 +125,6 @@ class BGP_Session(DiagNetTest):
             "type": "positive-number",
             "requirement": "optional",
         },
-        # {
-        #    "name": "peer_one_update_source_interface",
-        #    "display_name": "BGP Peer 1 - Source-Interface",
-        #    "type": "cisco-interface",
-        #    "description": "The interface used for the BGP Session",
-        #    "requirement": "optional",
-        # },
         {
             "name": "bgp_peer_two",
             "display_name": "BGP Peer 2",
@@ -145,200 +141,90 @@ class BGP_Session(DiagNetTest):
             "type": "positive-number",
             "requirement": "optional",
         },
-        # {
-        #    "name": "peer_two_update_source_interface",
-        #    "display_name": "BGP Peer 2 - Source-Interface",
-        #    "type": "cisco-interface",
-        #    "description": "The interface used for the BGP Session",
-        #    "requirement": "optional",
-        # },
     ]
 
-    def get_peer_one_device(self) -> Device:
-        """Return the Device object for BGP Peer 1"""
-        return self.bgp_peer_one
-
-    def get_peer_two_device(self) -> Union[Device, str]:
-        """
-        Return the Device object for BGP Peer 2.
-        If two_way_check is One-Way-Check, Peer 2 can be an IP address string.
-        """
-        return self.bgp_peer_two
-
-    def connect_device(self, device: Device) -> Union[GenieDevice, None]:
-        """Connect to a device using Genie and return the device object"""
-        return device.get_genie_device_object()
-
-    def get_bgp_summary(self, device: Device) -> dict:
-        """Return parsed BGP summary from the device"""
-        genie_dev = self.connect_device(device)
+    @staticmethod
+    def _get_bgp_summary(dev: Device):
+        genie_dev = dev.get_genie_device_object()
         if not genie_dev:
-            raise ValueError(f"Cannot connect to device {device.name}")
+            raise ValueError(f"Connection failed: {dev.name}")
+        return genie_dev.parse("show bgp summary")
 
-        try:
-            return genie_dev.parse("show bgp summary")
-        except Exception as e:
-            raise RuntimeError(f"Failed to get BGP summary on {device.name}: {e}")
+    def _validate(
+        self,
+        local: Device,
+        remote: Union[Device, str],
+        l_as: int = None,
+        r_as: int = None,
+    ) -> bool:
+        summary = self._get_bgp_summary(local)
 
-    def get_interface_ip(self, device: Device, interface: str) -> list[str]:
-        """
-        Return all IP addresses (IPv4 + IPv6) for a specific interface.
-        If the interface does not exist or has no IPs, return [].
-        """
-        genie_dev = self.connect_device(device)
-        if not genie_dev:
-            return []
-
-        ips = set()
-
-        try:
-            ipv4_data = genie_dev.parse("show ip interface brief") or {}
-            iface_info = ipv4_data.get("interface", {}).get(interface, {})
-            ip_addr = iface_info.get("ip_address") or iface_info.get("ip")
-            if ip_addr and ip_addr.lower() != "unassigned":
-                ips.add(ip_addr)
-        except Exception:
-            pass
-
-        try:
-            ipv6_data = genie_dev.parse("show ipv6 interface brief") or {}
-            iface_info = ipv6_data.get("interface", {}).get(interface, {})
-            ipv6_list = iface_info.get("ipv6", [])
-            if isinstance(ipv6_list, str):
-                ipv6_list = [ipv6_list]
-            for ip in ipv6_list:
-                if ip.lower() != "unassigned":
-                    ips.add(ip.split("/")[0])
-        except Exception:
-            pass
-
-        return list(ips)
-
-    def check_bgp_state(self, local_device: Device, remote: Union[Device, str]) -> bool:
-        """
-        Check if a BGP session state matches expected_session_state.
-        Works for devices with multiple IPs, IPv4/IPv6, optional AS checks, and update-source.
-        """
-        summary = self.get_bgp_summary(local_device)
-        expected_state = self.expected_session_state
-
-        # Determine list of IPs to check for the remote
-        if isinstance(remote, Device):
-            # Use all IPs if device provides get_all_ips(), else fallback to single ip_address
-            remote_ips = (
+        # Get all possible IPs for the remote device to match against neighbor list
+        remote_ips = (
+            [remote]
+            if isinstance(remote, str)
+            else (
                 remote.get_all_ips()
                 if hasattr(remote, "get_all_ips")
                 else [remote.ip_address]
             )
-        else:
-            remote_ips = [remote]  # IPv4/IPv6 string
-
-        # Access neighbor dictionary
-        peers = summary.get("vrf", {}).get("default", {}).get("neighbor", {})
-
-        # Find peer_info matching any remote IP
-        peer_info = None
-        for ip in remote_ips:
-            if ip in peers:
-                peer_info = peers[ip]
-                remote_ip = ip
-                break
-
-        if not peer_info:
-            raise ValueError(
-                f"BGP peer {remote_ips} not found on device {local_device.name}"
-            )
-
-        # Extract first address_family available
-        af_info = peer_info.get("address_family", {})
-        af_data = (
-            af_info.get("")
-            or af_info.get("ipv4 unicast")
-            or af_info.get("ipv6 unicast")
-            or list(af_info.values())[0]
         )
 
-        # Determine actual BGP state from up_down
-        up_down = af_data.get("up_down", "")
-        import re
+        peers = summary.get("vrf", {}).get("default", {}).get("neighbor", {})
+        peer_ip = next((ip for ip in remote_ips if ip in peers), None)
 
-        if up_down == "never":
-            actual_state = "Idle"
-        elif re.match(r"\d+:\d+:\d+", up_down):
-            actual_state = "Established"
-        else:
-            actual_state = "Unknown"
+        if not peer_ip:
+            raise ValueError(f"Neighbor {remote_ips} not found on {local.name}")
 
-        # Check AS numbers if provided
-        # Local AS
-        local_as_actual = af_data.get("local_as")
-        # Remote AS
-        remote_as_actual = af_data.get("as")
+        # Access first available address family
+        af_data = next(iter(peers[peer_ip].get("address_family", {}).values()), {})
 
-        if (
-            isinstance(local_device, Device)
-            and hasattr(self, "peer_one_as")
-            and self.peer_one_as
-        ):
-            if str(local_as_actual) != str(self.peer_one_as):
-                raise ValueError(
-                    f"Local AS mismatch on {local_device.name}: expected {self.peer_one_as}, got {local_as_actual}"
-                )
+        # Normalize state: IOS returns uptime if established, otherwise state name
+        up_down = str(af_data.get("up_down", "")).lower()
+        actual = (
+            "Established"
+            if re.match(r"\d+:\d+:\d+", up_down)
+            else ("Idle" if up_down == "never" else up_down.capitalize())
+        )
 
-        if (
-            isinstance(remote, Device)
-            and hasattr(self, "peer_two_as")
-            and self.peer_two_as
-        ):
-            if str(remote_as_actual) != str(self.peer_two_as):
-                raise ValueError(
-                    f"Remote AS mismatch on {local_device.name} for peer {remote_ip}: expected {self.peer_two_as}, got {remote_as_actual}"
-                )
+        # Validate AS numbers
+        if l_as and str(af_data.get("local_as")) != str(l_as):
+            raise ValueError(f"Local AS mismatch on {local.name}")
+        if r_as and str(af_data.get("as")) != str(r_as):
+            raise ValueError(f"Remote AS mismatch on {local.name}")
 
-        # Optional: check update-source interface if provided
+        return actual == self.expected_session_state
 
-        if (
-            hasattr(self, "peer_one_update_source_interface")
-            and self.peer_one_update_source_interface
-        ):
-            # TODO
-            pass  # Placeholder for optional interface check
+    def test_device_connection(self) -> bool:
+        can_connect_to_device_one = self.bgp_peer_one.can_connect()
+        can_connect_to_device_two = self.bgp_peer_two.can_connect()
+        if not can_connect_to_device_one:
+            raise ValueError(f"Could not connect to Device {self.bgp_peer_one.name}")
 
-        return actual_state == expected_state
+        if self.two_way_check == "Two-Way-Check" and not can_connect_to_device_two:
+            raise ValueError(f"Could not connect to Device {self.bgp_peer_two.name}")
 
-    def test_run(self) -> bool:
-        """
-        Run the BGP session test.
-        Handles One-Way and Two-Way checks, AS validation, and multiple IPs per device.
-        """
-        # Get the peer devices or IPs
-        peer1 = self.get_peer_one_device()
-        peer2 = self.get_peer_two_device()
+        return True
 
-        # One-Way Check: only verify Peer 1 sees Peer 2
+    @depends_on("test_device_connection")
+    def test_bgp_peering(self) -> bool:
+        res1 = self._validate(
+            self.bgp_peer_one,
+            self.bgp_peer_two,
+            getattr(self, "peer_one_as", None),
+            getattr(self, "peer_two_as", None),
+        )
+
         if self.two_way_check == "One-Way-Check":
-            try:
-                result = self.check_bgp_state(peer1, peer2)
-                return result
-            except Exception as e:
-                raise RuntimeError(f"One-Way BGP check failed: {e}")
+            return res1
 
-        # Two-Way Check: verify both peers
-        elif self.two_way_check == "Two-Way-Check":
-            if not isinstance(peer2, Device):
-                raise ValueError("Two-Way-Check requires BGP Peer 2 to be a Device")
+        if not isinstance(self.bgp_peer_two, Device):
+            raise ValueError("Two-Way-Check requires Peer 2 to be a Device object")
 
-            try:
-                result1 = self.check_bgp_state(peer1, peer2)
-            except Exception as e:
-                raise RuntimeError(f"Two-Way BGP check failed on {peer1.name}: {e}")
-
-            try:
-                result2 = self.check_bgp_state(peer2, peer1)
-            except Exception as e:
-                raise RuntimeError(f"Two-Way BGP check failed on {peer2.name}: {e}")
-
-            return result1 and result2
-
-        else:
-            raise ValueError(f"Invalid two_way_check value: {self.two_way_check}")
+        res2 = self._validate(
+            self.bgp_peer_two,
+            self.bgp_peer_one,
+            getattr(self, "peer_two_as", None),
+            getattr(self, "peer_one_as", None),
+        )
+        return res1 and res2
