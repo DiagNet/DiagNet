@@ -1,48 +1,77 @@
 /** Cisco Interface Datatype */
 class CiscoInterface extends Datatype {
-    /**
-     * Checks if the given value is a valid Cisco interface.
-     * Supports short and long names for common types (GigabitEthernet, FastEthernet, Serial, Loopback, etc.)
-     * @param {string} value The interface string to check
-     */
-    check(value) {
-        if (typeof value !== "string") return false;
+    constructor(conditions = undefined) {
+        super(conditions)
+        this._targets = {
+            "fastethernet": "FastEthernet",
+            "gigabitethernet": "GigabitEthernet",
+            "loopback": "Loopback",
+            "tunnel": "Tunnel",
+            "vlan": "Vlan",
+            "port-channel": "Port-Channel",
+            "serial": "Serial"
+        };
 
-        const val = value.toLowerCase().trim();
+        this._shortMap = {
+            "fa": "fastethernet",
+            "gig": "gigabitethernet",
+            "lo": "loopback",
+            "tu": "tunnel",
+            "vl": "vlan",
+            "po": "port-channel",
+            "se": "serial"
+        };
 
-        const interfaceRegex = /^(?:gi|gig|gigabitethernet|fa|fastethernet|se|serial|lo|loopback)\d+\/\d+(?:\/\d+)?$/;
-        return interfaceRegex.test(val);
+        this.pattern = /^([a-zA-Z\-]+)\s*(\d.*)$/;
     }
 
-    /**
-     * Returns a description of this datatype
-     */
+    _getMatches(prefixInput) {
+        const input = prefixInput.toLowerCase();
+        const matches = new Set();
+
+        for (const [key, formalName] of Object.entries(this._targets)) {
+            if (key.startsWith(input)) {
+                matches.add(formalName);
+            }
+        }
+
+        for (const [short, targetKey] of Object.entries(this._shortMap)) {
+            if (short.startsWith(input)) {
+                matches.add(this._targets[targetKey]);
+            }
+        }
+
+        return Array.from(matches);
+    }
+
+    canBeExpanded(interfaceStr) {
+        if (!interfaceStr) return false;
+        const match = interfaceStr.trim().match(this.pattern);
+        if (!match) return false;
+
+        return this._getMatches(match[1]).length === 1;
+    }
+
+    canonicalize(interfaceStr) {
+        if (!interfaceStr) return "";
+        const trimmed = interfaceStr.trim();
+        const match = trimmed.match(this.pattern);
+
+        if (!match) return trimmed;
+
+        const prefix = match[1];
+        const identifier = match[2];
+        const matches = this._getMatches(prefix);
+
+        return matches.length === 1 ? `${matches[0]}${identifier}` : trimmed;
+    }
+
+    check(value) {
+        return this.canBeExpanded(value)
+    }
+
     getDescription() {
         return "A Cisco interface identifier";
-    }
-
-    /**
-     * Normalizes interface to long form
-     * e.g., gi0/0 -> GigabitEthernet0/0
-     * fa0/1 -> FastEthernet0/1
-     */
-    normalize(value) {
-        if (!this.check(value)) {
-            throw new Error(`Invalid Cisco interface: ${value}`);
-        }
-
-        const val = value.toLowerCase();
-        if (val.startsWith("gi") || val.startsWith("gig")) {
-            return val.replace(/^gi(g)?/, "GigabitEthernet");
-        } else if (val.startsWith("fa")) {
-            return val.replace(/^fa/, "FastEthernet");
-        } else if (val.startsWith("se")) {
-            return val.replace(/^se/, "Serial");
-        } else if (val.startsWith("lo")) {
-            return val.replace(/^lo/, "Loopback");
-        } else {
-            return value; // already long form
-        }
     }
 
     toString() {
@@ -51,5 +80,12 @@ class CiscoInterface extends Datatype {
 
     displayName() {
         return "Cisco Interface";
+    }
+
+    before_submit(value) {
+        if (this.canBeExpanded(value)) {
+            return this.canonicalize(value)
+        }
+        return value
     }
 }

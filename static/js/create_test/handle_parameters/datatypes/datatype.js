@@ -121,4 +121,8 @@ class Datatype {
     displayName() {
         throw new Error("displayName() must be implemented in subclass");
     }
+
+    before_submit(value) {
+        return value
+    }
 }

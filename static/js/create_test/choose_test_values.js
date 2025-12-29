@@ -96,6 +96,10 @@ function readInputs(parameters) {
             let name = params['name'];
             let value = field.getValue();
 
+            params['type'].forEach(item => {
+                value = item.before_submit(value);
+            });
+
             if (field instanceof ListField) {
                 values[name] = value;
             } else {
