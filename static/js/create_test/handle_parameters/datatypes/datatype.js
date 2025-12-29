@@ -69,6 +69,9 @@ class Datatype {
             case "text":
                 return new Text(conditions);
 
+            case "cisco-community":
+                return new CiscoCommunity(conditions);
+
             case "list":
             case "choice":
                 // do nothing
