@@ -273,16 +273,20 @@ class ListField extends ParameterField {
             const field = value['parameter_info'];
             const fieldValue = field.getValue();
             const isDevice = field instanceof SingleLineDeviceField && allDevices.includes(fieldValue)
-            if (isDevice) {
-                 output[value['name']] = {
-                    "value": deviceIdAndName[fieldValue],
-                    "isDevice": true
-                };
+            if (field instanceof ListField) {
+                output[value['name']] = fieldValue
             } else {
-                output[value['name']] = {
-                    "value": fieldValue,
-                    "isDevice": false
-                };
+                if (isDevice) {
+                     output[value['name']] = {
+                        "value": deviceIdAndName[fieldValue],
+                        "isDevice": true
+                    };
+                } else {
+                    output[value['name']] = {
+                        "value": fieldValue,
+                        "isDevice": false
+                    };
+                }
             }
         }
         return output;
