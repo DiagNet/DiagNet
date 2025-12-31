@@ -3,16 +3,19 @@ class CiscoCommunity extends Datatype {
         if (typeof value !== 'string') return false;
 
         const aannRegex = /^([0-9]{1,5}):([0-9]{1,5})$/;
+        const extendedRegex = /^(rt|soo):.+:.+$/i;
+        const largeRegex = /^([0-9]+):([0-9]+):([0-9]+)$/;
+
         if (aannRegex.test(value)) {
             const [aa, nn] = value.split(':').map(Number);
             return aa <= 65535 && nn <= 65535;
         }
 
-        return false;
+        return extendedRegex.test(value) || largeRegex.test(value);
     }
 
     getDescription() {
-        return "A BGP Community (AA:NN, decimal, or well-known alias)";
+        return "BGP Community (Standard AA:NN, Extended, Large)";
     }
 
     toString() {

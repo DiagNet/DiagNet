@@ -72,6 +72,9 @@ class Datatype {
             case "cisco-community":
                 return new CiscoCommunity(conditions);
 
+            case "cisco-as-path":
+                return new CiscoASPath(conditions);
+
             case "list":
             case "choice":
                 // do nothing
