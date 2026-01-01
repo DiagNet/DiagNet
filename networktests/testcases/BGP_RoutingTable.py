@@ -6,79 +6,56 @@ __author__ = "Luka Pacar"
 
 class BGP_RoutingTable(DiagNetTest):
     """
-    <div class="p-4 bg-white rounded shadow-sm" style="font-family:Arial,sans-serif; line-height:1.5; max-width:800px;">
-        <h2 class="mb-3">BGP_RoutingTable Test Class</h2>
-        <p>
-            The <strong>BGP_RoutingTable</strong> test class inspects the BGP Loc-RIB (BGP Table) of a network device.
-            It validates the presence, attributes, and selection status of specific network prefixes.
+    <div class="p-4 bg-white rounded shadow-sm" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; border: 1px solid #e2e8f0; color: #1e293b;">
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 25px -25px; border-bottom: 4px solid #3b82f6;">
+            <h2 style="color: #ffffff; margin: 0; font-weight: 700; letter-spacing: -0.025em;">BGP Routing Table</h2>
+            <p style="color: #94a3b8; margin: 8px 0 0 0; font-size: 1rem; font-weight: 500;">Loc-RIB Integrity & Policy Compliance</p>
+        </div>
+
+        <section style="margin-top: 10px;">
+            <p style="font-size: 1.05rem; color: #475569;">
+                The <strong>BGP_RoutingTable</strong> test class performs a deep-dive inspection of the BGP Local RIB.
+                It validates that specific prefixes are not only present but are optimally selected and originated from the correct Autonomous Systems.
+            </p>
+        </section>
+
+        <h4 style="color: #0f172a; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
+            <span style="background: #3b82f6; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
+            Core Match Strategies
+        </h4>
+        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+            <div style="flex: 1; background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #cbd5e1;">
+                <strong style="color: #334155;">Exact Match</strong><br>
+                <span style="font-size: 0.85rem; color: #64748b;">The prefix must match the specific entry in the BGP table exactly, including the mask length.</span>
+            </div>
+            <div style="flex: 1; background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <strong style="color: #334155;">Included Match</strong><br>
+                <span style="font-size: 0.85rem; color: #64748b;">Validates if the target subnet is a subset covered by a larger aggregate or summary route.</span>
+            </div>
+        </div>
+
+        <h4 style="color: #0f172a; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
+            <span style="background: #3b82f6; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
+            Verification Pillars
+        </h4>
+        <ul style="list-style: none; padding-left: 0;">
+            <li style="margin-bottom: 12px; display: flex; align-items: start;">
+                <span style="color: #3b82f6; margin-right: 10px;">✔</span>
+                <span><strong>Best Path Status:</strong> Verifies if the route is selected (<code>></code>) or held as a Backup path.</span>
+            </li>
+            <li style="margin-bottom: 12px; display: flex; align-items: start;">
+                <span style="color: #3b82f6; margin-right: 10px;">✔</span>
+                <span><strong>Origin AS:</strong> Traces the AS-Path to confirm the route originated from the expected ASN.</span>
+            </li>
+            <li style="margin-bottom: 12px; display: flex; align-items: start;">
+                <span style="color: #3b82f6; margin-right: 10px;">✔</span>
+                <span><strong>Strict Enforcement:</strong> Optionally fails if any undefined routes are found, preventing unauthorized route leaks.</span>
+            </li>
+        </ul>
+
+        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 25px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 15px;">
+            Authored by: Luka Pacar
         </p>
-
-        <h4 class="mt-4 mb-2">Purpose</h4>
-        <p>
-            This test ensures that a device is receiving or originating the correct BGP routes. It goes beyond simple reachability
-            by verifying protocol-specific details like Next-Hop, Origin AS, and Best-Path selection, making it essential for
-            validating routing policy and redundancy.
-        </p>
-
-        <h4 class="mt-4 mb-2">Parameters</h4>
-
-        <h5 class="mt-3">Global Parameters</h5>
-        <ul class="list-group mb-3">
-            <li class="list-group-item">
-                <strong>BGP Device</strong> (<em>Device</em>)<br>
-                The network device whose BGP table will be inspected.
-            </li>
-            <li class="list-group-item">
-                <strong>Address Family</strong> (<em>choice</em>)<br>
-                The protocol version to check. Choices: IPv4, IPv6.
-            </li>
-            <li class="list-group-item">
-                <strong>VRF</strong> (<em>string</em>)<br>
-                Optional. Specify the Virtual Routing and Forwarding instance. Default is the global routing table.
-            </li>
-            <li class="list-group-item">
-                <strong>Allow Other Routes</strong> (<em>choice</em>)<br>
-                If set to "False", the test will fail if any routes exist in the BGP table that are not defined in the Entries list.
-            </li>
-        </ul>
-
-        <h5 class="mt-3">Entry-Specific Parameters</h5>
-        <p>Multiple entries can be checked in a single test run. Each entry includes:</p>
-        <ul class="list-group mb-3">
-            <li class="list-group-item">
-                <strong>Network</strong> (<em>CIDR</em>)<br>
-                The prefix to search for (e.g., 10.0.0.0/24 or 2001:db8::/32).
-            </li>
-            <li class="list-group-item">
-                <strong>Match Strategy</strong> (<em>choice</em>)<br>
-                <strong>Exact:</strong> The prefix must match the table entry exactly.<br>
-                <strong>Included:</strong> The prefix is valid if it is a subset of a larger aggregate in the table.
-            </li>
-            <li class="list-group-item">
-                <strong>Best Path Option</strong> (<em>choice</em>)<br>
-                Verifies if the route is the "Best" path (marked with &gt;), a "Back-Up" path, or if selection status should be ignored.
-            </li>
-            <li class="list-group-item">
-                <strong>Next-Hop / Local Origin</strong><br>
-                Validates if the route is locally originated (0.0.0.0) or learned via a specific neighbor IP.
-            </li>
-        </ul>
-
-        <h4 class="mt-4 mb-2">How it Works</h4>
-        <ol>
-            <li>The test connects to the specified <strong>BGP Device</strong>.</li>
-            <li>It retrieves the BGP table filtered by the chosen <strong>Address Family</strong> and <strong>VRF</strong>.</li>
-            <li>For each network in the <strong>Entries</strong> list, it performs a lookup based on the <strong>Match Strategy</strong>.</li>
-            <li>It compares the actual BGP attributes (Next-Hop, Best-Path flag, Origin AS) against the expected parameters.</li>
-        </ol>
-
-        <h4 class="mt-4 mb-2">Why Use This Test</h4>
-        <ul>
-            <li>Confirm that the device is learning prefixes from the correct upstream neighbors.</li>
-            <li>Verify that local network advertisements are active in the BGP process.</li>
-            <li>Validate path redundancy by ensuring back-up routes are present but not selected as best.</li>
-            <li>Enforce "Strict Table" policies by alerting on unexpected external route leaks.</li>
-        </ul>
     </div>
     """
 
