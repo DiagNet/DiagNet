@@ -89,7 +89,7 @@ class OSPF_Adjacency(DiagNetTest):
             "type": "choice",
             "choices": ["Yes", "No"],
             "default_choice": "Yes",
-            "description": "Cross-references MTU, Hello/Dead Timers, and Network Types between peers.",
+            "description": "Hello/Dead Timers, and Network Types between peers.",
         },
         {
             "name": "area_id",
@@ -100,10 +100,10 @@ class OSPF_Adjacency(DiagNetTest):
         },
     ]
 
-    def _get_clean_state(self, raw_state):
+    def _to_clean_state(self, raw_state):
         return str(raw_state).split("/")[0].strip().upper() if raw_state else "DOWN"
 
-    def _extract_ospf_instance_data(self, raw_data):
+    def _get_vrf_instance(self, raw_data):
         target_vrf = getattr(self, "vrf", "default") or "default"
         return (
             raw_data.get("vrf", {})
@@ -113,93 +113,146 @@ class OSPF_Adjacency(DiagNetTest):
             .get("instance", {})
         )
 
-    def _extract_all_neighbors(self, raw_data):
+    def _extract_neighbor_map(self, raw_data):
+        if not raw_data:
+            return {}
         neighbor_map = {}
-        for instance in self._extract_ospf_instance_data(raw_data).values():
+        for instance in self._get_vrf_instance(raw_data).values():
             for area in instance.get("areas", {}).values():
                 for interface in area.get("interfaces", {}).values():
                     for rid, nbr in interface.get("neighbors", {}).items():
-                        if "state" in nbr:
-                            neighbor_map[rid] = self._get_clean_state(nbr["state"])
+                        state = nbr.get("state")
+                        if state:
+                            neighbor_map[rid] = self._to_clean_state(state)
         return neighbor_map
 
-    def _extract_local_router_id(self, raw_data):
-        for instance in self._extract_ospf_instance_data(raw_data).values():
-            for area in instance.get("areas", {}).values():
-                for interface in area.get("interfaces", {}).values():
-                    rid = interface.get("router_id")
-                    if rid:
-                        return rid
-        return None
+    def _get_router_id_and_interfaces(self, raw_data):
+        router_id = None
+        interfaces = {}
+        for instance in self._get_vrf_instance(raw_data).values():
+            for area_id, area_data in instance.get("areas", {}).items():
+                area_ints = area_data.get("interfaces", {})
+                for name, details in area_ints.items():
+                    details["area_id_found"] = area_id
+                    interfaces[name] = details
+                    if not router_id:
+                        router_id = details.get("router_id")
+        return router_id, interfaces
 
-    def _get_ospf_interfaces(self, raw_data):
-        for instance in self._extract_ospf_instance_data(raw_data).values():
-            for area in instance.get("areas", {}).values():
-                return area.get("interfaces", {})
-        return {}
-
-    def test_device_reachability(self) -> bool:
-        """Verifies that both devices are reachable via the diagnostic framework."""
-        for peer in [self.device_a, self.device_b]:
-            if not peer.can_connect():
-                raise ValueError(f"Connectivity failed for {peer.name}")
+    def test_connectivity(self) -> bool:
+        for device in [self.device_a, self.device_b]:
+            if not device.can_connect():
+                raise ValueError(f"Target {device.name} is unreachable.")
         return True
 
-    @depends_on("test_device_reachability")
-    def test_fetch_and_discover_link(self) -> bool:
-        vrf_context = getattr(self, "vrf", "default") or "default"
+    @depends_on("test_connectivity")
+    def test_discover_shared_link(self) -> bool:
+        vrf = getattr(self, "vrf", "default") or "default"
         cmd = (
             "show ip ospf interface"
-            if vrf_context == "default"
-            else f"show ip ospf vrf {vrf_context} interface"
+            if vrf == "default"
+            else f"show ip ospf vrf {vrf} interface"
         )
 
         raw_a = self.device_a.get_genie_device_object().parse(cmd)
         raw_b = self.device_b.get_genie_device_object().parse(cmd)
 
-        self.rid_a = self._extract_local_router_id(raw_a)
-        self.rid_b = self._extract_local_router_id(raw_b)
+        self.rid_a, ints_a = self._get_router_id_and_interfaces(raw_a)
+        self.rid_b, ints_b = self._get_router_id_and_interfaces(raw_b)
 
         if not self.rid_a or not self.rid_b:
             raise ValueError(
-                f"Router-ID discovery failed. RID_A: {self.rid_a}, RID_B: {self.rid_b}"
+                f"Could not resolve Router-IDs (A: {self.rid_a}, B: {self.rid_b})"
             )
 
-        ints_a = self._get_ospf_interfaces(raw_a)
-        ints_b = self._get_ospf_interfaces(raw_b)
-
-        self.shared_link_params = {}
-        for name_a, data_a in ints_a.items():
-            if not data_a.get("ip_address"):
+        found_overlap = False
+        for name_a, details_a in ints_a.items():
+            if not details_a.get("ip_address"):
                 continue
-            net_a = ipaddress.ip_interface(data_a["ip_address"]).network
+            net_a = ipaddress.ip_interface(details_a["ip_address"]).network
 
-            for name_b, data_b in ints_b.items():
-                if not data_b.get("ip_address"):
+            for name_b, details_b in ints_b.items():
+                if not details_b.get("ip_address"):
                     continue
-                if net_a == ipaddress.ip_interface(data_b["ip_address"]).network:
-                    self.shared_link_params = {"a": data_a, "b": data_b}
-                    return True
+                if net_a == ipaddress.ip_interface(details_b["ip_address"]).network:
+                    self.local_int_name_a, self.local_int_name_b = name_a, name_b
+                    self.link_data_a, self.link_data_b = details_a, details_b
+                    found_overlap = True
+                    break
+            if found_overlap:
+                break
 
-        raise ValueError(
-            "Topology Mismatch: No shared OSPF subnet found between peers."
-        )
+        if not found_overlap:
+            raise ValueError(
+                "Topology Mismatch: No shared OSPF subnet found between peers."
+            )
+        return True
 
-    @depends_on("test_fetch_and_discover_link")
-    def test_validate_dual_neighbor_state(self) -> bool:
-        vrf_context = getattr(self, "vrf", "default") or "default"
-        cmd = (
-            "show ip ospf neighbor detail"
-            if vrf_context == "default"
-            else f"show ip ospf vrf {vrf_context} neighbor detail"
-        )
+    @depends_on("test_discover_shared_link")
+    def test_config_audit(self) -> bool:
+        if self.audit_config_consistency == "No":
+            return True
 
-        view_a = self._extract_all_neighbors(
-            self.device_a.get_genie_device_object().parse(cmd)
+        errors = []
+
+        # Timers
+        h_a, d_a = (
+            self.link_data_a.get("hello_interval"),
+            self.link_data_a.get("dead_interval"),
         )
-        view_b = self._extract_all_neighbors(
-            self.device_b.get_genie_device_object().parse(cmd)
+        h_b, d_b = (
+            self.link_data_b.get("hello_interval"),
+            self.link_data_b.get("dead_interval"),
         )
+        if h_a != h_b or d_a != d_b:
+            errors.append(
+                f"Timer Mismatch! {self.device_a.name}: {h_a}/{d_a}, {self.device_b.name}: {h_b}/{d_b}"
+            )
+
+        # Area ID
+        ar_a, ar_b = (
+            self.link_data_a.get("area_id_found"),
+            self.link_data_b.get("area_id_found"),
+        )
+        if ar_a != ar_b:
+            errors.append(f"Area Mismatch! Peer A: {ar_a}, Peer B: {ar_b}")
+        if getattr(self, "area_id", None) and str(ar_a) != str(self.area_id):
+            errors.append(
+                f"Area ID Override Failure! Found {ar_a}, Expected {self.area_id}"
+            )
+
+        # Network Type
+        nt_a, nt_b = (
+            self.link_data_a.get("interface_type"),
+            self.link_data_b.get("interface_type"),
+        )
+        if nt_a != nt_b:
+            errors.append(f"Network Type Mismatch! Peer A: {nt_a}, Peer B: {nt_b}")
+
+        if errors:
+            raise ValueError(" | ".join(errors))
+
+        return True
+
+    @depends_on("test_config_audit")
+    def test_validate_state_targeted(self) -> bool:
+        """Step 4: Operational State Validation via Targeted Neighbor Detail."""
+        vrf = getattr(self, "vrf", "default") or "default"
+
+        cmd_a = f"show ip ospf neighbor {self.local_int_name_a} detail"
+        cmd_b = f"show ip ospf neighbor {self.local_int_name_b} detail"
+        if vrf != "default":
+            cmd_a = f"show ip ospf vrf {vrf} neighbor {self.local_int_name_a} detail"
+            cmd_b = f"show ip ospf vrf {vrf} neighbor {self.local_int_name_b} detail"
+
+        def safe_parse(device, command):
+            try:
+                return device.get_genie_device_object().parse(command)
+            except Exception:
+                return {}
+
+        view_a = self._extract_neighbor_map(safe_parse(self.device_a, cmd_a))
+        view_b = self._extract_neighbor_map(safe_parse(self.device_b, cmd_b))
 
         state_a_sees_b = view_a.get(self.rid_b, "DOWN")
         state_b_sees_a = view_b.get(self.rid_a, "DOWN")
@@ -209,23 +262,8 @@ class OSPF_Adjacency(DiagNetTest):
             or state_b_sees_a != self.expected_state
         ):
             raise ValueError(
-                f"Adjacency Mismatch! Expected: {self.expected_state} | "
+                f"Adjacency Failure! Target: {self.expected_state} | "
                 f"{self.device_a.name} reports {state_a_sees_b}, "
                 f"{self.device_b.name} reports {state_b_sees_a}"
             )
-        return True
-
-    @depends_on("test_validate_dual_neighbor_state")
-    def test_config_consistency_audit(self) -> bool:
-        if self.audit_config_consistency == "No":
-            return True
-
-        hello_a = self.shared_link_params["a"].get("hello_interval")
-        hello_b = self.shared_link_params["b"].get("hello_interval")
-
-        if hello_a != hello_b:
-            raise ValueError(
-                f"Timer Mismatch! {self.device_a.name}: {hello_a}s, {self.device_b.name}: {hello_b}s"
-            )
-
         return True
