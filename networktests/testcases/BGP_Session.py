@@ -7,80 +7,58 @@ __author__ = "Luka Pacar"
 
 class BGP_Session(DiagNetTest):
     """
-    <div class="p-4 bg-white rounded shadow-sm" style="font-family:Arial,sans-serif; line-height:1.5; max-width:800px;">
-        <h2 class="mb-3">BGP_Session Test Class</h2>
-        <p>
-            The <strong>BGP_Session</strong> test class validates that a BGP session exists between two network devices.
-            It can perform a one-way or two-way check depending on the test configuration and ensures that the session reaches the expected state.
-        </p>
+    <div class="p-4 bg-white rounded shadow-sm"
+         style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; border: 1px solid #e0e6ed; color: #334155;">
 
-        <h4 class="mt-4 mb-2">Purpose</h4>
-        <p>
-            This test verifies that BGP peers are able to establish a session and maintain the expected state.
-            It is useful for network diagnostics, automation, and proactive validation of BGP configurations.
-        </p>
+        <div style="background: linear-gradient(90deg, #1e293b 0%, #334155 100%); padding: 20px; border-radius: 8px 8px 0 0; margin: -25px -25px 20px -25px;">
+            <h2 style="color: #f8fafc; margin: 0; font-weight: 600; letter-spacing: 0.5px;">BGP Session Validation</h2>
+            <p style="color: #cbd5e1; margin: 5px 0 0 0; font-size: 0.95rem;">Peer-to-Peer Connectivity & State Verification</p>
+        </div>
 
-        <h4 class="mt-4 mb-2">Parameters</h4>
+        <section style="margin-top: 10px;">
+            <p>
+                The <strong>BGP_Session</strong> test ensures reliable peering between network nodes. It verifies the
+                BGP Finite State Machine (FSM) and ensures consistency across Autonomous Systems (AS).
+            </p>
+        </section>
 
-        <h5 class="mt-3">Required Parameters</h5>
-        <ul class="list-group mb-3">
-            <li class="list-group-item">
-                <strong>Type of Test</strong> (<em>choice</em>)<br>
-                Marks if the session is supposed to be checked on both devices or only one.<br>
-                Choices: One-Way-Check, Two-Way-Check. Default: One-Way-Check.
+        <h4 style="color: #0f172a; border-left: 4px solid #3b82f6; padding-left: 10px; margin-top: 25px;">Validation Modes</h4>
+        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+            <div style="flex: 1; background: #f1f5f9; padding: 15px; border-radius: 6px; border-top: 3px solid #64748b;">
+                <strong style="display: block; margin-bottom: 5px; color: #475569;">One-Way Check</strong>
+                <span style="font-size: 0.85rem;">Validates that the primary device sees the neighbor in the target state.</span>
+            </div>
+            <div style="flex: 1; background: #eff6ff; padding: 15px; border-radius: 6px; border-top: 3px solid #3b82f6;">
+                <strong style="display: block; margin-bottom: 5px; color: #1d4ed8;">Two-Way Check</strong>
+                <span style="font-size: 0.85rem;">Ensures bidirectional establishment by verifying the state from both peers.</span>
+            </div>
+        </div>
+
+        <h4 style="color: #0f172a; border-left: 4px solid #3b82f6; padding-left: 10px;">Verification Pillars</h4>
+        <ul style="list-style: none; padding-left: 0;">
+            <li style="margin-bottom: 12px; display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 10px;">✔</span>
+                <span><strong>FSM State Accuracy:</strong> Confirms the session has reached <code>Established</code>.</span>
             </li>
-            <li class="list-group-item">
-                <strong>BGP Peer 1</strong> (<em>Device</em>)<br>
-                The device from which to test the BGP session.
+            <li style="margin-bottom: 12px; display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 10px;">✔</span>
+                <span><strong>AS Integrity:</strong> Matches Local and Remote AS numbers to prevent configuration errors.</span>
             </li>
-            <li class="list-group-item">
-                <strong>BGP Peer 2</strong> (<em>Device, IPv4, or IPv6</em>)<br>
-                The second device or peer to check the BGP session. If <em>Type of Test</em> is One-Way-Check, IPv4 or IPv6 may also be used.
-            </li>
-            <li class="list-group-item">
-                <strong>Expected Session State</strong> (<em>choice</em>)<br>
-                The expected BGP session state between the peers. Choices: Idle, Connect, Active, OpenSent, OpenConfirm, Established.
+            <li style="margin-bottom: 12px; display: flex; align-items: start;">
+                <span style="color: #10b981; margin-right: 10px;">✔</span>
+                <span><strong>Multi-Context Awareness:</strong> Full support for <strong>VRF Overrides</strong>.</span>
             </li>
         </ul>
 
-        <h5 class="mt-3">Optional Parameters</h5>
-        <ul class="list-group mb-3">
-            <li class="list-group-item">
-                <strong>BGP Peer 1 - AS</strong> (<em>number</em>)<br>
-                Autonomous System number for Peer 1.
-            </li>
-            <li class="list-group-item">
-                <strong>BGP Peer 1 - Source Interface</strong> (<em>cisco-interface</em>)<br>
-                Interface used for the BGP session from Peer 1.
-            </li>
-            <li class="list-group-item">
-                <strong>BGP Peer 2 - AS</strong> (<em>number</em>)<br>
-                Autonomous System number for Peer 2.
-            </li>
-            <li class="list-group-item">
-                <strong>BGP Peer 2 - Source Interface</strong> (<em>cisco-interface</em>)<br>
-                Interface used for the BGP session from Peer 2.
-            </li>
-        </ul>
-
-        <h4 class="mt-4 mb-2">How it Works</h4>
-        <p>
-            The test checks if a BGP session is established between the specified peers. Based on the <em>Type of Test</em> parameter:
-        </p>
-        <ol>
-            <li>One-Way Check: Verifies that Peer 1 sees Peer 2 as established.</li>
-            <li>Two-Way Check: Verifies that both peers have an established session with each other.</li>
-        </ol>
-        <p>
-            The test will fail if the BGP session does not reach the expected state or is not configured correctly.
+        <h4 style="color: #0f172a; border-left: 4px solid #3b82f6; padding-left: 10px; margin-top: 25px;">Why It Matters</h4>
+        <p style="background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 6px; font-size: 0.9rem; color: #92400e;">
+            <strong>Crucial for Redundancy:</strong> This test identifies "half-open" sessions that look "Up" on one side but
+            stuck in "Connect" on the other, preventing silent traffic blackholes.
         </p>
 
-        <h4 class="mt-4 mb-2">Why Use This Test</h4>
-        <ul>
-            <li>Automatically verify BGP session establishment between devices.</li>
-            <li>Detect misconfigurations or missing BGP connections before impacting network routing.</li>
-            <li>Ensure compliance with network BGP policies.</li>
-        </ul>
+        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 20px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+            Authored by: Luka Pacar
+        </p>
     </div>
     """
 
