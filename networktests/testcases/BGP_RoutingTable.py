@@ -1,4 +1,6 @@
 import ipaddress
+import re
+
 from networktests.testcases.base import DiagNetTest, depends_on
 
 __author__ = "Luka Pacar"
@@ -154,9 +156,6 @@ class BGP_RoutingTable(DiagNetTest):
         },
     ]
 
-    def _get_parsed_data(self, command: str):
-        return self.bgp_device.get_genie_device_object().parse(command)
-
     def _search_recursive(self, data: dict, target_key: str):
         if target_key in data:
             return data[target_key]
@@ -166,123 +165,140 @@ class BGP_RoutingTable(DiagNetTest):
                 return found
         return {}
 
+    def _to_int_str(self, val):
+        try:
+            return str(int(str(val).strip())) if val is not None else None
+        except (ValueError, TypeError):
+            return None
+
     def test_device_connection(self) -> bool:
         if not self.bgp_device.can_connect():
             raise ValueError(f"Connection failed: {self.bgp_device.name}")
         return True
 
     @depends_on("test_device_connection")
-    def test_bgp_table(self) -> bool:
+    def test_fetch_bgp_data(self) -> bool:
         family = self.address_family.lower()
         vrf_name = getattr(self, "vrf", "default") or "default"
-        context = f"{family} unicast" + (
-            f" vrf {vrf_name}" if vrf_name != "default" else ""
-        )
+        context = f"{family} unicast"
+        if vrf_name != "default":
+            context = f"{context} vrf {vrf_name}"
 
-        table_output = self._get_parsed_data(f"show bgp {context}")
-        prefixes_in_table = self._search_recursive(
-            table_output, "prefixes"
-        ) or self._search_recursive(table_output, "prefix")
+        genie_dev = self.bgp_device.get_genie_device_object()
 
-        summary_output = self._get_parsed_data(f"show bgp {context} summary")
-        device_local_as = str(self._search_recursive(summary_output, "local_as") or "")
+        # Cache
+        self.raw_table = genie_dev.parse(f"show bgp {context}")
+        self.raw_summary = genie_dev.parse(f"show bgp {context} summary")
 
-        if not prefixes_in_table:
+        self.table_prefixes = self._search_recursive(
+            self.raw_table, "prefixes"
+        ) or self._search_recursive(self.raw_table, "prefix")
+
+        if not self.table_prefixes:
             raise ValueError(
                 f"BGP Table is empty for {context} on {self.bgp_device.name}"
             )
 
-        validated_prefixes = []
+        return True
+
+    @depends_on("test_fetch_bgp_data")
+    def test_validate_prefixes(self) -> bool:
+        local_as = self._to_int_str(
+            self._search_recursive(self.raw_summary, "local_as")
+        )
+        self.validated_keys = []
 
         for entry in self.entries:
             target_net = entry["network"]
             strategy = entry["match-strategy"]
+            target_obj = ipaddress.ip_network(target_net)
 
-            # Find matching prefix string in table
-            matched_prefix_key = next(
-                (
-                    p
-                    for p in prefixes_in_table
-                    if (
-                        target_net == p
-                        if strategy == "Exact"
-                        else ipaddress.ip_network(target_net).subnet_of(
-                            ipaddress.ip_network(p if "/" in p else f"{p}/32")
-                        )
+            # Finding a match based on strategy
+            matched_key = None
+            for p_str in self.table_prefixes:
+                if strategy == "Exact":
+                    if p_str == target_net:
+                        matched_key = p_str
+                        break
+                else:
+                    p_obj = ipaddress.ip_network(
+                        p_str if "/" in p_str else f"{p_str}/32"
                     )
-                ),
-                None,
-            )
+                    if target_obj.subnet_of(p_obj):
+                        matched_key = p_str
+                        break
 
-            if not matched_prefix_key:
+            if not matched_key:
                 raise ValueError(
                     f"Prefix {target_net} ({strategy}) not found in Loc-RIB."
                 )
 
-            rejection_reasons = []
+            # Path verification
+            path_errors = []
             has_valid_path = False
+            indices = self.table_prefixes[matched_key].get("index", {}).items()
 
-            for path_index, attributes in (
-                prefixes_in_table[matched_prefix_key].get("index", {}).items()
-            ):
-                path_errors = []
+            for idx, attr in indices:
+                current_errors = []
 
-                # Best Path Validation
-                is_actually_best = any(
+                # Best Path
+                is_best = any(
                     [
-                        attributes.get("bestpath"),
-                        attributes.get("best"),
-                        ">" in str(attributes.get("status_codes", "")),
+                        attr.get("bestpath"),
+                        attr.get("best"),
+                        ">" in str(attr.get("status_codes", "")),
                     ]
                 )
-                if entry["best_option"] == "Best-Option" and not is_actually_best:
-                    path_errors.append("not best-path")
-                if entry["best_option"] == "Back-Up-Path" and is_actually_best:
-                    path_errors.append("is best-path (expected backup)")
+                if entry["best_option"] == "Best-Option" and not is_best:
+                    current_errors.append("not best-path")
+                elif entry["best_option"] == "Back-Up-Path" and is_best:
+                    current_errors.append("is best-path (expected backup)")
 
-                # Next-Hop Validation
-                actual_nh = str(
-                    attributes.get("next_hop", attributes.get("gateway", ""))
-                ).strip()
+                # Next-Hop Check
+                actual_nh = str(attr.get("next_hop", attr.get("gateway", ""))).strip()
                 if entry["is_local_origin"] == "True":
                     if actual_nh not in ["0.0.0.0", "::", "self"]:
-                        path_errors.append(f"not local origin (NH: {actual_nh})")
-                elif entry.get("next_hop") and actual_nh != str(entry["next_hop"]):
-                    path_errors.append(
-                        f"NH mismatch: expected {entry['next_hop']}, got {actual_nh}"
-                    )
-
-                # AS Path Validation
-                if entry.get("expected_origin_as"):
-                    raw_as_path = str(
-                        attributes.get("route_info", attributes.get("as_path", ""))
-                    )
-                    as_numbers = [n for n in raw_as_path.split() if n.isdigit()]
-                    actual_origin_as = as_numbers[-1] if as_numbers else device_local_as
-
-                    if actual_origin_as != str(entry["expected_origin_as"]):
-                        path_errors.append(
-                            f"AS mismatch: expected {entry['expected_origin_as']}, got {actual_origin_as}"
+                        current_errors.append(f"not local origin (NH: {actual_nh})")
+                elif entry.get("next_hop"):
+                    if actual_nh != str(entry["next_hop"]):
+                        current_errors.append(
+                            f"NH mismatch: Exp {entry['next_hop']}, Got {actual_nh}"
                         )
 
-                if not path_errors:
+                # Origin AS Check
+                if entry.get("expected_origin_as"):
+                    raw_as_path = str(attr.get("route_info", attr.get("as_path", "")))
+                    as_list = re.findall(r"\d+", raw_as_path)
+                    actual_as = as_list[-1] if as_list else local_as
+                    if actual_as != self._to_int_str(entry["expected_origin_as"]):
+                        current_errors.append(
+                            f"AS mismatch: Exp {entry['expected_origin_as']}, Got {actual_as}"
+                        )
+
+                if not current_errors:
                     has_valid_path = True
-                    validated_prefixes.append(matched_prefix_key)
+                    self.validated_keys.append(matched_key)
                     break
-                rejection_reasons.append(
-                    f"Path #{path_index}: {', '.join(path_errors)}"
-                )
+                path_errors.append(f"Path #{idx}: {', '.join(current_errors)}")
 
             if not has_valid_path:
                 raise ValueError(
-                    f"Route {target_net} failed validation: {' | '.join(rejection_reasons)}"
+                    f"Route {target_net} failed: {' | '.join(path_errors)}"
                 )
 
-        if self.allow_other_routes == "False":
-            unexpected_routes = set(prefixes_in_table.keys()) - set(validated_prefixes)
-            if unexpected_routes:
-                raise ValueError(
-                    f"Strict Table Check Failed. Unexpected routes: {list(unexpected_routes)}"
-                )
+        return True
+
+    @depends_on("test_validate_prefixes")
+    def test_strict_table_enforcement(self) -> bool:
+        if str(self.allow_other_routes) == "True":
+            return True
+
+        all_table_keys = set(self.table_prefixes.keys())
+        unexpected = all_table_keys - set(self.validated_keys)
+
+        if unexpected:
+            raise ValueError(
+                f"Strict Check Failed. Unexpected routes: {sorted(list(unexpected))}"
+            )
 
         return True
