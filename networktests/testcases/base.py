@@ -372,7 +372,7 @@ class DiagNetTest:
 
             success_count = 0
             total_runs = amount_of_repeat
-            fail_message = None
+            message = None
 
             for i in range(amount_of_repeat):
                 if (
@@ -383,24 +383,28 @@ class DiagNetTest:
                 try:
                     result = method()
 
+                    duration = time.time() - start
+
                     # treat None as True (void methods count as a PASS)
                     if result is None:
                         result = True
+                    elif isinstance(result, str):
+                        message = result
+                        result = True
 
-                    duration = time.time() - start
                     if not isinstance(result, bool):
                         raise ValueError(
-                            f"Test method {test_name} must return a boolean or return None"
+                            f"Test method {test_name} must return a boolean, str or return None"
                         )
                     if result:
                         success = True
                     else:
                         success = False
-                        fail_message = f"Test {test_name} returned False"
+                        message = f"Test {test_name} returned False"
                 except Exception as e:
                     duration = time.time() - start
                     success = False
-                    fail_message = f"{e}"
+                    message = f"{e}"
 
                 total_duration += duration
 
@@ -428,18 +432,18 @@ class DiagNetTest:
 
             if passed:
                 status = "PASS"
-                msg = ""
+                msg = message
             else:
                 if amount_of_repeat > 1 and success_count > 0:
                     # Partial success on repeats -> REPETITION_FAIL
                     status = "FAIL"
                     msg = (
                         f"Repetition Fail: {success_count}/{total_runs} successful runs. "
-                        f"Last error: {fail_message}"
+                        f"Last error: {message}"
                     )
                 else:
                     status = "FAIL"
-                    msg = fail_message or ""
+                    msg = message or ""
 
             results[test_name] = {
                 "status": status,

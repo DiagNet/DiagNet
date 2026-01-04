@@ -97,6 +97,9 @@ function readInputs(parameters) {
             let value = field.getValue();
 
             params['type'].forEach(item => {
+                if (item === undefined) {
+                    return;
+                }
                 value = item.before_submit(value);
             });
 
