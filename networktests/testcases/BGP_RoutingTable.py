@@ -270,7 +270,12 @@ class BGP_RoutingTable(DiagNetTest):
                     raw_as_path = str(attr.get("route_info", attr.get("as_path", "")))
                     as_list = re.findall(r"\d+", raw_as_path)
                     actual_as = as_list[-1] if as_list else local_as
-                    if actual_as != self._to_int_str(entry["expected_origin_as"]):
+                    expected_as = self._to_int_str(entry["expected_origin_as"])
+                    if actual_as is None:
+                        current_errors.append(
+                            f"AS mismatch: Exp {entry['expected_origin_as']}, Got <unknown>"
+                        )
+                    elif actual_as != expected_as:
                         current_errors.append(
                             f"AS mismatch: Exp {entry['expected_origin_as']}, Got {actual_as}"
                         )
