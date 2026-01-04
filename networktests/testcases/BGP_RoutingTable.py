@@ -221,9 +221,12 @@ class BGP_RoutingTable(DiagNetTest):
                         matched_key = p_str
                         break
                 else:
-                    p_obj = ipaddress.ip_network(
-                        p_str if "/" in p_str else f"{p_str}/32"
-                    )
+                    if "/" in p_str:
+                        p_obj = ipaddress.ip_network(p_str)
+                    else:
+                        # Apply appropriate default prefix length based on IP version
+                        default_prefix = 128 if target_obj.version == 6 else 32
+                        p_obj = ipaddress.ip_network(f"{p_str}/{default_prefix}")
                     if target_obj.subnet_of(p_obj):
                         matched_key = p_str
                         break
