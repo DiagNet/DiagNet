@@ -156,6 +156,8 @@ class BGP_RoutingTable(DiagNetTest):
         },
     ]
 
+    LOCAL_ORIGIN_NEXT_HOPS = ["0.0.0.0", "::", "self"]
+
     def _search_recursive(self, data: dict, target_key: str):
         if target_key in data:
             return data[target_key]
@@ -260,7 +262,7 @@ class BGP_RoutingTable(DiagNetTest):
                 # Next-Hop Check
                 actual_nh = str(attr.get("next_hop", attr.get("gateway", ""))).strip()
                 if entry["is_local_origin"] == "True":
-                    if actual_nh not in ["0.0.0.0", "::", "self"]:
+                    if actual_nh not in self.LOCAL_ORIGIN_NEXT_HOPS:
                         current_errors.append(f"not local origin (NH: {actual_nh})")
                 elif entry.get("next_hop"):
                     if actual_nh != str(entry["next_hop"]):
