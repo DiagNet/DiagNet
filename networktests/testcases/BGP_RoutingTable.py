@@ -290,10 +290,17 @@ class BGP_RoutingTable(DiagNetTest):
                 path_errors.append(f"Path #{idx}: {', '.join(current_errors)}")
 
             if not has_valid_path:
-                raise ValueError(
-                    f"Route {target_net} failed: {' | '.join(path_errors)}"
-                )
+                if path_errors:
+                    max_details = 3
+                    if len(path_errors) > max_details:
+                        detailed = " | ".join(path_errors[:max_details])
+                        summary = f"{detailed} | ... and {len(path_errors) - max_details} more path(s) with errors"
+                    else:
+                        summary = " | ".join(path_errors)
+                else:
+                    summary = "Unknown path error"
 
+                raise ValueError(f"Route {target_net} failed: {summary}")
         return True
 
     @depends_on("test_validate_prefixes")
