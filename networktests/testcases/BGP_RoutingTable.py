@@ -186,7 +186,7 @@ class BGP_RoutingTable(DiagNetTest):
 
         genie_dev = self.bgp_device.get_genie_device_object()
 
-        # Cache
+        # Cache parsed BGP table and summary data for use in subsequent test methods
         self.raw_table = genie_dev.parse(f"show bgp {context}")
         self.raw_summary = genie_dev.parse(f"show bgp {context} summary")
 
