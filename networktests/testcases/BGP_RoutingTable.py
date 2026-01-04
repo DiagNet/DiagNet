@@ -101,7 +101,7 @@ class BGP_RoutingTable(DiagNetTest):
                     "requirement": "required",
                 },
                 {
-                    "name": "match-strategy",
+                    "name": "match_strategy",
                     "display_name": "Match Strategy",
                     "type": "choice",
                     "choices": ["Exact", "Included"],
@@ -210,7 +210,7 @@ class BGP_RoutingTable(DiagNetTest):
 
         for entry in self.entries:
             target_net = entry["network"]
-            strategy = entry["match-strategy"]
+            strategy = entry["match_strategy"]
             target_obj = ipaddress.ip_network(target_net)
 
             # Finding a match based on strategy
