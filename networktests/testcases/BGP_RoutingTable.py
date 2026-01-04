@@ -106,7 +106,7 @@ class BGP_RoutingTable(DiagNetTest):
                     "type": "choice",
                     "choices": ["Exact", "Included"],
                     "default_choice": "Exact",
-                    "description": "The type of match needed for this route to be accepted. Exact: This Route needs to be its own entry. Included: This Route is also allowed to be included in a different route. (sub-prefixes)",
+                    "description": "The type of match needed for this route to be accepted. Exact: This route needs to be its own entry. Included: This route may be matched if it is a more specific subnet covered by a broader route in the table (the configured network is a sub-prefix of an existing route).",
                     "requirement": "required",
                 },
                 {
