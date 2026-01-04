@@ -297,8 +297,9 @@ class BGP_RoutingTable(DiagNetTest):
         unexpected = all_table_keys - set(self.validated_keys)
 
         if unexpected:
+            unexpected_routes = ", ".join(sorted(str(route) for route in unexpected))
             raise ValueError(
-                f"Strict Check Failed. Unexpected routes: {sorted(list(unexpected))}"
+                f"Strict Check Failed. Unexpected routes: {unexpected_routes}"
             )
 
         return True
