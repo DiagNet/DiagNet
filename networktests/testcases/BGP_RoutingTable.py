@@ -161,9 +161,9 @@ class BGP_RoutingTable(DiagNetTest):
             return data[target_key]
         for value in (v for v in data.values() if isinstance(v, dict)):
             found = self._search_recursive(value, target_key)
-            if found:
+            if found is not None:
                 return found
-        return {}
+        return None
 
     def _to_int_str(self, val):
         try:
