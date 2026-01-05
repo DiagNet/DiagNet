@@ -11,7 +11,46 @@ logging.getLogger("genie").setLevel(logging.ERROR)
 
 
 class OSPF_Areas(DiagNetTest):
-    """ """
+    """
+    <div class="p-4 bg-white rounded shadow-sm" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; border: 1px solid #e2e8f0; color: #1e293b;">
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 25px -25px; border-bottom: 4px solid #f59e0b;">
+            <h2 style="color: #ffffff; margin: 0; font-weight: 700; letter-spacing: -0.025em;">OSPF Areas</h2>
+            <p style="color: #94a3b8; margin: 8px 0 0 0; font-size: 1rem; font-weight: 500;">Multi-Area Hierarchy & Validation</p>
+        </div>
+
+        <section style="margin-top: 10px;">
+            <p style="font-size: 1.05rem; color: #475569;">
+                The <strong>OSPF_Areas</strong> test class performs a rigorous bidirectional audit of OSPF area configurations.
+                It validates that the operational state matches the intended design and enforces fundamental OSPF architectural rules, such as the <strong>Backbone Transit Rule</strong>.
+            </p>
+        </section>
+
+
+
+        <h4 style="color: #0f172a; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
+            <span style="background: #f59e0b; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
+            Audit Phases
+        </h4>
+        <ul style="list-style: none; padding-left: 0;">
+            <li style="margin-bottom: 12px; display: flex; align-items: start;">
+                <span style="color: #f59e0b; margin-right: 10px;">1.</span>
+                <span><strong>Intent-to-Reality:</strong> Verifies that all areas defined in the design are active on the devices with the correct <strong>Area Type</strong> (Stub, NSSA, etc.) and <strong>Summary</strong> settings.</span>
+            </li>
+            <li style="margin-bottom: 12px; display: flex; align-items: start;">
+                <span style="color: #f59e0b; margin-right: 10px;">2.</span>
+                <span><strong>Configuration Drift:</strong> Identifies "Shadow Areas" configured on routers that were not part of the intended design.</span>
+            </li>
+            <li style="margin-bottom: 12px; display: flex; align-items: start;">
+                <span style="color: #f59e0b; margin-right: 10px;">3.</span>
+                <span><strong>Transit Integrity:</strong> Enforces that any router acting as an <strong>ABR</strong> (Area Border Router) has a valid, active physical or virtual path to <strong>Area 0 (Backbone)</strong>.</span>
+            </li>
+        </ul>
+
+        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 25px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 15px;">
+            Authored by: Luka Pacar
+        </p>
+    </div>
+    """
 
     _params = [
         {
