@@ -1,13 +1,11 @@
 import ipaddress
-import logging
 from typing import Dict, Union
 
 from devices.models import Device
 from networktests.testcases.base import DiagNetTest, depends_on
 from pyats.async_ import pcall
 
-logging.getLogger("unicon").setLevel(logging.ERROR)
-logging.getLogger("genie").setLevel(logging.ERROR)
+__author__ = "Luka Pacar"
 
 
 class OSPF_Areas(DiagNetTest):
@@ -112,7 +110,6 @@ class OSPF_Areas(DiagNetTest):
     ]
 
     def _normalize_area_id(self, area_id: Union[str, int]) -> int:
-        """Standardizes Area IDs to integers (e.g., '0.0.0.0' -> 0)."""
         try:
             area_str = str(area_id).upper().strip()
             if any(x in area_str for x in ["BACKBONE", "0.0.0.0"]) or area_str == "0":
@@ -126,9 +123,6 @@ class OSPF_Areas(DiagNetTest):
             return -1
 
     def _get_operational_state(self, dev_data: Dict, target_instance: str) -> Dict:
-        """
-        Parses OSPF telemetry into a map of configured vs. physically active areas.
-        """
         state = {
             "found": False,
             "all_configured_areas": set(),
@@ -155,7 +149,7 @@ class OSPF_Areas(DiagNetTest):
                     state["all_configured_areas"].add(norm_id)
 
                     stats = area_data.get("statistics", {})
-                    # Transit Logic: Check for physical (non-loopback) interfaces
+                    # Check for physical (non-loopback) interfaces
                     phys_count = stats.get("interfaces_count", 0) - stats.get(
                         "loopback_count", 0
                     )
@@ -172,7 +166,6 @@ class OSPF_Areas(DiagNetTest):
         return state
 
     def test_analyze_intent(self):
-        """Maps user-defined design intent."""
         self.intended_topology = {}
         self.area_intent_details = {}
         type_map = {
@@ -197,7 +190,6 @@ class OSPF_Areas(DiagNetTest):
 
     @depends_on("test_analyze_intent")
     def test_collect_telemetry(self):
-        """Parallelized telemetry collection with exception capture."""
         unique_devices = {
             m["member"].name: m["member"]
             for a in self.area_definitions
@@ -216,16 +208,12 @@ class OSPF_Areas(DiagNetTest):
 
     @depends_on("test_collect_telemetry")
     def test_verify_architectural_compliance(self):
-        """
-        Bidirectional Audit: No print statements used. All findings reported via exception.
-        """
         audit_errors = []
         target_inst = str(self.ospf_instance)
 
         for dev_name, intended_areas in self.intended_topology.items():
             raw_data = self.telemetry.get(dev_name, {})
 
-            # 1. Telemetry Health Check
             if "_collection_error" in raw_data:
                 audit_errors.append(
                     f"{dev_name}: Telemetry failure ({raw_data['_collection_error']})"
@@ -234,14 +222,14 @@ class OSPF_Areas(DiagNetTest):
 
             op_state = self._get_operational_state(raw_data, target_inst)
 
-            # 2. Instance Existence Check
+            # Instance Existence Check
             if not op_state["found"]:
                 audit_errors.append(
                     f"{dev_name}: OSPF Process {target_inst} missing from operational state."
                 )
                 continue
 
-            # 3. Phase 1: Intent -> Reality (Compliance)
+            # Intent -> Reality
             for aid in intended_areas:
                 if aid not in op_state["area_details"]:
                     audit_errors.append(
@@ -263,15 +251,14 @@ class OSPF_Areas(DiagNetTest):
                 if intent["no_summary"] and not actual["no_summary"]:
                     audit_errors.append(f"{dev_name} Area {aid}: Missing 'no-summary'.")
 
-            # 4. Phase 2: Reality -> Intent (Drift/Shadow Areas)
+            # Reality -> Intent
             for op_aid in op_state["all_configured_areas"]:
                 if op_aid not in intended_areas:
                     audit_errors.append(
                         f"{dev_name}: Configuration Drift - Unintended Area {op_aid} found."
                     )
 
-            # 5. Phase 3: Architectural Integrity (Backbone Rule)
-            # If ANY area (intended or unintended) creates an ABR role, backbone is mandatory.
+            # When more than 1 area is connected -> Needs connection to Backbone Area
             if len(op_state["all_configured_areas"]) > 1:
                 has_bb = (0 in op_state["physically_active_areas"]) or op_state[
                     "has_virtual_bb"
@@ -283,6 +270,5 @@ class OSPF_Areas(DiagNetTest):
                     )
 
         if audit_errors:
-            # Raise a single error containing all findings for the framework
             error_report = "\n- " + "\n- ".join(audit_errors)
             raise ValueError(f"OSPF AUDIT FAILED: {error_report}")
