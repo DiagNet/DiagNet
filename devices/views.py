@@ -5,7 +5,12 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from devices.forms import DeviceForm, UploadFileForm
+from devices.forms import (
+    DeviceForm,
+    UploadFileForm,
+    FortigateDeviceForm,
+    DeviceVendorForm,
+)
 
 from .models import Device
 
@@ -39,19 +44,47 @@ class DeviceListView(generic.ListView):
 
 class DeviceCreate(CreateView):
     model = Device
-    form_class = DeviceForm
     template_name = "devices/partials/device_form.html"
+
+    def get_form_class(self):
+        vendor = self.request.POST.get("vendor", "cisco")
+        return FortigateDeviceForm if vendor == "fortinet" else DeviceForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # 👇 Vendor-Auswahl-Form ins Template geben
+        context["vendor_form"] = DeviceVendorForm(
+            initial={"vendor": self.request.POST.get("vendor", "cisco")}
+        )
+
+        return context
 
     def form_valid(self, form):
         self.object = form.save()
+
         if self.request.headers.get("HX-Request") == "true":
             response = HttpResponse(status=204)
             response["HX-Trigger"] = "deviceCreated"
             return response
+
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse_lazy("devices-page")
+
+
+def device_vendor_form(request):
+    vendor = request.GET.get("vendor", "cisco")
+
+    if vendor == "fortinet":
+        form = FortigateDeviceForm()
+        template = "devices/partials/fortigate_fields.html"
+    else:
+        form = DeviceForm()
+        template = "devices/partials/cisco_fields.html"
+
+    return render(request, template, {"form": form})
 
 
 class DeviceUpdate(UpdateView):
