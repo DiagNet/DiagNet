@@ -1,20 +1,31 @@
 <form method="post"
-    hx-post="{% if object %}{% url 'device-update' object.pk %}{% else %}{% url 'device-create' %}{% endif %}">
+      hx-post="{% url 'device-create' %}"
+      hx-target="this"
+      hx-swap="outerHTML">
+
     {% csrf_token %}
-    {% for field in form %}
-    {% if field.label != "Id" %}
+
+    <!-- Vendor Auswahl -->
     <div class="form-floating mb-3">
-        {{ field }}
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {% if field.errors %}
-        <div class="invalid-feedback d-block">
-            {{ field.errors|join:", " }}
-        </div>
-        {% endif %}
+        <select
+            name="vendor"
+            class="form-select"
+            hx-get="{% url 'device-vendor-form' %}"
+            hx-trigger="change"
+            hx-target="#device-fields"
+        >
+            <option value="cisco">Cisco</option>
+            <option value="fortinet">Fortinet</option>
+        </select>
+        <label>Vendor</label>
     </div>
-    {% endif %}
-    {% endfor %}
+
+    <!-- Dynamische Formularfelder -->
+    <div id="device-fields">
+        {% include "devices/partials/cisco_fields.html" %}
+    </div>
+
     <button class="btn btn-success" type="submit">
-        {% if object %}Save{% else %}Create{% endif %}
+        Create
     </button>
 </form>
