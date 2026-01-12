@@ -12,4 +12,5 @@ urlpatterns = [
     path("api/check/<int:pk>/", views.device_check, name="device-check"),
     path("api/export/", views.export_devices_from_yaml, name="devices-export"),
     path("import-devices/", views.import_devices_from_yaml, name="device-import"),
+    path("devices/vendor-form/", views.device_vendor_form, name="device-vendor-form"),
 ]
