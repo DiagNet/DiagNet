@@ -6,12 +6,25 @@ from django.urls import reverse  # To generate URLS by reversing URL patterns
 from genie.testbed import load
 from django.db.models.functions import Lower
 from django.db.models import Q
+
 import netmiko
+from fortigate_api import FortiGateAPI
 
 device_connections = {}
 
 
 class Device(models.Model):
+    VENDORS = [
+        ("cisco", "Cisco"),
+        ("fortinet", "Fortinet"),
+    ]
+
+    vendor = models.CharField(
+        max_length=20,
+        choices=VENDORS,
+        default="cisco",
+    )
+
     DEVICE_TYPES = [
         ("router_ios", "Router (IOS)"),
         ("router_iosxe", "Router (IOSXE)"),
@@ -26,27 +39,49 @@ class Device(models.Model):
         ("telnet", "Telnet"),
     ]
 
-    name = models.CharField(
-        "Hostname",
-        max_length=100,
-        unique=True,
-    )
+    # 🔹 Gemeinsame Felder
+    name = models.CharField("Hostname", max_length=100, unique=True)
+    ip_address = models.GenericIPAddressField("IP Address")
+
+    # 🔹 Cisco-spezifisch (optional)
     protocol = models.CharField(
         "Protocol",
         choices=PROTOCOLS,
         default="ssh",
+        blank=True,
+        null=True,
     )
-    ip_address = models.GenericIPAddressField("IP Address")
     port = models.IntegerField(
-        default=22, validators=[MinValueValidator(1), MaxValueValidator(65535)]
+        default=22,
+        validators=[MinValueValidator(1), MaxValueValidator(65535)],
+        blank=True,
+        null=True,
     )
     device_type = models.CharField(
         "Device Type",
         max_length=20,
         choices=DEVICE_TYPES,
+        blank=True,
+        null=True,
     )
-    username = models.CharField(max_length=100)
-    password = models.CharField(max_length=100)
+    username = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+    password = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+
+    # 🔹 FortiGate-spezifisch
+    token = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="FortiGate API Token",
+    )
 
     class Meta:
         constraints = [
@@ -55,10 +90,30 @@ class Device(models.Model):
                 name="name_case_insensitive_unique",
                 violation_error_message="Hostname already exists (case insensitive match)",
             ),
+            # ❌ Telnet auf IOSXE
             models.CheckConstraint(
-                check=~(Q(protocol="telnet") & Q(device_type__endswith="iosxe")),
+                check=~(
+                    Q(vendor="cisco")
+                    & Q(protocol="telnet")
+                    & Q(device_type__endswith="iosxe")
+                ),
                 name="no_telnet_on_iosxe",
                 violation_error_message="Telnet is not allowed for IOSXE devices.",
+            ),
+            # ✅ Cisco braucht Username + Password
+            models.CheckConstraint(
+                check=(
+                    Q(vendor="fortinet")
+                    | (Q(username__isnull=False) & Q(password__isnull=False))
+                ),
+                name="cisco_requires_username_password",
+                violation_error_message="Cisco devices require username and password.",
+            ),
+            # ✅ FortiGate braucht Token
+            models.CheckConstraint(
+                check=(Q(vendor="cisco") | Q(token__isnull=False)),
+                name="fortigate_requires_token",
+                violation_error_message="FortiGate devices require an API token.",
             ),
         ]
 
@@ -159,7 +214,21 @@ class Device(models.Model):
         connection_type = "" if self.protocol == "ssh" else "_telnet"
         return f"{ios_type}{connection_type}"
 
+    def forti_can_connect(self) -> bool:
+        try:
+            api = FortiGateAPI(host=self.ip_address, token=self.token)
+            api.login()
+            api.logout()
+            return True
+        except Exception as e:
+            raise e
+
     def can_connect(self) -> bool:
+        # for forti devices
+        if self.vendor == "fortinet":
+            return self.forti_can_connect()
+
+        # for cisco devices
         device = {
             "device_type": self.get_netmiko_type(),
             "host": self.ip_address,
