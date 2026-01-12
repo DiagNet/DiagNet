@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('devices', '0004_device_status_device_no_telnet_on_iosxe'),
+        ("devices", "0004_device_status_device_no_telnet_on_iosxe"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='device',
-            name='status',
+            model_name="device",
+            name="status",
         ),
     ]
