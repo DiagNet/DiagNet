@@ -4,20 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('devices', '0005_remove_device_status'),
+        ("devices", "0005_remove_device_status"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='device',
-            name='id',
-            field=models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
+            model_name="device",
+            name="id",
+            field=models.BigAutoField(
+                auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+            ),
         ),
         migrations.AlterField(
-            model_name='device',
-            name='name',
-            field=models.CharField(max_length=100, unique=True, verbose_name='Hostname'),
+            model_name="device",
+            name="name",
+            field=models.CharField(
+                max_length=100, unique=True, verbose_name="Hostname"
+            ),
         ),
     ]
