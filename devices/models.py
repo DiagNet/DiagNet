@@ -216,12 +216,12 @@ class Device(models.Model):
 
     def forti_can_connect(self) -> bool:
         try:
-            api = FortiGateAPI(host=self.ip_address, token=self.token)
+            api = FortiGateAPI(host=self.ip_address, token=self.token, timeout=1)
             api.login()
             api.logout()
             return True
-        except Exception as e:
-            raise e
+        except Exception:
+            return False
 
     def can_connect(self) -> bool:
         # for forti devices
