@@ -12,6 +12,12 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
+    <style>
+        .dropdown-item.active .d-none {
+            display: block !important;
+        }
+    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"></script>
     <script src="{% static 'js/polarity.js' %}"></script>
 
@@ -32,8 +38,8 @@
                     <a class="nav-link d-inline text-light" href="{% url 'networktests-page' %}">Network Tests</a>
                     <a class="nav-link d-inline text-light" href="{% url 'testgroup-page' %}">Test Groups</a>
                 </div>
-                <div>
-                </div>
+
+                {% include "polarity-switcher.html" %}
             </div>
     </nav>
     <div class="container">{% block content %}{% endblock %}</div>
