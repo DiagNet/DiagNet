@@ -5,7 +5,6 @@
 
     {% csrf_token %}
 
-    <!-- Vendor Auswahl -->
     <div class="form-floating mb-3">
         <select
             name="vendor"
@@ -13,6 +12,7 @@
             hx-get="{% url 'device-vendor-form' %}"
             hx-trigger="change"
             hx-target="#device-fields"
+	    hx-swap="innerHTML"
         >
             <option value="cisco">Cisco</option>
             <option value="fortinet">Fortinet</option>
@@ -20,7 +20,6 @@
         <label>Vendor</label>
     </div>
 
-    <!-- Dynamische Formularfelder -->
     <div id="device-fields">
         {% include "devices/partials/cisco_fields.html" %}
     </div>
