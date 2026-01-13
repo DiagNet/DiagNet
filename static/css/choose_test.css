@@ -1,12 +1,19 @@
-#resultsList li.active {
-    background-color: #007bff;
-    color: white;
+/* Basis-Zustand: Wenn die Maus NICHT auf dem Element ist */
+.inlineTestTemplateClass .item-container {
+    background-color: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color); /* Nutzt Bootstrap Standard Grau */
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    list-style: none !important;
+    user-select: none;
+    box-shadow: var(--bs-box-shadow-sm); /* Standard Schatten */
 }
 
-
-/* Cool hover effect for the list item */
-#inlineTestTemplate .item-container:hover {
+/* Hover-Zustand: Wenn die Maus drauf ist */
+.inlineTestTemplateClass .item-container:hover {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    border-color: #a3d5ff;
+    /* Nutzt Primary-Subtle (sehr helles Blau) für den Hover-Effekt */
+    background-color: var(--bs-primary-bg-subtle);
+    border-color: var(--bs-primary-border-subtle);
+    box-shadow: var(--bs-box-shadow); /* Stärkerer Schatten */
 }

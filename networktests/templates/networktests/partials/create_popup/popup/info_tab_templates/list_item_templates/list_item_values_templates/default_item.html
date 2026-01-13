@@ -1,50 +1,48 @@
 <template id="DefaultItem">
-    <div class="d-flex flex-column p-2 bg-white border rounded shadow-sm mb-2"
-         style="min-width: 200px; max-width: 350px; position: relative;">
+    <div class="d-flex flex-column p-2 border rounded shadow-sm mb-2"
+         style="min-width: 200px; max-width: 350px; position: relative; background-color: var(--bs-body-bg); border-color: var(--bs-border-color) !important;">
 
-        <!-- Badge top-right -->
         <span class="deviceBadge" style="
             position: absolute;
             top: 5px;
             right: 8px;
-            background-color: #0d6efd; /* Bootstrap primary blue */
-            color: white;
+            background-color: var(--bs-primary);
+            color: var(--bs-white);
             font-size: 0.65rem;
             font-weight: 600;
             padding: 0.15rem 0.4rem;
-            border-radius: 0.25rem;
+            border-radius: var(--bs-border-radius-sm);
             text-transform: uppercase;
             letter-spacing: 0.5px;">
             Device
-</span>
+        </span>
+
         <span class="emptyBadge" style="
             position: absolute;
             top: 5px;
             right: 8px;
-            background-color: #dc3545;
-            color: white;
+            background-color: var(--bs-danger);
+            color: var(--bs-white);
             font-size: 0.65rem;
             font-weight: 600;
             padding: 0.15rem 0.4rem;
-            border-radius: 0.25rem;
+            border-radius: var(--bs-border-radius-sm);
             text-transform: uppercase;
             letter-spacing: 0.5px;">
             Empty
         </span>
 
-        <!-- Name on top-left, slightly bigger -->
         <span id="name"
-              style="font-size: 0.85rem; font-weight: 500; color: #6c757d; margin-bottom: 0.15rem; line-height: 1.2;">
+              style="font-size: 0.85rem; font-weight: 500; color: var(--bs-secondary); margin-bottom: 0.15rem; line-height: 1.2;">
             Name
         </span>
 
-        <!-- Value spans full width, handles long text -->
         <span id="value"
               title=""
               style="
                   font-size: 1rem;
                   font-weight: 600;
-                  color: #343a40;
+                  color: var(--bs-body-color);
                   overflow: hidden;
                   text-overflow: ellipsis;
                   white-space: nowrap;
