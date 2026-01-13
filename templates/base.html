@@ -13,11 +13,12 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"></script>
+    <script src="{% static 'js/polarity.js' %}"></script>
 
     <title>{% block title %}DiagNet{% endblock %}</title>
 </head>
 
-<body class="bg-light">
+<body>
     <nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-4">
         <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'dashboard' %}">DiagNet</a>
