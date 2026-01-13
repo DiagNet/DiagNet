@@ -1,16 +1,7 @@
 <template id="inlineTestTemplate">
-  <li class="p-0 border-0">
-    <div class="p-3 rounded shadow-sm d-flex align-items-center justify-content-between item-container"
-         style="
-             background:#ffffff;
-             border:1px solid #e5e5e5;
-             transition: all 0.3s ease-in-out;
-             cursor:pointer;
-             user-select: none;
-         "
-         onmouseover="this.style.boxShadow='0 12px 30px rgba(0,0,0,0.18)'; this.style.background='#f0f8ff';"
-         onmouseout="this.style.boxShadow='0 0.25rem 0.5rem rgba(0,0,0,0.1)'; this.style.background='#ffffff';">
-      <span class="item-name fw-semibold" style="user-select: none;"></span>
-    </div>
-  </li>
+    <li class="p-0 border-0 inlineTestTemplateClass item-container-for-test">
+        <div class="p-3 rounded d-flex align-items-center justify-content-between item-container">
+            <span class="item-name fw-semibold"></span>
+        </div>
+    </li>
 </template>

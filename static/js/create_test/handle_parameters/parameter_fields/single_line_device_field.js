@@ -96,6 +96,7 @@ class SingleLineDeviceField extends SingleLineInputField {
         const li = document.createElement('li');      // create li element
         li.className = 'list-group-item hoverable';
         li.textContent = device;
+        li.style.cursor = 'pointer';
         this.searchResults.appendChild(li);
     }
 
