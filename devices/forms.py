@@ -97,13 +97,11 @@ class FortigateDeviceForm(forms.ModelForm):
     def save(self, commit=True):
         device = super().save(commit=False)
 
-        # 🔒 Vendor fest setzen
         device.vendor = "fortinet"
 
-        # 🧹 Cisco-Felder absichtlich leeren
         device.protocol = None
         device.port = 443
-        device.device_type = None
+        device.device_type = "FortiOS"
         device.username = None
         device.password = None
 
