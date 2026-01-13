@@ -7,6 +7,7 @@ from genie.testbed import load
 from django.db.models.functions import Lower
 from django.db.models import Q
 
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 import netmiko
 from fortigate_api import FortiGateAPI
 
@@ -214,14 +215,22 @@ class Device(models.Model):
         connection_type = "" if self.protocol == "ssh" else "_telnet"
         return f"{ios_type}{connection_type}"
 
+    def test_forti_connection(self):
+        api = FortiGateAPI(host=self.ip_address, token=self.token, timeout=1)
+        api.login()
+        api.logout()
+
     def forti_can_connect(self) -> bool:
+        executor = ThreadPoolExecutor(max_workers=1)
+        future = executor.submit(self.test_forti_connection)
+
         try:
-            api = FortiGateAPI(host=self.ip_address, token=self.token, timeout=1)
-            api.login()
-            api.logout()
+            future.result(timeout=5)
             return True
-        except Exception:
+        except TimeoutError:
             return False
+        finally:
+            executor.shutdown(wait=False)
 
     def can_connect(self) -> bool:
         # for forti devices
