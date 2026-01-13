@@ -102,7 +102,7 @@ class FortigateDeviceForm(forms.ModelForm):
 
         # 🧹 Cisco-Felder absichtlich leeren
         device.protocol = None
-        device.port = None
+        device.port = 443
         device.device_type = None
         device.username = None
         device.password = None
