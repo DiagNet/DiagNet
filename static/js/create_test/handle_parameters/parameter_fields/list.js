@@ -271,8 +271,16 @@ class ListField extends ParameterField {
         let output = {};
         for (const value of this.parameters) {
             const field = value['parameter_info'];
-            const fieldValue = field.getValue();
+            let fieldValue = field.getValue();
             const isDevice = field instanceof SingleLineDeviceField && allDevices.includes(fieldValue)
+
+            value['type'].forEach(item => {
+                if (item === undefined) {
+                    return;
+                }
+                fieldValue = item.before_submit(fieldValue);
+            });
+
             if (field instanceof ListField) {
                 output[value['name']] = fieldValue
             } else {
