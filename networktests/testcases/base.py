@@ -432,7 +432,7 @@ class DiagNetTest:
 
             if passed:
                 status = "PASS"
-                msg = message
+                msg = message or ""
             else:
                 if amount_of_repeat > 1 and success_count > 0:
                     # Partial success on repeats -> REPETITION_FAIL
