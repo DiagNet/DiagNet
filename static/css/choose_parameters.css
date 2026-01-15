@@ -5,7 +5,7 @@
 .item-container-for-test{
     border: 1px solid transparent !important;
     border-radius: 0.375rem !important;
-    transition: border-color 0.2s ease-in-out; /* Macht den Übergang weich */
+    transition: border-color 0.2s ease-in-out;
 }
 
 .item-container-for-test.selectedTestCase {
@@ -23,19 +23,19 @@
 
 .tab-btn {
     background-color: var(--bs-body-bg);
-    color: var(--bs-secondary-color); /* Statt #495057 */
+    color: var(--bs-secondary-color);
     border: none;
-    border-top-left-radius: var(--bs-border-radius); /* Konsistenter Radius */
+    border-top-left-radius: var(--bs-border-radius);
     border-top-right-radius: var(--bs-border-radius);
     transition: background-color 0.2s, color 0.2s;
 }
 
 .tab-btn.active {
-    background-color: var(--bs-primary); /* Statt #0d6efd */
+    background-color: var(--bs-primary);
 }
 
 .tab-btn:not(.active):hover {
-    background-color: var(--bs-tertiary-bg); /* Statt #e2e6ea */
+    background-color: var(--bs-tertiary-bg);
 }
 
 .tab-content {
@@ -53,7 +53,7 @@
     padding-right: 0.5rem;
 }
 
-/* Scrollbar an Bootstrap Theme anpassen */
+
 .param-tab-pane::-webkit-scrollbar {
     width: 8px;
 }
@@ -68,14 +68,12 @@
 }
 
 
-/* Template CSS - Single Line Input */
 .hover-effect {
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .hover-effect:hover {
     transform: translateY(-2px);
-    /* Nutzt Bootstrap Shadow Variable */
     box-shadow: var(--bs-box-shadow);
 }
 
@@ -86,11 +84,8 @@
 
 .param-input:focus {
     border-color: var(--bs-primary);
-    /* Nutzt das RGB-Modell für den Glow-Effekt */
     box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
 }
-
-/* Template CSS - Multiple Choice Input */
 
 .choice-container {
     transition: transform 0.2s, box-shadow 0.2s;
@@ -112,12 +107,11 @@
 }
 
 
-/* Parameter Tabs */
 .create-popup-nav {
     transition: background-color .2s, color .2s, box-shadow .2s;
 }
 
 .create-popup-nav:not(.disabled):hover {
-    background-color: var(--bs-secondary-bg); /* Statt #e9ecef */
-    color: var(--bs-body-color); /* Statt #212529 */
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
 }
