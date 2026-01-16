@@ -60,6 +60,7 @@ class RoutingTable(DiagNetTest):
         </p>
     </div>
     """
+
     _params = [
         {
             "name": "device",
@@ -173,7 +174,7 @@ class RoutingTable(DiagNetTest):
 
     @staticmethod
     def _get_route_entry(
-            all_routes: Dict[str, Any],
+        all_routes: Dict[str, Any],
         target: str,
         strategy: str,
     ) -> Optional[Dict[str, Any]]:
