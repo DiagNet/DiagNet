@@ -133,7 +133,7 @@ class RoutingTable(DiagNetTest):
                 {
                     "name": "next_hop",
                     "display_name": "Next Hop IP",
-                    "type": ["IPV4", "IPV6"],
+                    "type": ["IPv4", "IPv6"],
                     "description": "The specific IP address of the next-hop gateway.",
                     "requirement": "optional",
                 },
@@ -171,8 +171,11 @@ class RoutingTable(DiagNetTest):
         },
     ]
 
+    @staticmethod
     def _get_route_entry(
-            self, all_routes: Dict[str, Any], target: str, strategy: str
+            all_routes: Dict[str, Any],
+        target: str,
+        strategy: str,
     ) -> Optional[Dict[str, Any]]:
         if strategy == "Exact":
             return all_routes.get(target)
@@ -187,7 +190,8 @@ class RoutingTable(DiagNetTest):
                 continue
         return None
 
-    def _normalize_int(self, value: Any) -> Optional[int]:
+    @staticmethod
+    def _normalize_int(value: Any) -> Optional[int]:
         try:
             return int(value)
         except (ValueError, TypeError):
@@ -264,10 +268,9 @@ class RoutingTable(DiagNetTest):
                         found_nh = True
                         break
 
-                if not found_nh and "outgoing_interface" not in nh_data:
-                    # Some parsers put next hop directly, not in a map
-                    if nh_data.get("next_hop") == req_nh:
-                        found_nh = True
+                # Some parsers put next hop directly, not in a map
+                if not found_nh and nh_data.get("next_hop") == req_nh:
+                    found_nh = True
 
                 if not found_nh:
                     errors.append(f"Next-Hop {req_nh} not found in path list")
