@@ -79,6 +79,13 @@ class UserUpdateForm(forms.ModelForm):
 class UserPasswordChangeForm(forms.Form):
     """Form for changing a user's password (admin action)."""
 
+    old_password = forms.CharField(
+        label="Current Password",
+        required=False,
+        widget=forms.PasswordInput(
+            attrs={"class": "form-control", "placeholder": "Current Password"}
+        ),
+    )
     new_password1 = forms.CharField(
         label="New Password",
         widget=forms.PasswordInput(
@@ -92,9 +99,23 @@ class UserPasswordChangeForm(forms.Form):
         ),
     )
 
-    def __init__(self, user, *args, **kwargs):
+    def __init__(self, user, request_user=None, *args, **kwargs):
         self.user = user
+        self.request_user = request_user
         super().__init__(*args, **kwargs)
+        # Require old password if changing own password
+        if request_user and request_user == user:
+            self.fields["old_password"].required = True
+        else:
+            # Hide old password field when admin changes another user's password
+            del self.fields["old_password"]
+
+    def clean_old_password(self):
+        old_password = self.cleaned_data.get("old_password")
+        if self.request_user and self.request_user == self.user:
+            if not self.user.check_password(old_password):
+                raise ValidationError("Your current password is incorrect.")
+        return old_password
 
     def clean(self):
         cleaned_data = super().clean()
