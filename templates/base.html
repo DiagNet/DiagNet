@@ -19,7 +19,7 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"></script>
-    <script src="{% static 'js/polarity.js' %}"></script>
+    <script src="{% static 'js/theme.js' %}"></script>
 
     <title>{% block title %}DiagNet{% endblock %}</title>
 </head>
@@ -39,7 +39,7 @@
                     <a class="nav-link d-inline text-light" href="{% url 'testgroup-page' %}">Test Groups</a>
                 </div>
 
-                {% include "polarity-switcher.html" %}
+                {% include "theme-switcher.html" %}
             </div>
     </nav>
     <div class="container">{% block content %}{% endblock %}</div>
