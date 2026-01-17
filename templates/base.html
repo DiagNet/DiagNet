@@ -60,13 +60,23 @@
                         {% endif %}
                     </div>
                     {% if user.is_authenticated %}
-                        <div class="d-flex align-items-center">
-                            <span class="navbar-text me-3 text-light">Hi, {{ user.username }}</span>
-                            <form method="post" action="{% url 'logout' %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-outline-light btn-sm">Sign Out</button>
-                            </form>
-                        </div>
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown">
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'my-password-change' %}">Change Password</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <form method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">Sign Out</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                     {% endif %}
                     {% include "theme-switcher.html" %}
                 </div>
