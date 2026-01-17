@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    # Self-service URLs
+    path("password/", views.MyPasswordChangeView.as_view(), name="my-password-change"),
     # User management URLs
     path("manage/users/", views.UserListView.as_view(), name="user-list"),
     path("manage/users/create/", views.UserCreateView.as_view(), name="user-create"),

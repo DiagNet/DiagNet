@@ -1,5 +1,6 @@
 from django.contrib import messages
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import Group, User
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
@@ -122,11 +123,11 @@ class UserDetailView(AdminRequiredMixin, DetailView):
 
 
 class UserPasswordChangeView(AdminRequiredMixin, View):
-    """Change a user's password."""
+    """Change a user's password (admin action)."""
 
     def get(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        form = UserPasswordChangeForm(user)
+        form = UserPasswordChangeForm(user, request_user=request.user)
         return render(
             request,
             "accounts/partials/user_password_form.html",
@@ -135,9 +136,14 @@ class UserPasswordChangeView(AdminRequiredMixin, View):
 
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        form = UserPasswordChangeForm(user, request.POST)
+        form = UserPasswordChangeForm(
+            user, request_user=request.user, data=request.POST
+        )
         if form.is_valid():
             form.save()
+            # Keep the user logged in if they changed their own password
+            if user == request.user:
+                update_session_auth_hash(request, user)
             if request.headers.get("HX-Request") == "true":
                 response = HttpResponse(status=204)
                 response["HX-Trigger"] = "usersRefresh"
@@ -150,6 +156,34 @@ class UserPasswordChangeView(AdminRequiredMixin, View):
             request,
             "accounts/partials/user_password_form.html",
             {"form": form, "object": user},
+        )
+
+
+class MyPasswordChangeView(LoginRequiredMixin, View):
+    """Allow any user to change their own password."""
+
+    def get(self, request):
+        form = UserPasswordChangeForm(request.user, request_user=request.user)
+        return render(
+            request,
+            "accounts/my_password_change.html",
+            {"form": form},
+        )
+
+    def post(self, request):
+        form = UserPasswordChangeForm(
+            request.user, request_user=request.user, data=request.POST
+        )
+        if form.is_valid():
+            form.save()
+            # Keep the user logged in after password change
+            update_session_auth_hash(request, request.user)
+            messages.success(request, "Your password has been changed successfully.")
+            return HttpResponseRedirect(reverse_lazy("dashboard"))
+        return render(
+            request,
+            "accounts/my_password_change.html",
+            {"form": form},
         )
 
 
