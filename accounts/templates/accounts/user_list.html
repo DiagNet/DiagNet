@@ -1,55 +1,174 @@
 {% extends "base.html" %}
 
+{% block title %}Users - DiagNet{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-	<h2>User Management</h2>
-</div>
-<div class="container mt-4">
-	<div id="user-table-container" hx-get="{% url 'user-list' %}" hx-trigger="userListChanged from:body"
-		hx-target="#user-table-container" hx-select="#user-table-container">
-		<div class="card shadow">
-			<div class="card-body table-responsive p-2">
-				<table class="table table-hover align-middle mb-1">
-					<thead>
-						<tr>
-							<th>Username</th>
-							<th>Email</th>
-							<th>Status</th>
-							<th>Groups</th>
-							<th class="text-end">Actions</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for user in users %}
-						<tr>
-							<td><strong>{{ user.username }}</strong></td>
-							<td>{{ user.email|default:"-" }}</td>
-							<td>
-								{% if user.is_superuser %}
-								<span class="badge bg-danger">Superuser</span>
-								{% elif user.is_staff %}
-								<span class="badge bg-warning text-dark">Staff</span>
-								{% else %}
-								<span class="badge bg-secondary">User</span>
-								{% endif %}
-							</td>
-							<td>
-								{% for group in user.groups.all %}
-								<span class="badge border text-dark">{{ group.name }}</span>
-								{% empty %}
-								<small class="text-muted">No groups</small>
-								{% endfor %}
-							</td>
-							<td class="text-end">
-								<button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
-								<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-							</td>
-						</tr>
-						{% endfor %}
-					</tbody>
-				</table>
+<h1>Users</h1>
+
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#userCreateModal">
+	Add User
+</button>
+
+<!-- User Create Modal -->
+<div class="modal fade" id="userCreateModal" tabindex="-1" aria-labelledby="userCreateModalLabel">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="userCreateModalLabel">Create A User</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body" hx-get="{% url 'user-create' %}" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
+				<div class="text-center">
+					<div class="spinner-border" role="status">
+						<span class="visually-hidden">Loading form...</span>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
+
+<!-- User Detail Modal -->
+<div class="modal fade" id="userDetailModal" tabindex="-1" aria-labelledby="userDetailModalLabel">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="userDetailModalLabel">User Details</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body" id="userDetailModalBody">
+				<div class="text-center">
+					<div class="spinner-border" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- User Edit Modal -->
+<div class="modal fade" id="userEditModal" tabindex="-1" aria-labelledby="userEditModalLabel">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="userEditModalLabel">Edit User</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body" id="userEditModalBody">
+				<div class="text-center">
+					<div class="spinner-border" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- User Password Modal -->
+<div class="modal fade" id="userPasswordModal" tabindex="-1" aria-labelledby="userPasswordModalLabel">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="userPasswordModalLabel">Change Password</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body" id="userPasswordModalBody">
+				<div class="text-center">
+					<div class="spinner-border" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div hx-get="{% url 'user-list' %}" hx-trigger="refresh from:body" hx-swap="innerHTML" hx-select="#user-table-content" id="user-table">
+	<div id="user-table-content">
+		<div class="table-responsive">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Username</th>
+						<th>Email</th>
+						<th>Status</th>
+						<th>Groups</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% if users %}
+					{% for account in users %}
+					<tr id="user-{{ account.pk }}">
+						<td class="align-middle">
+							<button class="btn btn-link detail-user-btn" data-user-id="{{ account.pk }}">{{ account.username }}</button>
+							{% if account == request.user %}<span class="badge bg-info">You</span>{% endif %}
+						</td>
+						<td class="align-middle">{{ account.email|default:"-" }}</td>
+						<td class="align-middle">
+							{% if account.is_superuser %}
+							<span class="badge bg-danger">Superuser</span>
+							{% elif account.is_staff %}
+							<span class="badge bg-warning text-dark">Staff</span>
+							{% elif account.is_active %}
+							<span class="badge bg-success">Active</span>
+							{% else %}
+							<span class="badge bg-secondary">Inactive</span>
+							{% endif %}
+						</td>
+						<td class="align-middle">
+							{% for group in account.groups.all %}
+							<span class="badge bg-primary">{{ group.name }}</span>
+							{% empty %}
+							-
+							{% endfor %}
+						</td>
+						<td class="align-middle">
+							<button title="View details" class="btn btn-sm btn-info detail-user-btn" data-user-id="{{ account.pk }}">
+								<i class="bi bi-eye"></i>
+							</button>
+							<button title="Edit user" class="btn btn-sm btn-primary edit-user-btn" data-user-id="{{ account.pk }}">
+								<i class="bi bi-pencil"></i>
+							</button>
+							<button title="Change password" class="btn btn-sm btn-warning password-user-btn" data-user-id="{{ account.pk }}">
+								<i class="bi bi-key"></i>
+							</button>
+							{% if account != request.user and not account.is_superuser %}
+							<button title="Delete user" class="btn btn-sm btn-danger"
+								hx-delete="{% url 'user-delete' account.pk %}"
+								hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+								hx-confirm="Are you sure you want to delete the user '{{ account.username }}'?">
+								<i class="bi bi-trash"></i>
+							</button>
+							{% endif %}
+						</td>
+					</tr>
+					{% endfor %}
+					{% else %}
+					<tr>
+						<td colspan="5">No users yet.</td>
+					</tr>
+					{% endif %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% load static %}
+<script src="{% static 'accounts/js/user_management.js' %}"></script>
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		// Reset creation modal
+		const modalEl = document.getElementById('userCreateModal');
+		modalEl.addEventListener('show.bs.modal', () => {
+			const modalBody = modalEl.querySelector('.modal-body');
+			htmx.ajax('GET', '{% url "user-create" %}', {target: modalBody});
+		});
+	});
+</script>
 {% endblock %}
