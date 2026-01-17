@@ -24,7 +24,9 @@ from dashboard import views as dashboard_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("accounts/", include("django.contrib.auth.urls")),
     path("", dashboard_views.index, name="dashboard"),
+    path("accounts/", include("accounts.urls")),
     path("devices/", include("devices.urls")),
     path("networktests/", include("networktests.urls")),
     path("testgroups/", include("testgroups.urls")),

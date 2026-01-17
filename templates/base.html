@@ -26,13 +26,43 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav">
+                <div class="navbar-nav me-auto">
                     <a class="nav-link d-inline text-light" href="{% url 'devices-page' %}">Devices</a>
                     <a class="nav-link d-inline text-light" href="{% url 'networktests-page' %}">Network Tests</a>
                     <a class="nav-link d-inline text-light" href="{% url 'testgroup-page' %}">Test Groups</a>
+                    {% if user.is_superuser %}
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown">
+                            Management
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="{% url 'user-list' %}">Users</a></li>
+                            <li><a class="dropdown-item" href="{% url 'group-list' %}">Groups</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'admin:index' %}">Django Admin</a></li>
+                        </ul>
+                    </div>
+                    {% endif %}
                 </div>
-                <div>
+                {% if user.is_authenticated %}
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown">
+                        {{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'my-password-change' %}">Change Password</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item">Sign Out</button>
+                            </form>
+                        </li>
+                    </ul>
                 </div>
+                {% endif %}
             </div>
     </nav>
     <div class="container">{% block content %}{% endblock %}</div>
