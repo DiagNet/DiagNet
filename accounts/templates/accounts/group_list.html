@@ -3,6 +3,12 @@
 {% block title %}Groups - DiagNet{% endblock %}
 
 {% block content %}
+<div id="group-urls"
+	data-detail-url="{% url 'group-detail' 0 %}"
+	data-membership-url="{% url 'group-membership' 0 %}"
+	data-create-url="{% url 'group-create' %}">
+</div>
+
 <h1>Groups</h1>
 
 <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#groupCreateModal">
@@ -127,14 +133,4 @@
 {% block scripts %}
 {% load static %}
 <script src="{% static 'accounts/js/group_management.js' %}"></script>
-<script>
-	document.addEventListener('DOMContentLoaded', () => {
-		// Reset creation modal
-		const modalEl = document.getElementById('groupCreateModal');
-		modalEl.addEventListener('show.bs.modal', () => {
-			const modalBody = modalEl.querySelector('.modal-body');
-			htmx.ajax('GET', '{% url "group-create" %}', {target: modalBody});
-		});
-	});
-</script>
 {% endblock %}

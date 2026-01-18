@@ -4,13 +4,31 @@ document.addEventListener('DOMContentLoaded', () => {
 	const userEditModal = document.getElementById('userEditModal');
 	const userPasswordModal = document.getElementById('userPasswordModal');
 
+	// Get URL patterns from data attributes
+	const urlsEl = document.getElementById('user-urls');
+	const urls = {
+		detail: urlsEl.dataset.detailUrl,
+		edit: urlsEl.dataset.editUrl,
+		password: urlsEl.dataset.passwordUrl,
+		create: urlsEl.dataset.createUrl,
+	};
+
+	// Helper function to replace placeholder ID in URL pattern
+	const buildUrl = (pattern, id) => pattern.replace('/0/', `/${id}/`);
+
+	// Reset creation modal when opened
+	userCreateModal.addEventListener('show.bs.modal', () => {
+		const modalBody = userCreateModal.querySelector('.modal-body');
+		htmx.ajax('GET', urls.create, { target: modalBody });
+	});
+
 	// View user details buttons
 	document.body.addEventListener('click', (e) => {
 		const detailBtn = e.target.closest('.detail-user-btn');
 		if (detailBtn) {
 			const userId = detailBtn.dataset.userId;
 			const modalBody = document.getElementById('userDetailModalBody');
-			htmx.ajax('GET', `/accounts/manage/users/${userId}/`, { target: modalBody });
+			htmx.ajax('GET', buildUrl(urls.detail, userId), { target: modalBody });
 			const modal = new bootstrap.Modal(userDetailModal);
 			modal.show();
 		}
@@ -22,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (editBtn) {
 			const userId = editBtn.dataset.userId;
 			const modalBody = document.getElementById('userEditModalBody');
-			htmx.ajax('GET', `/accounts/manage/users/${userId}/edit/`, { target: modalBody });
+			htmx.ajax('GET', buildUrl(urls.edit, userId), { target: modalBody });
 			const modal = new bootstrap.Modal(userEditModal);
 			modal.show();
 		}
@@ -34,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (passBtn) {
 			const userId = passBtn.dataset.userId;
 			const modalBody = document.getElementById('userPasswordModalBody');
-			htmx.ajax('GET', `/accounts/manage/users/${userId}/password/`, { target: modalBody });
+			htmx.ajax('GET', buildUrl(urls.password, userId), { target: modalBody });
 			const modal = new bootstrap.Modal(userPasswordModal);
 			modal.show();
 		}
@@ -44,7 +62,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	document.body.addEventListener('htmx:beforeSwap', (e) => {
 		if (e.detail.xhr.status === 204) {
 			// Close all user modals
-			[userCreateModal, userDetailModal, userEditModal, userPasswordModal].forEach(modalEl => {
+			[
+				userCreateModal,
+				userDetailModal,
+				userEditModal,
+				userPasswordModal,
+			].forEach((modalEl) => {
 				if (modalEl) {
 					const modal = bootstrap.Modal.getInstance(modalEl);
 					if (modal) modal.hide();

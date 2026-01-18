@@ -3,6 +3,13 @@
 {% block title %}Users - DiagNet{% endblock %}
 
 {% block content %}
+<div id="user-urls"
+	data-detail-url="{% url 'user-detail' 0 %}"
+	data-edit-url="{% url 'user-update' 0 %}"
+	data-password-url="{% url 'user-password' 0 %}"
+	data-create-url="{% url 'user-create' %}">
+</div>
+
 <h1>Users</h1>
 
 <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#userCreateModal">
@@ -158,14 +165,4 @@
 {% block scripts %}
 {% load static %}
 <script src="{% static 'accounts/js/user_management.js' %}"></script>
-<script>
-	document.addEventListener('DOMContentLoaded', () => {
-		// Reset creation modal
-		const modalEl = document.getElementById('userCreateModal');
-		modalEl.addEventListener('show.bs.modal', () => {
-			const modalBody = modalEl.querySelector('.modal-body');
-			htmx.ajax('GET', '{% url "user-create" %}', {target: modalBody});
-		});
-	});
-</script>
 {% endblock %}
