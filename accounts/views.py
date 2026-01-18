@@ -34,7 +34,18 @@ class AdminRequiredMixin(UserPassesTestMixin):
     """Mixin to require admin/superuser access."""
 
     def test_func(self):
-        return self.request.user.is_superuser
+        user = self.request.user
+        return (
+            user.is_superuser
+            or user.has_perm("auth.view_user")
+            or user.has_perm("auth.view_group")
+            or user.has_perm("auth.add_user")
+            or user.has_perm("auth.add_group")
+            or user.has_perm("auth.change_user")
+            or user.has_perm("auth.change_group")
+            or user.has_perm("auth.delete_user")
+            or user.has_perm("auth.delete_group")
+        )
 
 
 # ============== User Views ==============
