@@ -91,6 +91,11 @@ class UserUpdateView(AdminRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy("user-update", kwargs={"pk": self.object.pk})
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request_user"] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
         self.object = form.save()
         if self.request.headers.get("HX-Request") == "true":
