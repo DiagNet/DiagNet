@@ -12,6 +12,10 @@ from django.core.exceptions import ValidationError
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 
+from devices.models import Device
+from networktests.models import TestCase, TestResult
+from testgroups.models import TestGroup
+
 from .models import GroupProfile
 
 logger = logging.getLogger(__name__)
@@ -19,6 +23,9 @@ logger = logging.getLogger(__name__)
 
 @receiver(post_migrate)
 def create_superuser_if_none(sender, **kwargs):
+    if sender.name != "accounts":
+        return
+
     User = get_user_model()
     if not User.objects.filter(is_superuser=True).exists():
         print("⚠️ No superuser found. Creating one...")
@@ -60,14 +67,6 @@ def create_superuser_if_none(sender, **kwargs):
 @receiver(post_migrate)
 def create_default_groups(sender, **kwargs):
     """Create default groups with permissions after migration."""
-
-    # Import models - may not exist yet during initial migrations
-    try:
-        from devices.models import Device
-        from networktests.models import TestCase, TestResult
-        from testgroups.models import TestGroup
-    except ImportError:
-        return
 
     def get_perms(model_class, actions):
         """Get permission objects for a model and actions."""
