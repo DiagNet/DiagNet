@@ -16,6 +16,10 @@ from django.views.generic import (
     UpdateView,
 )
 
+from devices.models import Device
+from networktests.models import TestCase, TestResult
+from testgroups.models import TestGroup
+
 from .forms import (
     GroupForm,
     GroupMembershipForm,
@@ -261,14 +265,6 @@ class GroupCreateView(AdminRequiredMixin, View):
 
         # Clear existing permissions
         group.permissions.clear()
-
-        # Import models to get permissions
-        try:
-            from devices.models import Device
-            from networktests.models import TestCase, TestResult
-            from testgroups.models import TestGroup
-        except ImportError:
-            return
 
         logger = logging.getLogger(__name__)
 
