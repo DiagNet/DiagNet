@@ -13,7 +13,7 @@
 		<div class="form-text">{{ field.help_text }}</div>
 		{% endif %}
 		{% if field.errors %}
-		<div class="invalid-feedback d-block">
+		<div class="alert alert-danger py-2 mt-2">
 			{{ field.errors|join:", " }}
 		</div>
 		{% endif %}
