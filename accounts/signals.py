@@ -1,7 +1,6 @@
 import logging
 from getpass import getpass
 
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.auth.password_validation import (
     password_validators_help_texts,
@@ -26,7 +25,6 @@ def create_superuser_if_none(sender, **kwargs):
     if sender.name != "accounts":
         return
 
-    User = get_user_model()
     if not User.objects.filter(is_superuser=True).exists():
         print("⚠️ No superuser found. Creating one...")
 
