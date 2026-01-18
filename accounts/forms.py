@@ -1,6 +1,6 @@
 from django import forms
-from django.contrib.auth.models import Group, User
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import Group, User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
@@ -76,6 +76,47 @@ class UserUpdateForm(forms.ModelForm):
                 attrs={"class": "form-control", "placeholder": "Username"}
             ),
         }
+
+    def __init__(self, *args, request_user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request_user = request_user
+
+    def _is_admin(self, user):
+        """Check if user is in a group with 'Admins' role type."""
+        return user.groups.filter(profile__role_type="Admins").exists()
+
+    def clean_is_active(self):
+        is_active = self.cleaned_data.get("is_active")
+
+        if is_active or not self.request_user:
+            return is_active
+
+        # Prevent deactivating your own account
+        if self.instance == self.request_user:
+            raise ValidationError("You cannot deactivate your own account.")
+
+        # Superusers can deactivate anyone, but not the last active superuser
+        if self.request_user.is_superuser:
+            if self.instance.is_superuser:
+                active_superuser_count = (
+                    User.objects.filter(is_superuser=True, is_active=True)
+                    .exclude(pk=self.instance.pk)
+                    .count()
+                )
+                if active_superuser_count == 0:
+                    raise ValidationError(
+                        "Cannot deactivate the last active superuser account."
+                    )
+            return is_active
+
+        # Non-superuser admins cannot deactivate superusers or other admins
+        if self.instance.is_superuser:
+            raise ValidationError("Only superusers can deactivate superuser accounts.")
+
+        if self._is_admin(self.instance):
+            raise ValidationError("Only superusers can deactivate admin accounts.")
+
+        return is_active
 
 
 class UserPasswordChangeForm(forms.Form):
