@@ -60,7 +60,7 @@
                         {% endif %}
                     </div>
                     {% if user.is_authenticated %}
-                    <div class="nav-item dropdown">
+                    <div class="nav-item dropdown ms-auto">
                         <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown">
                             {{ user.username }}
                         </a>
@@ -77,6 +77,7 @@
                             </li>
                         </ul>
                     </div>
+                    <div class="vr d-none d-sm-block mx-2 text-light"></div>
                     {% endif %}
                     {% include "theme-switcher.html" %}
                 </div>
