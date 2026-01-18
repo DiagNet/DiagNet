@@ -142,7 +142,7 @@
 							{% if account != request.user and not account.is_superuser %}
 							<button title="Delete user" class="btn btn-sm btn-danger"
 								hx-delete="{% url 'user-delete' account.pk %}"
-								hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+								hx-headers='{"X-CSRFToken": "{{ csrf_token|escapejs }}"}'
 								hx-confirm="Are you sure you want to delete the user '{{ account.username }}'?">
 								<i class="bi bi-trash"></i>
 							</button>

@@ -111,7 +111,7 @@
 							</button>
 							<button title="Delete group" class="btn btn-sm btn-danger"
 								hx-delete="{% url 'group-delete' group.pk %}"
-								hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+								hx-headers='{"X-CSRFToken": "{{ csrf_token|escapejs }}"}'
 								hx-confirm="Are you sure you want to delete the group '{{ group.name }}'?">
 								<i class="bi bi-trash"></i>
 							</button>
