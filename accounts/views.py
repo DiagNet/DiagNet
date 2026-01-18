@@ -23,6 +23,7 @@ from .forms import (
     UserPasswordChangeForm,
     UserUpdateForm,
 )
+from .models import GroupProfile
 
 
 class AdminRequiredMixin(UserPassesTestMixin):
@@ -209,25 +210,10 @@ class GroupListView(AdminRequiredMixin, ListView):
         return context
 
     def _determine_role_type(self, group):
-        """Determine the role type based on group permissions."""
-        perms = set(group.permissions.values_list("codename", flat=True))
-
-        # Check for admin permissions (user management)
-        if "add_user" in perms or "change_user" in perms:
-            return "Admins"
-
-        # Check for delete permissions (managers)
-        if "delete_device" in perms or "delete_testcase" in perms:
-            return "Managers"
-
-        # Check for add/change permissions (editors)
-        if "add_device" in perms or "change_device" in perms:
-            return "Editors"
-
-        # Check for view permissions (viewers)
-        if "view_device" in perms or "view_testcase" in perms:
-            return "Viewers"
-
+        """Determine the role type based on group metadata."""
+        profile = GroupProfile.objects.filter(group=group).only("role_type").first()
+        if profile is not None:
+            return profile.role_type
         return "Custom"
 
 
@@ -243,6 +229,7 @@ class GroupCreateView(AdminRequiredMixin, View):
         if form.is_valid():
             group = form.save()
             role_type = form.cleaned_data["role_type"]
+            GroupProfile.objects.create(group=group, role_type=role_type)
             self._assign_permissions(group, role_type)
 
             if request.headers.get("HX-Request") == "true":
