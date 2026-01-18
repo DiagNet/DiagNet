@@ -1,25 +1,27 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import Group, User
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import (
-    ListView,
     CreateView,
-    UpdateView,
     DeleteView,
     DetailView,
+    ListView,
+    UpdateView,
 )
 
 from .forms import (
-    UserCreateForm,
-    UserUpdateForm,
-    UserPasswordChangeForm,
     GroupForm,
     GroupMembershipForm,
+    UserCreateForm,
+    UserPasswordChangeForm,
+    UserUpdateForm,
 )
 
 
@@ -267,6 +269,8 @@ class GroupCreateView(AdminRequiredMixin, View):
         except ImportError:
             return
 
+        logger = logging.getLogger(__name__)
+
         def get_perms(model_class, actions):
             """Get permission objects for a model and actions."""
             ct = ContentType.objects.get_for_model(model_class)
@@ -277,7 +281,12 @@ class GroupCreateView(AdminRequiredMixin, View):
                     perm = Permission.objects.get(content_type=ct, codename=codename)
                     perms.append(perm)
                 except Permission.DoesNotExist:
-                    pass
+                    logger.warning(
+                        "Permission '%s' not found for model '%s'. "
+                        "Ensure migrations have been run.",
+                        codename,
+                        model_class._meta.model_name,
+                    )
             return perms
 
         permissions = []
