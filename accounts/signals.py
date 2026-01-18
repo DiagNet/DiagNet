@@ -12,6 +12,8 @@ from django.core.exceptions import ValidationError
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 
+from .models import GroupProfile
+
 logger = logging.getLogger(__name__)
 
 
@@ -121,6 +123,9 @@ def create_default_groups(sender, **kwargs):
                 continue
 
             group.permissions.set(permissions)
+            GroupProfile.objects.update_or_create(
+                group=group, defaults={"role_type": role_name}
+            )
             logger.info(
                 "Created default group '%s' with %d permissions.",
                 role_name,
@@ -137,3 +142,6 @@ def create_default_groups(sender, **kwargs):
                     role_name,
                     len(permissions),
                 )
+            GroupProfile.objects.update_or_create(
+                group=group, defaults={"role_type": role_name}
+            )

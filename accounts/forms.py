@@ -4,6 +4,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
+from .models import GroupProfile
+
 
 class UserCreateForm(UserCreationForm):
     """Form for creating new users with group assignment."""
@@ -142,13 +144,6 @@ class UserPasswordChangeForm(forms.Form):
 class GroupForm(forms.Form):
     """Form for creating groups with a custom name and role type."""
 
-    ROLE_CHOICES = [
-        ("Viewers", "Viewers - Read Only"),
-        ("Editors", "Editors - View + Edit/Run"),
-        ("Managers", "Managers - View + Edit + Delete"),
-        ("Admins", "Admins - Full Access + User Management"),
-    ]
-
     name = forms.CharField(
         max_length=150,
         widget=forms.TextInput(
@@ -157,7 +152,8 @@ class GroupForm(forms.Form):
     )
 
     role_type = forms.ChoiceField(
-        choices=ROLE_CHOICES, widget=forms.Select(attrs={"class": "form-select"})
+        choices=GroupProfile.ROLE_CHOICES,
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     def clean_name(self):
