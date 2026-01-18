@@ -6,13 +6,13 @@
 	<div class="row mb-3">
 		<div class="col-md-4 text-muted">Role Type</div>
 		<div class="col-md-8">
-			{% if group.name == "Viewers" %}
+			{% if role_type == "Viewers" %}
 			<span class="badge bg-secondary">Read Only</span>
-			{% elif group.name == "Editors" %}
+			{% elif role_type == "Editors" %}
 			<span class="badge bg-info">View + Edit</span>
-			{% elif group.name == "Managers" %}
+			{% elif role_type == "Managers" %}
 			<span class="badge bg-warning text-dark">Full CRUD</span>
-			{% elif group.name == "Admins" %}
+			{% elif role_type == "Admins" %}
 			<span class="badge bg-danger">Full Access</span>
 			{% else %}
 			<span class="badge bg-dark">Custom</span>

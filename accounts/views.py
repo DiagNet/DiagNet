@@ -347,7 +347,15 @@ class GroupDetailView(AdminRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["members"] = self.object.user_set.all()
         context["permissions"] = self.object.permissions.all()
+        context["role_type"] = self._determine_role_type(self.object)
         return context
+
+    def _determine_role_type(self, group):
+        """Determine the role type based on group metadata."""
+        profile = GroupProfile.objects.filter(group=group).only("role_type").first()
+        if profile is not None:
+            return profile.role_type
+        return "Custom"
 
 
 class GroupDeleteView(AdminRequiredMixin, DeleteView):
