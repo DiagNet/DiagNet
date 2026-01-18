@@ -3,7 +3,8 @@ import logging
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group, Permission, User
+from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
@@ -276,9 +277,6 @@ class GroupCreateView(AdminRequiredMixin, View):
 
     def _assign_permissions(self, group, role_type):
         """Assign permissions based on the role type."""
-        from django.contrib.auth.models import Permission
-        from django.contrib.contenttypes.models import ContentType
-
         # Clear existing permissions
         group.permissions.clear()
 
