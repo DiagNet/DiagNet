@@ -95,9 +95,8 @@ class UserDeleteView(AdminRequiredMixin, DeleteView):
     template_name = "accounts/user_confirm_delete.html"
     success_url = reverse_lazy("user-list")
 
-    def delete(self, request, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
-        username = self.object.username
 
         # Prevent deleting yourself
         if self.object == request.user:
@@ -105,6 +104,21 @@ class UserDeleteView(AdminRequiredMixin, DeleteView):
                 return HttpResponse("You cannot delete your own account.", status=400)
             messages.error(request, "You cannot delete your own account.")
             return HttpResponseRedirect(self.success_url)
+
+        # Prevent deleting superusers (block at dispatch level)
+        if self.object.is_superuser:
+            if request.headers.get("HX-Request") == "true":
+                return HttpResponse(
+                    "You cannot delete a superuser account.", status=400
+                )
+            messages.error(request, "You cannot delete a superuser account.")
+            return HttpResponseRedirect(self.success_url)
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        username = self.object.username
 
         self.object.delete()
 
