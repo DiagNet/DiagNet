@@ -167,7 +167,7 @@ class UserPasswordChangeForm(forms.Form):
 
         if password1 and password2:
             if password1 != password2:
-                raise ValidationError("The two password fields didn't match.")
+                self.add_error("new_password2", "The two password fields didn't match.")
             try:
                 validate_password(password1, self.user)
             except ValidationError as e:
