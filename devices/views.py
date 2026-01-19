@@ -204,6 +204,7 @@ def handle_uploaded_file(f, overwrite_existing_devices: bool):
                     devices.append(device)
                     continue
                 device = Device(
+                    vendor="cisco",
                     name=name,
                     protocol=params["protocol"],
                     ip_address=params["ip_address"],
@@ -217,20 +218,17 @@ def handle_uploaded_file(f, overwrite_existing_devices: bool):
                     device = Device.objects.get(name=name)
                     device.name = name
                     device.ip_address = params["ip_address"]
-                    device.port = params["port"]
-                    device.device_type = params["device_type"]
-                    device.username = params["username"]
-                    device.password = params["password"]
+                    device.token = params["token"]
                     devices.append(device)
                     continue
                 device = Device(
+                    vendor="fortinet",
                     name=name,
-                    protocol=params["protocol"],
                     ip_address=params["ip_address"],
-                    port=params["port"],
-                    device_type=params["device_type"],
-                    username=params["username"],
-                    password=params["password"],
+                    token=params["token"],
+                    device_type="FortiOS",
+                    protocol="HTTPS",
+                    port=443,
                 )
             devices.append(device)
         except Exception as e:

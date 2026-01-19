@@ -99,7 +99,7 @@ class FortigateDeviceForm(forms.ModelForm):
 
         device.vendor = "fortinet"
 
-        device.protocol = None
+        device.protocol = "HTTPS"
         device.port = 443
         device.device_type = "FortiOS"
         device.username = None
