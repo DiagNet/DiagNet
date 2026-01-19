@@ -53,10 +53,10 @@ class DeviceCreate(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # 👇 Vendor-Auswahl-Form ins Template geben
         context["vendor_form"] = DeviceVendorForm(
             initial={"vendor": self.request.POST.get("vendor", "cisco")}
         )
+        context["is_update"] = False
 
         return context
 
@@ -104,7 +104,7 @@ class DeviceUpdate(UpdateView):
         context = super().get_context_data(**kwargs)
 
         context["vendor"] = self.object.vendor
-        context["vendor_locked"] = True  # fürs Template
+        context["is_update"] = True
 
         return context
 
@@ -191,26 +191,47 @@ def handle_uploaded_file(f, overwrite_existing_devices: bool):
         if not overwrite_existing_devices and Device.objects.filter(name=name).exists():
             raise Exception(f'device "{name}" already exists')
         try:
-            if Device.objects.filter(name=name).exists():
-                device = Device.objects.get(name=name)
-                device.name = name
-                device.protocol = params["protocol"]
-                device.ip_address = params["ip_address"]
-                device.port = params["port"]
-                device.device_type = params["device_type"]
-                device.username = params["username"]
-                device.password = params["password"]
-                devices.append(device)
-                continue
-            device = Device(
-                name=name,
-                protocol=params["protocol"],
-                ip_address=params["ip_address"],
-                port=params["port"],
-                device_type=params["device_type"],
-                username=params["username"],
-                password=params["password"],
-            )
+            if params["vendor"] == "cisco":
+                if Device.objects.filter(name=name).exists():
+                    device = Device.objects.get(name=name)
+                    device.name = name
+                    device.protocol = params["protocol"]
+                    device.ip_address = params["ip_address"]
+                    device.port = params["port"]
+                    device.device_type = params["device_type"]
+                    device.username = params["username"]
+                    device.password = params["password"]
+                    devices.append(device)
+                    continue
+                device = Device(
+                    name=name,
+                    protocol=params["protocol"],
+                    ip_address=params["ip_address"],
+                    port=params["port"],
+                    device_type=params["device_type"],
+                    username=params["username"],
+                    password=params["password"],
+                )
+            else:
+                if Device.objects.filter(name=name).exists():
+                    device = Device.objects.get(name=name)
+                    device.name = name
+                    device.ip_address = params["ip_address"]
+                    device.port = params["port"]
+                    device.device_type = params["device_type"]
+                    device.username = params["username"]
+                    device.password = params["password"]
+                    devices.append(device)
+                    continue
+                device = Device(
+                    name=name,
+                    protocol=params["protocol"],
+                    ip_address=params["ip_address"],
+                    port=params["port"],
+                    device_type=params["device_type"],
+                    username=params["username"],
+                    password=params["password"],
+                )
             devices.append(device)
         except Exception as e:
             raise Exception("at device" + name + ", " + str(e))
