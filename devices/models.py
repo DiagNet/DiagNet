@@ -7,7 +7,7 @@ from genie.testbed import load
 from django.db.models.functions import Lower
 from django.db.models import Q
 
-from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from concurrent.futures import ThreadPoolExecutor
 import netmiko
 from fortigate_api import FortiGateAPI
 
@@ -227,7 +227,7 @@ class Device(models.Model):
         try:
             future.result(timeout=5)
             return True
-        except TimeoutError:
+        except Exception:
             return False
         finally:
             executor.shutdown(wait=False)
