@@ -92,8 +92,21 @@ class DeviceUpdate(UpdateView):
     form_class = DeviceForm
     template_name = "devices/partials/device_form.html"
 
+    def get_form_class(self):
+        if self.object.vendor == "fortinet":
+            return FortigateDeviceForm
+        return DeviceForm
+
     def get_success_url(self):
         return reverse_lazy("device-update", kwargs={"pk": self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["vendor"] = self.object.vendor
+        context["vendor_locked"] = True  # fürs Template
+
+        return context
 
     def form_valid(self, form):
         self.object = form.save()
