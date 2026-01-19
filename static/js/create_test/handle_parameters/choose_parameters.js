@@ -112,7 +112,7 @@ function createParameterFields(parameter) {
 async function createAndSaveParameterFields(parameters) {
     for (const parameterInfo of parameters) {
         if (parameterInfo === null || typeof parameterInfo !== "object" || Array.isArray(parameterInfo)) {
-            throw new Error("Parameters can only be defined as a map like structure: Consider changing the test definition");
+            throw new Error(gettext("Parameters can only be defined as a map like structure: Consider changing the test definition"));
         }
         let inputField = createParameterFields(parameterInfo);
         await inputField.createField();
@@ -188,7 +188,7 @@ function createMutuallyExclusiveHandler(parameters, mutually_exclusive_bindings,
         let foundNamesCount = 0;
         for (const param of allParameterFields) {
             const paramName = param['name'];
-            if (!paramName) throw new Error("No name found for given parameter: Consider adding the 'name' field in the test definition");
+            if (!paramName) throw new Error(gettext("No name found for given parameter: Consider adding the 'name' field in the test definition"));
             if (typeof paramName !== "string") throw new Error("Parameter name has to be a string: Consider adding a valid 'name' field in the test definition");
             if (searchNames.has(paramName)) {
                 output[paramName] = param;
@@ -196,7 +196,7 @@ function createMutuallyExclusiveHandler(parameters, mutually_exclusive_bindings,
             }
         }
         if (foundNamesCount !== searchNames.size) {
-            throw new Error("Mutually-Exclusive-Binding parameter not found as an actual Parameter");
+            throw new Error(gettext("Mutually-Exclusive-Binding parameter not found as an actual Parameter"));
         }
         return output;
     }
@@ -242,7 +242,7 @@ function createDatatypeHandler(parameters, validInputMap) {
         validInputMap[parameterName] = requirement === "optional";
 
         if (!parameterName) {
-            throw new Error("No name found for given parameter: Consider adding the 'name' field in the test definition");
+            throw new Error(gettext("No name found for given parameter: Consider adding the 'name' field in the test definition"));
         }
         if (!parameterType) {
             throw new Error(`No datatype found for parameter ${parameterName}: Consider adding the 'type' field in the test definition`);
@@ -439,7 +439,7 @@ async function selectTestClass(testClass) {
     }
     if (!Array.isArray(parameters.parameters)) {
         reset();
-        throw new Error("Given parameters have to be contained in a list: Consider adding a valid test definition");
+        throw new Error(gettext("Given parameters have to be contained in a list: Consider adding a valid test definition"));
     }
 
 
@@ -447,7 +447,7 @@ async function selectTestClass(testClass) {
 
     if (allParameters.length === 0) {
         reset();
-        throw new Error("Test-Class needs to contain at least 1 parameter");
+        throw new Error(gettext("Test-Class needs to contain at least 1 parameter"));
     }
 
 

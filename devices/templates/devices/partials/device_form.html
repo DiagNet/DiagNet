@@ -1,3 +1,4 @@
+{% load i18n %}
 <form method="post"
     hx-post="{% if object %}{% url 'device-update' object.pk %}{% else %}{% url 'device-create' %}{% endif %}">
     {% csrf_token %}
@@ -15,6 +16,6 @@
     {% endif %}
     {% endfor %}
     <button class="btn btn-success" type="submit">
-        {% if object %}Save{% else %}Create{% endif %}
+        {% if object %}{% trans "Save" %}{% else %}{% trans "Create" %}{% endif %}
     </button>
 </form>

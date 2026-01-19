@@ -11,7 +11,7 @@ class PositiveNumber extends Datatype {
     }
 
     getDescription() {
-        return "A whole number (0 or positive integer, e.g., 0, 1, 42)";
+        return gettext("A whole number (0 or positive integer, e.g., 0, 1, 42)");
     }
 
     toString() {
@@ -19,6 +19,6 @@ class PositiveNumber extends Datatype {
     }
 
     displayName() {
-        return "Number";
+        return gettext("Number");
     }
 }

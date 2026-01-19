@@ -12,7 +12,7 @@ class IPv6 extends Datatype {
     }
 
     getDescription() {
-        return "An IPv6 address";
+        return gettext("An IPv6 address");
     }
 
     toString() {
@@ -43,7 +43,7 @@ class IPv6CIDR extends Datatype {
     }
 
     getDescription() {
-        return "An IPv6 network prefix in CIDR notation";
+        return gettext("An IPv6 network prefix in CIDR notation");
     }
 
     toString() {

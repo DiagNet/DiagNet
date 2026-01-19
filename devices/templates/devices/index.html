@@ -1,27 +1,28 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Devices - DiagNet{% endblock %}
+{% block title %}{% trans "Devices" %} - DiagNet{% endblock %}
 
 {% block content %}
-<h1>Devices</h1>
+<h1>{% trans "Devices" %}</h1>
 {% include "devices/partials/device_create_modal_button.html" %}
 {% include "devices/partials/device_create_modal.html" %}
 <a class="btn btn-success mb-3" id="check-all-devices">
-	<i class="bi bi-check2-all"></i> Check All Devices
+    <i class="bi bi-check2-all"></i> {% trans "Check All Devices" %}
 </a>
 <a class="btn btn-primary mb-3" href="{% url 'device-import' %}">
-	<i class="bi bi-box-arrow-in-down"></i> Import Devices
+    <i class="bi bi-box-arrow-in-down"></i> {% trans "Import Devices" %}
 </a>
 <a class="btn btn-primary mb-3" href="{% url 'devices-export' %}">
 
-	<i class="bi bi-box-arrow-up"></i> Export Devices
+    <i class="bi bi-box-arrow-up"></i> {% trans "Export Devices" %}
 </a>
 <div hx-get="{% url 'devices-table' %}" hx-trigger="load, refresh from:body" hx-swap="innerHTML" id="device-table">
-	<div class="text-center">
-		<div class="spinner-border" role="status">
-			<span class="visually-hidden">Loading devices...</span>
-		</div>
-	</div>
+    <div class="text-center">
+       <div class="spinner-border" role="status">
+          <span class="visually-hidden">{% trans "Loading devices..." %}</span>
+       </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -29,28 +30,28 @@
 {% load static %}
 <script src="{% static 'devices/device_status.js' %}"></script>
 <script>
-	document.addEventListener('DOMContentLoaded', () => {
-		// reset creation modal
-		const modalEl = document.getElementById('deviceCreationModal');
-		modalEl.addEventListener('show.bs.modal', () => {
-			const modalBody = modalEl.querySelector('.modal-body');
-			htmx.ajax('GET', '{% url "device-create" %}', {target: modalBody});
-		});
+    document.addEventListener('DOMContentLoaded', () => {
+       // reset creation modal
+       const modalEl = document.getElementById('deviceCreationModal');
+       modalEl.addEventListener('show.bs.modal', () => {
+          const modalBody = modalEl.querySelector('.modal-body');
+          htmx.ajax('GET', '{% url "device-create" %}', {target: modalBody});
+       });
 
-		// refresh on modal close
-		document.body.addEventListener('hidden.bs.modal', (event) => {
-			htmx.trigger('#device-table', 'refresh');
-		});
-	});
+       // refresh on modal close
+       document.body.addEventListener('hidden.bs.modal', (event) => {
+          htmx.trigger('#device-table', 'refresh');
+       });
+    });
 
-	document.body.addEventListener('deviceCreated', () => {
-		const modalEl = document.getElementById('deviceCreationModal');
-		const modal = bootstrap.Modal.getInstance(modalEl);
-		if (modal) modal.hide();
-	});
+    document.body.addEventListener('deviceCreated', () => {
+       const modalEl = document.getElementById('deviceCreationModal');
+       const modal = bootstrap.Modal.getInstance(modalEl);
+       if (modal) modal.hide();
+    });
 
-	document.body.addEventListener('devicesRefresh', () => {
-		htmx.trigger('#device-table', 'refresh');
-	});
+    document.body.addEventListener('devicesRefresh', () => {
+       htmx.trigger('#device-table', 'refresh');
+    });
 </script>
 {% endblock %}

@@ -10,7 +10,7 @@ class IPv4 extends Datatype {
     }
 
     getDescription() {
-        return "An IPv4 address";
+        return gettext("An IPv4 address");
     }
 
     toString() {
@@ -35,7 +35,7 @@ class IPv4CIDR extends Datatype {
     }
 
     getDescription() {
-        return "An IPv4 network prefix in CIDR notation";
+        return gettext("An IPv4 network prefix in CIDR notation");
     }
 
     toString() {

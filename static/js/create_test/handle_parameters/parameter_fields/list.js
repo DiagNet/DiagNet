@@ -221,13 +221,13 @@ class ListField extends ParameterField {
     badgeCountMaxed() {
         this.countBadge.classList.remove('bg-secondary', 'bg-warning', 'bg-success');
         this.countBadge.classList.add('bg-primary');
-        this.countInfo.innerHTML = "maximum length reached";
+        this.countInfo.innerHTML = gettext("maximum length reached");
     }
 
     badgeCountTooLow() {
         this.countBadge.classList.remove('bg-secondary', 'bg-primary', 'bg-success');
         this.countBadge.classList.add('bg-warning');
-        this.countInfo.innerHTML = "minimum length for this list is " + this.min_length;
+        this.countInfo.innerHTML = gettext("minimum length for this list is") + " " + this.min_length;
     }
 
     badgeInfoUpdate() {
@@ -344,8 +344,8 @@ class ListField extends ParameterField {
         }
 
         // Datatypes
-        container.querySelector('.infoTabDatatypeName').textContent = "List";
-        container.querySelector('.infoTabDatatypeDescription').textContent = "A list of entries, each defining its child parameters";
+        container.querySelector('.infoTabDatatypeName').textContent = gettext("List");
+        container.querySelector('.infoTabDatatypeDescription').textContent = gettext("A list of entries, each defining its child parameters");
 
         // Constraints
         if (this.min_length) container.querySelector('.list-min-length').textContent = Math.max(1, this.min_length);

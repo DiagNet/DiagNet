@@ -13,7 +13,7 @@ const inlineTestTemplate = document.getElementById("inlineTestTemplate");
 
 // Empty Result
 const emptyItem = document.createElement("li");
-emptyItem.textContent = "No testcases found";
+emptyItem.textContent = gettext("No testcases found");
 emptyItem.classList.add("list-group-item", "text-muted", "text-center");
 emptyItem.dataset.empty = "true";
 
@@ -39,13 +39,15 @@ paramTab.addEventListener("click", (e) => {
 // Test-Info
 const emptyDocumentation = `
 <div class="p-4 bg-white rounded shadow-sm text-center" style="font-family:Arial,sans-serif; line-height:1.5; max-width:800px;">
-  <h4 class="text-muted mb-3"><i class="bi bi-exclamation-circle"></i> Documentation Not Found</h4>
+  <h4 class="text-muted mb-3">
+    <i class="bi bi-exclamation-circle"></i> ${gettext("Documentation Not Found")}
+  </h4>
   <p class="text-secondary">
-    No documentation is available for this test class at the moment.
-    Please select another test class or ensure that the class has an associated docstring.
+    ${gettext("No documentation is available for this test class at the moment.")}
+    ${gettext("Please select another test class or ensure that the class has an associated docstring.")}
   </p>
   <p class="text-muted small">
-    Tip: Docstrings are required for proper documentation display.
+    ${gettext("Tip: Docstrings are required for proper documentation display.")}
   </p>
 </div>
 `;
@@ -99,7 +101,7 @@ const fetchTestClassInfoDebounced = debounce(async (testClassName) => {
 
 /** Hides the documentation. */
 function hideInfoForTestClass() {
-    docWindow.innerHTML = "Select a test class to view its documentation."
+    docWindow.innerHTML = gettext("Select a test class to view its documentation.")
 }
 
 

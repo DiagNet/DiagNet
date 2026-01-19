@@ -1,0 +1,151 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-01-19 17:22+0000\n"
+"PO-Revision-Date: 2026-01-19 18:25+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: German <de@li.org>\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: static/js/create_test/choose_test.js:16
+msgid "No testcases found"
+msgstr "Keine Testfälle gefunden"
+
+#: static/js/create_test/choose_test.js:43
+msgid "Documentation Not Found"
+msgstr "Dokumentation nicht gefunden"
+
+#: static/js/create_test/choose_test.js:46
+msgid "No documentation is available for this test class at the moment."
+msgstr "Für diese Testklasse ist derzeit keine Dokumentation verfügbar."
+
+#: static/js/create_test/choose_test.js:47
+msgid ""
+"Please select another test class or ensure that the class has an associated "
+"docstring."
+msgstr ""
+"Bitte wählen Sie eine andere Testklasse oder stellen Sie sicher, dass die "
+"Klasse über einen zugehörigen Docstring verfügt."
+
+#: static/js/create_test/choose_test.js:50
+msgid "Tip: Docstrings are required for proper documentation display."
+msgstr "Tipp: Für die korrekte Anzeige der Dokumentation sind Docstrings erforderlich."
+
+#: static/js/create_test/choose_test.js:104
+msgid "Select a test class to view its documentation."
+msgstr "Wählen Sie eine Testklasse aus, um deren Dokumentation anzuzeigen."
+
+#: static/js/create_test/choose_test_values.js:12
+msgid "Please Enter a valid testcase name"
+msgstr "Bitte geben Sie einen gültigen Namen für den Testfall ein"
+
+#: static/js/create_test/choose_test_values.js:31
+msgid "TestCase created successfully!"
+msgstr "Testfall erfolgreich erstellt!"
+
+#: static/js/create_test/error_handling.js:19
+msgid "ERROR"
+msgstr "FEHLER"
+
+#: static/js/create_test/error_handling.js:22
+msgid "Close"
+msgstr "Schließen"
+
+#: static/js/create_test/handle_parameters/choose_parameters.js:115
+msgid ""
+"Parameters can only be defined as a map like structure: Consider changing "
+"the test definition"
+msgstr ""
+"Parameter können nur als Map-ähnliche Struktur definiert werden: Erwägen Sie "
+"eine Änderung der Testdefinition"
+
+#: static/js/create_test/handle_parameters/choose_parameters.js:191
+#: static/js/create_test/handle_parameters/choose_parameters.js:245
+msgid ""
+"No name found for given parameter: Consider adding the 'name' field in the "
+"test definition"
+msgstr ""
+"Kein Name für den angegebenen Parameter gefunden: Erwägen Sie das Hinzufügen "
+"des Feldes 'name' in der Testdefinition"
+
+#: static/js/create_test/handle_parameters/choose_parameters.js:199
+msgid "Mutually-Exclusive-Binding parameter not found as an actual Parameter"
+msgstr "Parameter für gegenseitigen Ausschluss (Mutually-Exclusive-Binding) wurde nicht als tatsächlicher Parameter gefunden"
+
+#: static/js/create_test/handle_parameters/choose_parameters.js:442
+msgid ""
+"Given parameters have to be contained in a list: Consider adding a valid "
+"test definition"
+msgstr ""
+"Die angegebenen Parameter müssen in einer Liste enthalten sein: Erwägen Sie "
+"das Hinzufügen einer gültigen Testdefinition"
+
+#: static/js/create_test/handle_parameters/choose_parameters.js:450
+msgid "Test-Class needs to contain at least 1 parameter"
+msgstr "Die Testklasse muss mindestens einen Parameter enthalten"
+
+#: static/js/create_test/handle_parameters/datatypes/cisco_interface.js:21
+msgid "A Cisco interface identifier"
+msgstr "Eine Cisco-Schnittstellenkennung"
+
+#: static/js/create_test/handle_parameters/datatypes/device.js:16
+msgid "Device"
+msgstr "Gerät"
+
+#: static/js/create_test/handle_parameters/datatypes/ipv4.js:13
+msgid "An IPv4 address"
+msgstr "Eine IPv4-Adresse"
+
+#: static/js/create_test/handle_parameters/datatypes/ipv4.js:38
+msgid "An IPv4 network prefix in CIDR notation"
+msgstr "Ein IPv4-Netzwerkpräfix in CIDR-Notation"
+
+#: static/js/create_test/handle_parameters/datatypes/ipv6.js:15
+msgid "An IPv6 address"
+msgstr "Eine IPv6-Adresse"
+
+#: static/js/create_test/handle_parameters/datatypes/ipv6.js:46
+msgid "An IPv6 network prefix in CIDR notation"
+msgstr "Ein IPv6-Netzwerkpräfix in CIDR-Notation"
+
+#: static/js/create_test/handle_parameters/datatypes/number.js:14
+msgid "A whole number (0 or positive integer, e.g., 0, 1, 42)"
+msgstr "Eine ganze Zahl (0 oder positive Ganzzahl, z. B. 0, 1, 42)"
+
+#: static/js/create_test/handle_parameters/datatypes/number.js:22
+msgid "Number"
+msgstr "Zahl"
+
+#: static/js/create_test/handle_parameters/parameter_fields/choice_field.js:143
+msgid "Choice Field"
+msgstr "Auswahlfeld"
+
+#: static/js/create_test/handle_parameters/parameter_fields/choice_field.js:144
+msgid "Pick from a set of predefined choices for this parameter"
+msgstr "Wählen Sie aus einer Reihe vordefinierter Optionen für diesen Parameter"
+
+#: static/js/create_test/handle_parameters/parameter_fields/list.js:224
+msgid "maximum length reached"
+msgstr "Maximale Länge erreicht"
+
+#: static/js/create_test/handle_parameters/parameter_fields/list.js:230
+msgid "minimum length for this list is"
+msgstr "Die Mindestlänge für diese Liste beträgt"
+
+#: static/js/create_test/handle_parameters/parameter_fields/list.js:335
+msgid "List"
+msgstr "Liste"
+
+#: static/js/create_test/handle_parameters/parameter_fields/list.js:336
+msgid "A list of entries, each defining its child parameters"
+msgstr "Eine Liste von Einträgen, von denen jeder seine untergeordneten Parameter definiert"

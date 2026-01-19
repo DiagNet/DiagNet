@@ -1,14 +1,19 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Delete Device - DiagNet{% endblock %}
+{% block title %}{% trans "Delete Device" %} - DiagNet{% endblock %}
 
 {% block content %}
-<h1>Delete Device</h1>
-<p>Are you sure you want to delete the device "<strong>{{ device.name }}</strong>"?</p>
+<h1>{% trans "Delete Device" %}</h1>
+<p>
+    {% blocktrans with device_name=device.name %}
+    Are you sure you want to delete the device "<strong>{{ device_name }}</strong>"?
+    {% endblocktrans %}
+</p>
 
 <form method="post">
     {% csrf_token %}
-    <button type="submit" class="btn btn-danger">Yes, delete</button>
-    <a href="{% url 'devices-page' %}" class="btn btn-secondary">Cancel</a>
+    <button type="submit" class="btn btn-danger">{% trans "Yes, delete" %}</button>
+    <a href="{% url 'devices-page' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
 </form>
 {% endblock %}

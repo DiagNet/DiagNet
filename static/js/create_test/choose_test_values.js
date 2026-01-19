@@ -9,7 +9,7 @@ createTestButton.addEventListener("click", async () => {
     }
 
     if (labelInput.value.length === 0) {
-        throwException("Please Enter a valid testcase name");
+        throwException(gettext("Please Enter a valid testcase name"));
         return;
     }
 
@@ -28,7 +28,7 @@ createTestButton.addEventListener("click", async () => {
         return;
     }
 
-    showSuccess("TestCase created successfully!");
+    showSuccess(gettext("TestCase created successfully!"));
     // Hide the popup
     closeModel();
 });

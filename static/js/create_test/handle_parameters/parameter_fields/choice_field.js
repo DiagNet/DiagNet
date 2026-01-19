@@ -140,8 +140,8 @@ class ChoiceField extends ParameterField {
         }
 
         // Datatypes
-        container.querySelector('.infoTabDatatypeName').textContent = "Choice Field";
-        container.querySelector('.infoTabDatatypeDescription').textContent = `Pick from a set of predefined choices for this parameter`;
+        container.querySelector('.infoTabDatatypeName').textContent = gettext("Choice Field");
+        container.querySelector('.infoTabDatatypeDescription').textContent = gettext(`Pick from a set of predefined choices for this parameter`);
 
         infoContainer.appendChild(container);
     }

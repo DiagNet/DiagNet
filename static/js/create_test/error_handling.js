@@ -16,15 +16,17 @@ function throwException(message) {
 
     toastEl.innerHTML = `
         <div class="d-flex">
-            <div class="toast-body">ERROR: ${message}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            <div class="toast-body">${gettext("ERROR")}: ${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" 
+                data-bs-dismiss="toast" 
+                aria-label="${gettext("Close")}"></button>
         </div>
     `;
 
     toastContainer.appendChild(toastEl);
 
     // Initialize and show bootstrap toast
-    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+    const toast = new bootstrap.Toast(toastEl, {delay: 3000});
     toast.show();
 
     // Remove from DOM after hidden
@@ -45,6 +47,6 @@ const successToastBody = document.getElementById("successToastBody");
 function showSuccess(message, duration = 3000) {
     successToastBody.textContent = message;
 
-    const toast = new bootstrap.Toast(successToastEl, { delay: duration });
+    const toast = new bootstrap.Toast(successToastEl, {delay: duration});
     toast.show();
 }

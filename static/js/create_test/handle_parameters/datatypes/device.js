@@ -13,7 +13,7 @@ class Device extends Datatype {
     }
 
     displayName() {
-        return "Device";
+        return gettext("Device");
     }
 }
 

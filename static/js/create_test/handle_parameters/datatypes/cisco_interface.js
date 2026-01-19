@@ -71,7 +71,7 @@ class CiscoInterface extends Datatype {
     }
 
     getDescription() {
-        return "A Cisco interface identifier";
+        return gettext("A Cisco interface identifier");
     }
 
     toString() {
