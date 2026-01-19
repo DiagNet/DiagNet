@@ -62,7 +62,7 @@
 	{% endif %}
 </p>
 {% if testcase.results.last.log %}
-<pre class="bg-light p-2 rounded small">{{ testcase.results.last.log | pprint }}</pre>
+<pre class="bg-secondary p-2 rounded small">{{ testcase.results.last.log | pprint }}</pre>
 {% endif %}
 {% else %}
 <p class="text-muted">No test results yet.</p>
