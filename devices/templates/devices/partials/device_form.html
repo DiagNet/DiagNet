@@ -6,7 +6,14 @@
     {% csrf_token %}
 
     <div class="form-floating mb-3">
-        <select class="form-select" disabled>
+        <select
+            name="vendor"
+            class="form-select"
+            {% if is_update %}disabled{% endif %}
+            hx-get="{% url 'device-vendor-form' %}"
+            hx-trigger="change"
+            hx-target="#device-fields"
+        >
             <option value="cisco" {% if vendor == "cisco" %}selected{% endif %}>
                 Cisco
             </option>
