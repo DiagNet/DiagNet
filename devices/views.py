@@ -43,6 +43,10 @@ class DeviceListView(generic.ListView):
 
 
 class DeviceCreate(CreateView):
+    """
+    View for creating device
+    """
+
     model = Device
     template_name = "devices/partials/device_form.html"
 
@@ -75,6 +79,9 @@ class DeviceCreate(CreateView):
 
 
 def device_vendor_form(request):
+    """
+    Return device form fields associated with vendor
+    """
     vendor = request.GET.get("vendor", "cisco")
 
     if vendor == "fortinet":
@@ -88,6 +95,10 @@ def device_vendor_form(request):
 
 
 class DeviceUpdate(UpdateView):
+    """
+    View for updating device
+    """
+
     model = Device
     form_class = DeviceForm
     template_name = "devices/partials/device_form.html"
@@ -129,6 +140,10 @@ class DeviceUpdate(UpdateView):
 
 
 class DeviceDelete(DeleteView):
+    """
+    View for deleting device
+    """
+
     model = Device
     success_url = reverse_lazy("devices-page")
 
@@ -241,6 +256,9 @@ def handle_uploaded_file(f, overwrite_existing_devices: bool):
 
 
 def import_devices_from_yaml(request):
+    """
+    Import devices from yaml file
+    """
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
