@@ -13,7 +13,7 @@
     <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+          integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
@@ -32,50 +32,55 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-4">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">DiagNet</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'dashboard' %}">DiagNet</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
                 aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav">
-                    <a class="nav-link d-inline text-light" href="{% url 'devices-page' %}">{% trans "Devices" %}</a>
-                    <a class="nav-link d-inline text-light" href="{% url 'networktests-page' %}">{% trans "Network Tests" %}</a>
-                    <a class="nav-link d-inline text-light" href="{% url 'testgroup-page' %}">{% trans "Test Groups" %}</a>
-                </div>
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-link d-inline text-light" href="{% url 'devices-page' %}">{% trans "Devices" %}</a>
+                <a class="nav-link d-inline text-light"
+                   href="{% url 'networktests-page' %}">{% trans "Network Tests" %}</a>
+                <a class="nav-link d-inline text-light" href="{% url 'testgroup-page' %}">{% trans "Test Groups" %}</a>
+            </div>
 
-                {% include "theme-switcher.html" %}
-                <div class="vr ms-2 me-3 d-none d-sm-block" role="separator"></div>
-                <div class="nav-item dropdown text-body-secondary">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-globe"></i> {{ LANGUAGE_CODE|upper }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        {% for language in languages %}
-                            <li>
-                                <form action="{% url 'set_language' %}" method="post">
-                                    {% csrf_token %}
-                                    <input name="next" type="hidden" value="{{ request.get_full_path }}">
-                                    <input name="language" type="hidden" value="{{ language.code }}">
-                                    <button type="submit" class="dropdown-item {% if language.code == LANGUAGE_CODE %}active{% endif %}">
-                                        {{ language.name_local }} ({{ language.code|upper }})
-                                    </button>
-                                </form>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
+            {% include "theme-switcher.html" %}
+            <div class="vr ms-2 me-3 d-none d-sm-block" role="separator"></div>
+            <div class="nav-item dropdown">
+
+                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown"
+                   aria-expanded="false">
+                    <i class="bi bi-globe"></i> {{ LANGUAGE_CODE|upper }}
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-end">
+                    {% for language in languages %}
+                        <li>
+                            <form action="{% url 'set_language' %}" method="post">
+                                {% csrf_token %}
+                                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                <input name="language" type="hidden" value="{{ language.code }}">
+                                <button type="submit"
+                                        class="dropdown-item {% if language.code == LANGUAGE_CODE %}active{% endif %}">
+                                    {{ language.name_local }} ({{ language.code|upper }})
+                                </button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
-    </nav>
-    <div class="container">{% block content %}{% endblock %}</div>
+    </div>
+</nav>
+<div class="container">{% block content %}{% endblock %}</div>
 </body>
 
 {% block scripts %} {% endblock %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
-    crossorigin="anonymous"></script>
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        crossorigin="anonymous"></script>
 
 </html>
