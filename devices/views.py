@@ -114,7 +114,15 @@ def device_check(request, pk):
 
 def export_devices_from_yaml(request):
     """
-    Exports all devices that are stored in the database into a yaml file.
+    Generates a YAML file containing all stored devices and returns it as a downloadable attachment.
+
+    Merges the YAML representation of each device into a single document.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponse: A response containing the YAML file with Content-Disposition set to attachment.
     """
     import yaml
 
@@ -132,12 +140,35 @@ def export_devices_from_yaml(request):
 
 
 def get_all_devices(request):
+    """
+    Retrieves a list of all devices (names and IDs) formatted as JSON.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        JsonResponse: A JSON object containing a list of tuples [name, id] under the key "results".
+    """
     devices = Device.objects.all()
     names = [(obj.name, obj.id) for obj in devices]
     return JsonResponse({"results": names})
 
 
 def handle_uploaded_file(f, overwrite_existing_devices: bool):
+    """
+    Parses an uploaded YAML file to create or update Device objects in the database.
+
+    Args:
+        f: The uploaded file object (InMemoryUploadedFile or similar).
+        overwrite_existing_devices (bool): If True, updates existing devices with matching names.
+                                           If False, raises an exception if a device already exists.
+
+    Returns:
+        bool: True if the operation completes successfully.
+
+    Raises:
+        Exception: If a device exists and overwrite is False, or if parsing/saving fails.
+    """
     device_list_yaml: dict = yaml.safe_load(f)
     devices: list[Device] = []
 
@@ -176,6 +207,18 @@ def handle_uploaded_file(f, overwrite_existing_devices: bool):
 
 
 def import_devices_from_yaml(request):
+    """
+    View that handles the device import via YAML file upload.
+
+    Displays the upload form on GET. Processes the form data on POST, calling
+    the handler logic to update the database.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponse: Renders the upload template (on GET or error) or redirects to the device list (on success).
+    """
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
