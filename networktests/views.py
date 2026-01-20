@@ -291,6 +291,17 @@ def delete_testcase(request, pk):
     return HttpResponse(status=200)
 
 def generate_report(request):
+    """
+        Generates a PDF report containing a summary of all test cases and their latest results using ReportLab.
+
+        The report includes a table with:
+        - Label: Name of the test case
+        - Module: The python module used
+        - Expected Result: PASS/FAIL based on configuration
+        - Last Result: The outcome of the most recent execution (PASS/FAIL)
+        - Date: Timestamp of the last execution
+        """
+
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer)
     styles = getSampleStyleSheet()

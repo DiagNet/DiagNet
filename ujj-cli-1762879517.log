@@ -1,0 +1,10 @@
+
+2025-11-11 16:45:17,416: %UNICON-INFO: +++ ujj logfile ujj-cli-1762879517.log +++
+
+2025-11-11 16:45:17,417: %UNICON-INFO: +++ Unicon plugin ios (unicon.plugins.ios) +++
+Trying 192.168.10.2...
+
+
+2025-11-11 16:45:17,433: %UNICON-INFO: +++ connection to spawn: telnet 192.168.10.2 22, id: 140610342214864 +++
+
+2025-11-11 16:45:17,434: %UNICON-INFO: connection to ujj
