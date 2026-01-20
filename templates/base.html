@@ -47,26 +47,25 @@
                 </div>
 
                 {% include "theme-switcher.html" %}
-                <div class="navbar-nav ms-auto">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-globe"></i> {{ LANGUAGE_CODE|upper }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            {% for language in languages %}
-                                <li>
-                                    <form action="{% url 'set_language' %}" method="post">
-                                        {% csrf_token %}
-                                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
-                                        <input name="language" type="hidden" value="{{ language.code }}">
-                                        <button type="submit" class="dropdown-item {% if language.code == LANGUAGE_CODE %}active{% endif %}">
-                                            {{ language.name_local }} ({{ language.code|upper }})
-                                        </button>
-                                    </form>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </li>
+                <div class="vr ms-2 me-3 d-none d-sm-block" role="separator"></div>
+                <div class="nav-item dropdown text-body-secondary">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-globe"></i> {{ LANGUAGE_CODE|upper }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        {% for language in languages %}
+                            <li>
+                                <form action="{% url 'set_language' %}" method="post">
+                                    {% csrf_token %}
+                                    <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                    <input name="language" type="hidden" value="{{ language.code }}">
+                                    <button type="submit" class="dropdown-item {% if language.code == LANGUAGE_CODE %}active{% endif %}">
+                                        {{ language.name_local }} ({{ language.code|upper }})
+                                    </button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
         </div>
