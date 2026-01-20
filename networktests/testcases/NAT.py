@@ -1,3 +1,5 @@
+from pyats.utils.exceptions import SchemaEmptyParserError
+
 from networktests.testcases.base import DiagNetTest, depends_on
 
 __author__ = "Luka Pacar"
@@ -173,7 +175,7 @@ class NAT(DiagNetTest):
         {
             "name": "overload_interface",
             "display_name": "NAT/PAT - Overload Interface",
-            "description": 'The Interface maked as "overload" and used in the NAT/PAT process',
+            "description": 'The Interface marked as "overload" and used in the NAT/PAT process',
             "type": "cisco-interface",
             "requirement": "optional",
             "required_if": {"validation_mode": "NAT/PAT - Overload"},
@@ -200,18 +202,32 @@ class NAT(DiagNetTest):
         if vrf != "default":
             cmd_trans += f" vrf {vrf}"
 
-        self.stats = genie_dev.parse(cmd_stats)
+        try:
+            self.stats = genie_dev.parse(cmd_stats)
+        except SchemaEmptyParserError:
+            self.stats = {}
+        except Exception as e:
+            raise ValueError(
+                f"Critical failure parsing NAT statistics on {self.device.name}: {str(e)}"
+            )
 
         try:
             raw_trans = genie_dev.parse(cmd_trans)
-            idx = raw_trans.get("vrf", {}).get(vrf, {}).get("index", {})
+            vrf_data = raw_trans.get("vrf", {}).get(vrf, {})
+            idx_data = vrf_data.get("index", {})
 
-            if isinstance(idx, dict):
-                self.translations = list(idx.values())
+            if isinstance(idx_data, dict):
+                self.translations = list(idx_data.values())
             else:
-                self.translations = idx
-        except Exception:
+                self.translations = []
+
+        except SchemaEmptyParserError:
             self.translations = []
+
+        except Exception as e:
+            raise ValueError(
+                f"Critical failure parsing NAT translations on {self.device.name}: {str(e)}"
+            )
 
         return True
 
@@ -243,7 +259,10 @@ class NAT(DiagNetTest):
         if getattr(self, "min_active_translations", None):
             total = self.stats.get("active_translations", {}).get("total", 0)
             if total < self.min_active_translations:
-                raise ValueError(f"Low Activity: {total} translations found.")
+                raise ValueError(
+                    f"Active translations (found: {total}) are below the minimum "
+                    f"threshold ({self.min_active_translations})."
+                )
 
         # Static NAT
         if mode == "Static":
@@ -252,7 +271,13 @@ class NAT(DiagNetTest):
                     "Static validation failed: NAT translation table is empty."
                 )
 
-            for rule in self.static_rules:
+            static_rules = getattr(self, "static_rules", None)
+            if not static_rules:
+                raise ValueError(
+                    "Static validation failed: static_rules is not configured or is empty."
+                )
+
+            for rule in static_rules:
                 target_local = rule["inside_local"]
                 target_global = rule["inside_global"]
                 found_match = False
@@ -281,6 +306,11 @@ class NAT(DiagNetTest):
                 .get("id", {})
             )
             pool_data = None
+
+            if not self.pool_name:
+                raise ValueError(
+                    "Validation Mode 'Dynamic' requires a 'pool_name' parameter, but none was provided."
+                )
 
             for mapping_entry in mappings.values():
                 pool_config = mapping_entry.get("pool", {})
@@ -329,9 +359,15 @@ class NAT(DiagNetTest):
             )
             found_overload = False
 
+            if not self.overload_interface:
+                raise ValueError(
+                    "Validation Mode 'NAT/PAT - Overload' requires a 'overload_interface' parameter, but none was provided."
+                )
+
             for mapping_entry in mappings.values():
                 interface_name = str(mapping_entry.get("interface", ""))
-                if self.overload_interface in interface_name:
+                overload_interface = str(self.overload_interface)
+                if interface_name.strip().lower() == overload_interface.strip().lower():
                     found_overload = True
                     break
 
