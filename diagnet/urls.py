@@ -25,8 +25,11 @@ from dashboard import views as dashboard_views
 from django.conf.urls.i18n import i18n_patterns
 from django.views.i18n import JavaScriptCatalog
 
+from networktests import views
+
 urlpatterns = [
     path("i18n/", include("django.conf.urls.i18n")),
+    path("networktests/api/create/test", views.create_test, name="create_test_api"),
 ]
 
 urlpatterns += i18n_patterns(

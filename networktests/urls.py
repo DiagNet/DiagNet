@@ -11,7 +11,6 @@ urlpatterns = [
         views.get_parameters_of_specific_testcase,
         name="search_test_parameters_api",
     ),
-    path("api/create/test", views.create_test, name="create_test_api"),
     path("tests/<int:pk>/run/", views.run_testcase, name="tests-run"),
     path("tests/<int:pk>/delete/", views.delete_testcase, name="testcase_delete"),
     path(
