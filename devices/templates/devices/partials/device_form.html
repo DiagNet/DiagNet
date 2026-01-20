@@ -1,5 +1,5 @@
 <form method="post"
-      hx-post="{% url 'device-create' %}"
+      hx-post="{% if object %}{% url 'device-update' object.pk %}{% else %}{% url 'device-create' %}{% endif %}"
       hx-target="this"
       hx-swap="outerHTML">
 
