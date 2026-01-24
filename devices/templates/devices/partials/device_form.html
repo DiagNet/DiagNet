@@ -1,20 +1,20 @@
 <form method="post"
-    hx-post="{% if object %}{% url 'device-update' object.pk %}{% else %}{% url 'device-create' %}{% endif %}">
+      hx-post="{% if object %}{% url 'device-update' object.pk %}{% else %}{% url 'device-create' %}{% endif %}">
     {% csrf_token %}
     {% for field in form %}
-    {% if field.label != "Id" %}
-    <div class="form-floating mb-3">
-        {{ field }}
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {% if field.errors %}
-        <div class="invalid-feedback d-block">
-            {{ field.errors|join:", " }}
-        </div>
+        {% if field.label != "Id" %}
+            <div class="form-floating mb-3">
+                {{ field }}
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.errors %}<div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>{% endif %}
+            </div>
         {% endif %}
-    </div>
-    {% endif %}
     {% endfor %}
     <button class="btn btn-success" type="submit">
-        {% if object %}Save{% else %}Create{% endif %}
+        {% if object %}
+            Save
+        {% else %}
+            Create
+        {% endif %}
     </button>
 </form>

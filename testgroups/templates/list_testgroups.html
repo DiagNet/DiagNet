@@ -1,39 +1,42 @@
 <div class="table-responsive" id="testgroup-table">
-  <div id="placeholder">
-    {% if error %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      <strong>Error:</strong> {{ error }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div id="placeholder">
+        {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Error:</strong> {{ error }}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+            </div>
+        {% endif %}
     </div>
-    {% endif %}
-  </div>
-  <table class="table table-striped">
-      <thead>
-      <tr>
-          <th>Name</th>
-      </tr>
-      </thead>
-      <tbody>
-      {% if testgroup_list %}
-      {% for testgroup in testgroup_list %}
-      <tr id="testgroups-{{ testgroup.name }}">
-        <td style="width: 2rem;">
-          <button 
-            class="btn btn-sm btn-outline-secondary" 
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#collapse-{{ testgroup.name }}"
-            aria-expanded="false"
-            aria-controls="collapse-{{ testgroup.name }}">
-            <i class="bi bi-chevron-down"></i>
-          </button>
-        </td>
-
-        <td>
-          <button id="{{ testgroup.name }}-runall" class="btn btn-sm btn-primary" title="Run testcases in this group">
-						<i class="bi bi-play-fill"></i>
-					</button>
-          <script>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if testgroup_list %}
+                {% for testgroup in testgroup_list %}
+                    <tr id="testgroups-{{ testgroup.name }}">
+                        <td style="width: 2rem;">
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#collapse-{{ testgroup.name }}"
+                                    aria-expanded="false"
+                                    aria-controls="collapse-{{ testgroup.name }}">
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                        </td>
+                        <td>
+                            <button id="{{ testgroup.name }}-runall"
+                                    class="btn btn-sm btn-primary"
+                                    title="Run testcases in this group">
+                                <i class="bi bi-play-fill"></i>
+                            </button>
+                            <script>
             document.getElementById("{{ testgroup.name }}-runall").addEventListener("click", () => {
               console.log("heheheha")
               document.querySelectorAll(".{{ testgroup.name }}-runner").forEach(btn => {
@@ -41,56 +44,46 @@
                 console.log(btn)
               });
             });
-          </script>
-        </td>
-
-        <td>
-          {{ testgroup.name }}
-        </td>
-
-        <td class="text-end">
-          <button hx-get="popup/{{ testgroup.name }}"
-            hx-target="#modal-container"
-            hx-swap="innerHTML"
-            class="btn btn-sm btn-outline-success">
-            <i class="bi bi-plus"></i> Add Testcase
-          </button>
-        </td>
-
-        <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
-          <a 
-            hx-vals='{"name": "{{ testgroup.name }}"}'
-            hx-post="delete-testgroup/"
-            hx-target="#testgroup-table"
-            class="btn btn-sm btn-danger"
-            title="Delete">
-            <i class="bi bi-trash"></i>
-          </a>
-        </td>
-      </tr>
-
-      <!-- Collapsible row -->
-      <tr class="collapse" id="collapse-{{ testgroup.name }}">
-        <td colspan="3" class="bg-light" id="td-coll-{{ testgroup.name }}">
-          <div 
-            hx-get="list-testcases/{{ testgroup.name }}"
-            hx-trigger="load"
-            hx-swap="outerHTML">
-            <p>Loading content…</p>
-          </div>
-        </td>
-      </tr>
-
-      {% endfor %}
-      {% else %}
-      <tr>
-          <td colspan="100%">No Test Groups yet.</td>
-      </tr>
-      {% endif %}
-      </tbody>
-  </table>
+                            </script>
+                        </td>
+                        <td>{{ testgroup.name }}</td>
+                        <td class="text-end">
+                            <button hx-get="popup/{{ testgroup.name }}"
+                                    hx-target="#modal-container"
+                                    hx-swap="innerHTML"
+                                    class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-plus"></i> Add Testcase
+                            </button>
+                        </td>
+                        <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
+                            <a hx-vals='{"name": "{{ testgroup.name }}"}'
+                               hx-post="delete-testgroup/"
+                               hx-target="#testgroup-table"
+                               class="btn btn-sm btn-danger"
+                               title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <!-- Collapsible row -->
+                    <tr class="collapse" id="collapse-{{ testgroup.name }}">
+                        <td colspan="3" class="bg-light" id="td-coll-{{ testgroup.name }}">
+                            <div hx-get="list-testcases/{{ testgroup.name }}"
+                                 hx-trigger="load"
+                                 hx-swap="outerHTML">
+                                <p>Loading content…</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="100%">No Test Groups yet.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
 </div>
-
 <script>
         document.body.addEventListener('htmx:responseError', function (event) {
           // event.detail enthält Response-Daten

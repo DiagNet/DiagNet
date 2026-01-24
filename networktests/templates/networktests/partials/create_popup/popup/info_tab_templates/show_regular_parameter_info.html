@@ -1,42 +1,42 @@
 <template id="RegularParameterInfo">
     <div>
         <div class="d-flex justify-content-end mb-2">
-            <button type="button" class="btn btn-sm border bi bi-x-lg" tabindex="-1"
-                    style="border-color: var(--bs-border-color) !important; color: var(--bs-body-color);"
-                    onclick="this.closest('#parameterInfoContainer').classList.add('hidden')">
-            </button>
+            <button type="button"
+                    class="btn btn-sm border bi bi-x-lg"
+                    tabindex="-1"
+                    style="border-color: var(--bs-border-color) !important;
+                           color: var(--bs-body-color)"
+                    onclick="this.closest('#parameterInfoContainer').classList.add('hidden')"></button>
         </div>
-
         <div class="mt-4 p-4 rounded paramDescriptionContainer"
-             style="background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color);">
-            <h4 class="mb-3 text-body fw-bold" style="border-bottom: 2px solid var(--bs-border-color); padding-bottom: 0.5rem;">
-                Parameter Description
-            </h4>
+             style="background: var(--bs-tertiary-bg);
+                    border: 1px solid var(--bs-border-color)">
+            <h4 class="mb-3 text-body fw-bold"
+                style="border-bottom: 2px solid var(--bs-border-color);
+                       padding-bottom: 0.5rem">Parameter Description</h4>
             <div class="paramDescription p-3 rounded"
-                 style="
-                    background: var(--bs-body-bg);
-                    border: 1px solid var(--bs-border-color);
-                    color: var(--bs-body-color);
-                    line-height: 1.6;
-                    font-size: 0.96rem;
-                    font-weight: normal;
-            "></div>
+                 style="background: var(--bs-body-bg);
+                        border: 1px solid var(--bs-border-color);
+                        color: var(--bs-body-color);
+                        line-height: 1.6;
+                        font-size: 0.96rem;
+                        font-weight: normal"></div>
         </div>
-
         <div class="mt-4 p-4 rounded"
-             style="background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color);">
-            <h4 class="mb-4 text-body fw-bold" style="border-bottom: 2px solid var(--bs-border-color); padding-bottom: 0.5rem;">
-                Datatypes</h4>
-
+             style="background: var(--bs-tertiary-bg);
+                    border: 1px solid var(--bs-border-color)">
+            <h4 class="mb-4 text-body fw-bold"
+                style="border-bottom: 2px solid var(--bs-border-color);
+                       padding-bottom: 0.5rem">Datatypes</h4>
             <div class="datatypeContainer mb-4 p-3 rounded"
-                 style="background: var(--bs-body-bg); border-left: 5px solid var(--bs-primary);">
+                 style="background: var(--bs-body-bg);
+                        border-left: 5px solid var(--bs-primary)">
                 <div class="mb-2">
                     <div class="infoTabDatatypeName fw-bold fs-5 text-body"></div>
                 </div>
                 <div>
                     <div class="text-uppercase text-secondary small mb-1">Description</div>
-                    <div class="infoTabDatatypeDescription text-body" style="line-height: 1.6;">
-                    </div>
+                    <div class="infoTabDatatypeDescription text-body" style="line-height: 1.6"></div>
                 </div>
             </div>
         </div>

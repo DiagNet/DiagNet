@@ -1,16 +1,17 @@
 {% load datetime_helpers %}
-
-<td hx-swap-oob="true" id="last-run-{{ testcase.id }}" title="{{ testcase.results.last.finished_at|date:'Y-m-d H:i' }}">
-  {{ testcase.results.last.finished_at|relative_or_absolute }}
+<td hx-swap-oob="true"
+    id="last-run-{{ testcase.id }}"
+    title="{{ testcase.results.last.finished_at|date:'Y-m-d H:i' }}">
+    {{ testcase.results.last.finished_at|relative_or_absolute }}
 </td>
 <td hx-swap-oob="true" id="status-{{ testcase.id }}">
-  {% if testcase.results.last %}
-  {% if testcase.expected_result == testcase.results.last.result %}
-  <span class="badge rounded-pill bg-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-  {% else %}
-  <span class="badge rounded-pill bg-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-  {% endif %}
-  {% else %}
-  <span class="badge rounded-pill bg-secondary">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-  {% endif %}
+    {% if testcase.results.last %}
+        {% if testcase.expected_result == testcase.results.last.result %}
+            <span class="badge rounded-pill bg-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        {% else %}
+            <span class="badge rounded-pill bg-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        {% endif %}
+    {% else %}
+        <span class="badge rounded-pill bg-secondary">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    {% endif %}
 </td>

@@ -1,15 +1,18 @@
 {% if testcases %}
-{% for testcase in testcases %}
-<tr>
-  <td>{{ testcase.pk }}</td>
-  <td>{{ testcase.label }}</td>
-  <td>
-    <input type="checkbox" name="selected_testcases" value="{{ testcase.pk }}" class="form-check-input">
-  </td>
-</tr>
-{% endfor %}
+    {% for testcase in testcases %}
+        <tr>
+            <td>{{ testcase.pk }}</td>
+            <td>{{ testcase.label }}</td>
+            <td>
+                <input type="checkbox"
+                       name="selected_testcases"
+                       value="{{ testcase.pk }}"
+                       class="form-check-input">
+            </td>
+        </tr>
+    {% endfor %}
 {% else %}
-<tr>
-  <td colspan="100%">No Testcases to add.</td>
-</tr>
+    <tr>
+        <td colspan="100%">No Testcases to add.</td>
+    </tr>
 {% endif %}

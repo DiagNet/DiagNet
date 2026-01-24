@@ -1,4 +1,6 @@
-const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+const csrfToken = document.querySelector(
+  'input[name="csrfmiddlewaretoken"]',
+).value;
 
 /**
  * Fetches the required and optional parameters for a given test class from the API.
@@ -10,17 +12,19 @@ const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').va
  *   and mutually exclusive parameter groups (`mul`).
  */
 async function fetchTestParameters(testClass) {
-    if (!testClass) return {requiredParams: [], optionalParams: [], mul: null};
+  if (!testClass) return { requiredParams: [], optionalParams: [], mul: null };
 
-    const res = await fetch(`/networktests/api/search/test/parameters?test_class=${encodeURIComponent(testClass)}`);
-    const data = await res.json();
+  const res = await fetch(
+    `/networktests/api/search/test/parameters?test_class=${encodeURIComponent(testClass)}`,
+  );
+  const data = await res.json();
 
-    if (data.status === "FAIL") throw Error(data.message);
+  if (data.status === "FAIL") throw Error(data.message);
 
-    return {
-        parameters: data.parameters,
-        mul: data.mul_exclusive || []
-    };
+  return {
+    parameters: data.parameters,
+    mul: data.mul_exclusive || [],
+  };
 }
 
 /**
@@ -28,13 +32,13 @@ async function fetchTestParameters(testClass) {
  * and stores them locally in `allTestClasses`.
  */
 async function fetchAllTestClasses() {
-    try {
-        const res = await fetch(`/networktests/api/get/tests`);
-        const data = await res.json();
-        allTestClasses = data.results || [];
-    } catch (err) {
-        throw new Error("Search API error: " + err.message);
-    }
+  try {
+    const res = await fetch(`/networktests/api/get/tests`);
+    const data = await res.json();
+    allTestClasses = data.results || [];
+  } catch (err) {
+    throw new Error("Search API error: " + err.message);
+  }
 }
 
 /**
@@ -44,14 +48,14 @@ async function fetchAllTestClasses() {
  * @returns {Promise<string[]>} An array of device names. Returns an empty array if the request fails or no results are returned.
  */
 async function fetchAllDevices() {
-    try {
-        const res = await fetch(`/devices/api/get-devices`);
-        const data = await res.json();
+  try {
+    const res = await fetch(`/devices/api/get-devices`);
+    const data = await res.json();
 
-        return data.results || []
-    } catch (err) {
-        throw new Error("Search API error: " + err.message);
-    }
+    return data.results || [];
+  } catch (err) {
+    throw new Error("Search API error: " + err.message);
+  }
 }
 
 /**
@@ -64,40 +68,46 @@ async function fetchAllDevices() {
  * @param {string} description The description associated with the test case.
  * @param {boolean} expectedResult If the test case is supposed to pass (true) or fail (false).
  */
-async function createTest(testClass, params, label, description, expectedResult) {
-    const payload = {
-        test_class: testClass,
-        parameters: params,
-        label: label,
-        description: description,
-        expected_result: expectedResult
-    };
+async function createTest(
+  testClass,
+  params,
+  label,
+  description,
+  expectedResult,
+) {
+  const payload = {
+    test_class: testClass,
+    parameters: params,
+    label: label,
+    description: description,
+    expected_result: expectedResult,
+  };
 
-    let errorMessage = "";
-    try {
-        const response = await fetch("/networktests/api/create/test", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken
-            },
-            body: JSON.stringify(payload)
-        });
+  let errorMessage = "";
+  try {
+    const response = await fetch("/networktests/api/create/test", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,
+      },
+      body: JSON.stringify(payload),
+    });
 
-        const result = await response.json();
-        if (response.ok && result.status === "success") {
-            // Testcase created
-        } else {
-            errorMessage = "Error when creating testcase: " + (result.message || "Unknown error");
-        }
-    } catch (err) {
-        throw new Error("Error sending parameters: " + err.message);
+    const result = await response.json();
+    if (response.ok && result.status === "success") {
+      // Testcase created
+    } else {
+      errorMessage =
+        "Error when creating testcase: " + (result.message || "Unknown error");
     }
-    if (errorMessage.length) {
-        throw new Error(errorMessage);
-    }
+  } catch (err) {
+    throw new Error("Error sending parameters: " + err.message);
+  }
+  if (errorMessage.length) {
+    throw new Error(errorMessage);
+  }
 }
-
 
 /**
  * Fetches information for a given test class from the API.
@@ -107,14 +117,16 @@ async function createTest(testClass, params, label, description, expectedResult)
  * @returns {Promise<Object>} The results object from the API. Returns an empty object if the request fails.
  */
 async function fetchTestClassInfoAPI(testClassName) {
-    try {
-        const res = await fetch(`/networktests/api/get/test/info?name=${encodeURIComponent(testClassName)}`);
-        const data = await res.json();
-        if (data.status === "fail") throw new Error(data.message);
-        return data.results || {};
-    } catch (err) {
-        throw new Error("Failed to fetch test class info: " + err.message);
-    }
+  try {
+    const res = await fetch(
+      `/networktests/api/get/test/info?name=${encodeURIComponent(testClassName)}`,
+    );
+    const data = await res.json();
+    if (data.status === "fail") throw new Error(data.message);
+    return data.results || {};
+  } catch (err) {
+    throw new Error("Failed to fetch test class info: " + err.message);
+  }
 }
 
 /**
@@ -127,9 +139,9 @@ async function fetchTestClassInfoAPI(testClassName) {
  * @returns Debounced function.
  */
 function debounce(fn, delay) {
-    let timeout;
-    return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => fn(...args), delay);
-    };
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), delay);
+  };
 }

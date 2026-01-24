@@ -1,33 +1,37 @@
 <div class="table-responsive" id="testcase-table">
-  {% if error %}
-  <div class="alert alert-danger">
-    <strong>Error:</strong> {{ error }}
-  </div>
-  {% endif %}
-  <table class="table table-striped">
-      <thead>
-      <tr>
-          <th>Testcases</th>
-      </tr>
-      </thead>
-      <tbody>
-      {% if testcase_list %}
-      {% for testcase in testcase_list %}
-      <tr>
-          <td>
-            <a href="detail/{{ testcase.label }}/"> {{ testcase.label }} </a>
-          <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
-            <a hx-vals='{"name": "{{ testcase.label }}"}' hx-post="delete-testcase/" hx-target="#testcase-table" class="btn btn-sm btn-danger" title="Delete">
-                  <i class="bi bi-trash"></i>
-              </a>
-          </td>
-      </tr>
-      {% endfor %}
-      {% else %}
-      <tr>
-          <td colspan="100%">No Testcases yet.</td>
-      </tr>
-      {% endif %}
-      </tbody>
-  </table>
-</div>
+    {% if error %}
+        <div class="alert alert-danger">
+            <strong>Error:</strong> {{ error }}
+        </div>
+    {% endif %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Testcases</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if testcase_list %}
+                {% for testcase in testcase_list %}
+                    <tr>
+                        <td>
+                            <a href="detail/{{ testcase.label }}/">{{ testcase.label }}</a>
+                            <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
+                                <a hx-vals='{"name": "{{ testcase.label }}"}'
+                                   hx-post="delete-testcase/"
+                                   hx-target="#testcase-table"
+                                   class="btn btn-sm btn-danger"
+                                   title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="100%">No Testcases yet.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>

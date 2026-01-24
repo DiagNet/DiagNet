@@ -1,34 +1,33 @@
 {% extends "base.html" %}
-
 {% block title %}Devices - DiagNet{% endblock %}
-
 {% block content %}
-<h1>Devices</h1>
-{% include "devices/partials/device_create_modal_button.html" %}
-{% include "devices/partials/device_create_modal.html" %}
-<a class="btn btn-success mb-3" id="check-all-devices">
-	<i class="bi bi-check2-all"></i> Check All Devices
-</a>
-<a class="btn btn-primary mb-3" href="{% url 'device-import' %}">
-	<i class="bi bi-box-arrow-in-down"></i> Import Devices
-</a>
-<a class="btn btn-primary mb-3" href="{% url 'devices-export' %}">
-
-	<i class="bi bi-box-arrow-up"></i> Export Devices
-</a>
-<div hx-get="{% url 'devices-table' %}" hx-trigger="load, refresh from:body" hx-swap="innerHTML" id="device-table">
-	<div class="text-center">
-		<div class="spinner-border" role="status">
-			<span class="visually-hidden">Loading devices...</span>
-		</div>
-	</div>
-</div>
+    <h1>Devices</h1>
+    {% include "devices/partials/device_create_modal_button.html" %}
+    {% include "devices/partials/device_create_modal.html" %}
+    <a class="btn btn-success mb-3" id="check-all-devices">
+        <i class="bi bi-check2-all"></i> Check All Devices
+    </a>
+    <a class="btn btn-primary mb-3" href="{% url 'device-import' %}">
+        <i class="bi bi-box-arrow-in-down"></i> Import Devices
+    </a>
+    <a class="btn btn-primary mb-3" href="{% url 'devices-export' %}">
+        <i class="bi bi-box-arrow-up"></i> Export Devices
+    </a>
+    <div hx-get="{% url 'devices-table' %}"
+         hx-trigger="load, refresh from:body"
+         hx-swap="innerHTML"
+         id="device-table">
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading devices...</span>
+            </div>
+        </div>
+    </div>
 {% endblock %}
-
 {% block scripts %}
-{% load static %}
-<script src="{% static 'devices/device_status.js' %}"></script>
-<script>
+    {% load static %}
+    <script src="{% static 'devices/device_status.js' %}"></script>
+    <script>
 	document.addEventListener('DOMContentLoaded', () => {
 		// reset creation modal
 		const modalEl = document.getElementById('deviceCreationModal');
@@ -52,5 +51,5 @@
 	document.body.addEventListener('devicesRefresh', () => {
 		htmx.trigger('#device-table', 'refresh');
 	});
-</script>
+    </script>
 {% endblock %}
