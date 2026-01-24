@@ -5,7 +5,12 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from devices.forms import DeviceForm, UploadFileForm
+from devices.forms import (
+    DeviceForm,
+    UploadFileForm,
+    FortigateDeviceForm,
+    DeviceVendorForm,
+)
 
 from .models import Device
 
@@ -38,29 +43,81 @@ class DeviceListView(generic.ListView):
 
 
 class DeviceCreate(CreateView):
+    """
+    View for creating device
+    """
+
     model = Device
-    form_class = DeviceForm
     template_name = "devices/partials/device_form.html"
+
+    def get_form_class(self):
+        vendor = self.request.POST.get("vendor", "cisco")
+        return FortigateDeviceForm if vendor == "fortinet" else DeviceForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["vendor_form"] = DeviceVendorForm(
+            initial={"vendor": self.request.POST.get("vendor", "cisco")}
+        )
+        context["is_update"] = False
+
+        return context
 
     def form_valid(self, form):
         self.object = form.save()
+
         if self.request.headers.get("HX-Request") == "true":
             response = HttpResponse(status=204)
             response["HX-Trigger"] = "deviceCreated"
             return response
+
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse_lazy("devices-page")
 
 
+def device_vendor_form(request):
+    """
+    Return device form fields associated with vendor
+    """
+    vendor = request.GET.get("vendor", "cisco")
+
+    if vendor == "fortinet":
+        form = FortigateDeviceForm()
+        template = "devices/partials/fortigate_fields.html"
+    else:
+        form = DeviceForm()
+        template = "devices/partials/cisco_fields.html"
+
+    return render(request, template, {"form": form})
+
+
 class DeviceUpdate(UpdateView):
+    """
+    View for updating device
+    """
+
     model = Device
     form_class = DeviceForm
     template_name = "devices/partials/device_form.html"
 
+    def get_form_class(self):
+        if self.object.vendor == "fortinet":
+            return FortigateDeviceForm
+        return DeviceForm
+
     def get_success_url(self):
         return reverse_lazy("device-update", kwargs={"pk": self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["vendor"] = self.object.vendor
+        context["is_update"] = True
+
+        return context
 
     def form_valid(self, form):
         self.object = form.save()
@@ -83,6 +140,10 @@ class DeviceUpdate(UpdateView):
 
 
 class DeviceDelete(DeleteView):
+    """
+    View for deleting device
+    """
+
     model = Device
     success_url = reverse_lazy("devices-page")
 
@@ -145,26 +206,45 @@ def handle_uploaded_file(f, overwrite_existing_devices: bool):
         if not overwrite_existing_devices and Device.objects.filter(name=name).exists():
             raise Exception(f'device "{name}" already exists')
         try:
-            if Device.objects.filter(name=name).exists():
-                device = Device.objects.get(name=name)
-                device.name = name
-                device.protocol = params["protocol"]
-                device.ip_address = params["ip_address"]
-                device.port = params["port"]
-                device.device_type = params["device_type"]
-                device.username = params["username"]
-                device.password = params["password"]
-                devices.append(device)
-                continue
-            device = Device(
-                name=name,
-                protocol=params["protocol"],
-                ip_address=params["ip_address"],
-                port=params["port"],
-                device_type=params["device_type"],
-                username=params["username"],
-                password=params["password"],
-            )
+            if params["vendor"] == "cisco":
+                if Device.objects.filter(name=name).exists():
+                    device = Device.objects.get(name=name)
+                    device.name = name
+                    device.protocol = params["protocol"]
+                    device.ip_address = params["ip_address"]
+                    device.port = params["port"]
+                    device.device_type = params["device_type"]
+                    device.username = params["username"]
+                    device.password = params["password"]
+                    devices.append(device)
+                    continue
+                device = Device(
+                    vendor="cisco",
+                    name=name,
+                    protocol=params["protocol"],
+                    ip_address=params["ip_address"],
+                    port=params["port"],
+                    device_type=params["device_type"],
+                    username=params["username"],
+                    password=params["password"],
+                )
+            else:
+                if Device.objects.filter(name=name).exists():
+                    device = Device.objects.get(name=name)
+                    device.name = name
+                    device.ip_address = params["ip_address"]
+                    device.token = params["token"]
+                    devices.append(device)
+                    continue
+                device = Device(
+                    vendor="fortinet",
+                    name=name,
+                    ip_address=params["ip_address"],
+                    token=params["token"],
+                    device_type="FortiOS",
+                    protocol="HTTPS",
+                    port=443,
+                )
             devices.append(device)
         except Exception as e:
             raise Exception("at device" + name + ", " + str(e))
@@ -176,6 +256,9 @@ def handle_uploaded_file(f, overwrite_existing_devices: bool):
 
 
 def import_devices_from_yaml(request):
+    """
+    Import devices from yaml file
+    """
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
