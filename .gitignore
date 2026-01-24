@@ -1,6 +1,7 @@
 ### Nix ###
 .direnv
-.pre-commit-config.yaml
+/.pre-commit-config.yaml
+/result
 
 ### Jetbrains IDEs ###
 .idea/
