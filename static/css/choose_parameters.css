@@ -1,117 +1,121 @@
 .hidden {
-    display: none !important;
+  display: none !important;
 }
 
-.item-container-for-test{
-    border: 1px solid transparent !important;
-    border-radius: 0.375rem !important;
-    transition: border-color 0.2s ease-in-out;
+.item-container-for-test {
+  border: 1px solid transparent !important;
+  border-radius: 0.375rem !important;
+  transition: border-color 0.2s ease-in-out;
 }
 
 .item-container-for-test.selectedTestCase {
-    border-color: var(--bs-primary) !important;
-    color: var(--bs-primary) !important;
-    background-color: transparent !important;
+  border-color: var(--bs-primary) !important;
+  color: var(--bs-primary) !important;
+  background-color: transparent !important;
 }
 
-
-
 #resultsList .list-group-item.active > div {
-    box-shadow: 0 0 0 3px var(--bs-primary) inset;
-    background: inherit;
+  box-shadow: 0 0 0 3px var(--bs-primary) inset;
+  background: inherit;
 }
 
 .tab-btn {
-    background-color: var(--bs-body-bg);
-    color: var(--bs-secondary-color);
-    border: none;
-    border-top-left-radius: var(--bs-border-radius);
-    border-top-right-radius: var(--bs-border-radius);
-    transition: background-color 0.2s, color 0.2s;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-secondary-color);
+  border: none;
+  border-top-left-radius: var(--bs-border-radius);
+  border-top-right-radius: var(--bs-border-radius);
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .tab-btn.active {
-    background-color: var(--bs-primary);
+  background-color: var(--bs-primary);
 }
 
 .tab-btn:not(.active):hover {
-    background-color: var(--bs-tertiary-bg);
+  background-color: var(--bs-tertiary-bg);
 }
 
 .tab-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
 }
 
 .param-tab-pane {
-    display: block;
-    flex: 1 1 auto;
-    overflow-y: auto;
-    height: auto;
-    padding-right: 0.5rem;
+  display: block;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  height: auto;
+  padding-right: 0.5rem;
 }
 
-
 .param-tab-pane::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 
 .param-tab-pane::-webkit-scrollbar-thumb {
-    background-color: var(--bs-border-color-translucent);
-    border-radius: var(--bs-border-radius-pill);
+  background-color: var(--bs-border-color-translucent);
+  border-radius: var(--bs-border-radius-pill);
 }
 
 .param-tab-pane::-webkit-scrollbar-track {
-    background-color: transparent;
+  background-color: transparent;
 }
 
-
 .hover-effect {
-    transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .hover-effect:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--bs-box-shadow);
+  transform: translateY(-2px);
+  box-shadow: var(--bs-box-shadow);
 }
 
 .param-input {
-    border-radius: var(--bs-border-radius-lg);
-    transition: all 0.2s;
+  border-radius: var(--bs-border-radius-lg);
+  transition: all 0.2s;
 }
 
 .param-input:focus {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
 }
 
 .choice-container {
-    transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .choice-container:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--bs-box-shadow-sm);
+  transform: translateY(-2px);
+  box-shadow: var(--bs-box-shadow-sm);
 }
 
 .choice-select {
-    border-radius: var(--bs-border-radius-lg);
-    transition: all 0.2s;
+  border-radius: var(--bs-border-radius-lg);
+  transition: all 0.2s;
 }
 
 .choice-select:focus {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
 }
 
-
 .create-popup-nav {
-    transition: background-color .2s, color .2s, box-shadow .2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
 }
 
 .create-popup-nav:not(.disabled):hover {
-    background-color: var(--bs-secondary-bg);
-    color: var(--bs-body-color);
+  background-color: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
 }

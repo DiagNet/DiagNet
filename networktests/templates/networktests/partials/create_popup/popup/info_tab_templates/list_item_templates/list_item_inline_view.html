@@ -1,29 +1,49 @@
 <template id="ListItemSmallInfo">
     <div class="mt-1 d-flex align-items-center w-100"
-         style="background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: var(--bs-border-radius-lg); padding: 0.5rem 0.75rem; box-shadow: 0 2px 6px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; cursor: pointer;"
+         style="background: var(--bs-body-bg);
+                border: 1px solid var(--bs-border-color);
+                border-radius: var(--bs-border-radius-lg);
+                padding: 0.5rem 0.75rem;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+                transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+                cursor: pointer"
          onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(0,0,0,0.12)';"
          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.08)';">
-
         <span class="flex-grow-1 me-2 text-truncate"
-              style="overflow: hidden; white-space: nowrap; font-size: 0.9rem; color: var(--bs-body-color); font-weight: 500;"
-              id="infoText">
-        </span>
-
+              style="overflow: hidden;
+                     white-space: nowrap;
+                     font-size: 0.9rem;
+                     color: var(--bs-body-color);
+                     font-weight: 500"
+              id="infoText"></span>
         <div class="d-flex gap-2 flex-shrink-0">
             <button class="btn btn-sm p-2"
-                    title="More info" id="getInfoForItem" tabindex="-1"
-                    style="background: transparent; border-radius: var(--bs-border-radius); box-shadow: 0 2px 5px rgba(0,0,0,0.08); transition: background 0.2s, transform 0.2s;"
+                    title="More info"
+                    id="getInfoForItem"
+                    tabindex="-1"
+                    style="background: transparent;
+                           border-radius: var(--bs-border-radius);
+                           box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+                           transition: background 0.2s, transform 0.2s"
                     onmouseover="this.style.background='var(--bs-tertiary-bg)'; this.style.transform='scale(1.1)';"
                     onmouseout="this.style.background='transparent'; this.style.transform='scale(1)';">
-                <i class="bi bi-info-circle" style="font-size: 1.1rem; color: var(--bs-primary);"></i>
+                <i class="bi bi-info-circle"
+                   style="font-size: 1.1rem;
+                          color: var(--bs-primary)"></i>
             </button>
-
             <button class="btn btn-sm p-2"
-                    title="Delete" id="deleteItem" tabindex="-1"
-                    style="background: transparent; border-radius: var(--bs-border-radius); box-shadow: 0 2px 5px rgba(0,0,0,0.08); transition: background 0.2s, transform 0.2s;"
+                    title="Delete"
+                    id="deleteItem"
+                    tabindex="-1"
+                    style="background: transparent;
+                           border-radius: var(--bs-border-radius);
+                           box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+                           transition: background 0.2s, transform 0.2s"
                     onmouseover="this.style.background='var(--bs-tertiary-bg)'; this.style.transform='scale(1.1)';"
                     onmouseout="this.style.background='transparent'; this.style.transform='scale(1)';">
-                <i class="bi bi-trash" style="font-size: 1.1rem; color: var(--bs-danger);"></i>
+                <i class="bi bi-trash"
+                   style="font-size: 1.1rem;
+                          color: var(--bs-danger)"></i>
             </button>
         </div>
     </div>

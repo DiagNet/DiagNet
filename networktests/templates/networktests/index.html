@@ -1,20 +1,19 @@
 {% extends "base.html" %}
-
 {% block title %}Network Tests - DiagNet{% endblock %}
-
 {% block content %}
-<h1>Network Tests</h1>
-<a class="btn btn-primary mb-3" onclick="openModel()">
-	<i class="bi bi-database-add"></i> Add Test Case
-</a>
-
-<div hx-get="{% url 'networktests-table' %}" hx-trigger="load, refresh from:body delay:1s" hx-swap="innerHTML"
-	id="networktests-table">
-	<div class="text-center">
-		<div class="spinner-border" role="status">
-			<span class="visually-hidden">Loading test cases...</span>
-		</div>
-	</div>
-</div>
-{% include "networktests/partials/create_popup/create_test_popup.html" %}
+    <h1>Network Tests</h1>
+    <a class="btn btn-primary mb-3" onclick="openModel()">
+        <i class="bi bi-database-add"></i> Add Test Case
+    </a>
+    <div hx-get="{% url 'networktests-table' %}"
+         hx-trigger="load, refresh from:body delay:1s"
+         hx-swap="innerHTML"
+         id="networktests-table">
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading test cases...</span>
+            </div>
+        </div>
+    </div>
+    {% include "networktests/partials/create_popup/create_test_popup.html" %}
 {% endblock %}

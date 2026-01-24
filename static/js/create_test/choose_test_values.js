@@ -1,60 +1,62 @@
-const infoTab = document.getElementById('info-tab');
+const infoTab = document.getElementById("info-tab");
 
-const description = document.getElementById('descriptionInput');
+const description = document.getElementById("descriptionInput");
 // Create Test
-const createTestButton = document.getElementById('createTest')
+const createTestButton = document.getElementById("createTest");
 createTestButton.addEventListener("click", async () => {
-    if (setupParams || params === undefined) {
-        return;
-    }
+  if (setupParams || params === undefined) {
+    return;
+  }
 
-    if (labelInput.value.length === 0) {
-        throwException("Please Enter a valid testcase name");
-        return;
-    }
+  if (labelInput.value.length === 0) {
+    throwException("Please Enter a valid testcase name");
+    return;
+  }
 
-    let expectedResult = document.querySelector('input[name="expectedResult"]:checked').value;
+  let expectedResult = document.querySelector(
+    'input[name="expectedResult"]:checked',
+  ).value;
 
-    try {
-        await createTest(
-            previousTestClass,
-            params,
-            labelInput.value,
-            description.value,
-            expectedResult === "PASS"
-        );
-    } catch (e) {
-        throwException(e.message);
-        return;
-    }
+  try {
+    await createTest(
+      previousTestClass,
+      params,
+      labelInput.value,
+      description.value,
+      expectedResult === "PASS",
+    );
+  } catch (e) {
+    throwException(e.message);
+    return;
+  }
 
-    showSuccess("TestCase created successfully!");
-    // Hide the popup
-    closeModel();
+  showSuccess("TestCase created successfully!");
+  // Hide the popup
+  closeModel();
 });
 
 // Label Input
-const labelInput = document.getElementById('labelInput');
+const labelInput = document.getElementById("labelInput");
 
 /** Enables the "Create Test" button. */
 function enableCreateTest() {
-    createTestButton.disabled = false;
+  createTestButton.disabled = false;
 }
 
 /** Disables the "Create Test" button. */
 function disableCreateTest() {
-    createTestButton.disabled = true;
+  createTestButton.disabled = true;
 }
 
 /**
  * Checks if the label input has a value and enables or disables the "Create Test" button accordingly.
  */
 function checkTestValueInputs() {
-    if (labelInput.value.length === 0) {
-        disableCreateTest();
-    } else {
-        enableCreateTest();
-    }
+  if (labelInput.value.length === 0) {
+    disableCreateTest();
+  } else {
+    enableCreateTest();
+  }
 }
 
 labelInput.addEventListener("input", checkTestValueInputs);
@@ -70,15 +72,15 @@ let params = undefined;
  * @async
  */
 async function selectParameters(selectedParameters) {
-    setupParams = true;
+  setupParams = true;
 
-    params = readInputs(selectedParameters);
+  params = readInputs(selectedParameters);
 
-    infoTab.disabled = false;
-    infoTab.click();
-    updateTabContentAccessibility();
+  infoTab.disabled = false;
+  infoTab.click();
+  updateTabContentAccessibility();
 
-    setupParams = false;
+  setupParams = false;
 }
 
 /**
@@ -88,38 +90,39 @@ async function selectParameters(selectedParameters) {
  * @returns {Object<string, Object.<string, boolean>|[]>} Map of input names to values and list of device values.
  */
 function readInputs(parameters) {
-    const values = {};
+  const values = {};
 
-    for (const params of parameters) {
-        let field = params['parameter_info'];
-        if (!field.isEmpty()) {
-            let name = params['name'];
-            let value = field.getValue();
+  for (const params of parameters) {
+    let field = params["parameter_info"];
+    if (!field.isEmpty()) {
+      let name = params["name"];
+      let value = field.getValue();
 
-            params['type'].forEach(item => {
-                if (item === undefined) {
-                    return;
-                }
-                value = item.before_submit(value);
-            });
-
-            if (field instanceof ListField) {
-                values[name] = value;
-            } else {
-                const isDevice = field instanceof SingleLineDeviceField && allDevices.includes(value);
-                if (isDevice) {
-                    values[name] = {
-                        'value': deviceIdAndName[value],
-                        "isDevice": true
-                    };
-                } else {
-                    values[name] = {
-                        'value': value,
-                        "isDevice": false
-                    };
-                }
-            }
+      params["type"].forEach((item) => {
+        if (item === undefined) {
+          return;
         }
+        value = item.before_submit(value);
+      });
+
+      if (field instanceof ListField) {
+        values[name] = value;
+      } else {
+        const isDevice =
+          field instanceof SingleLineDeviceField && allDevices.includes(value);
+        if (isDevice) {
+          values[name] = {
+            value: deviceIdAndName[value],
+            isDevice: true,
+          };
+        } else {
+          values[name] = {
+            value: value,
+            isDevice: false,
+          };
+        }
+      }
     }
-    return values;
+  }
+  return values;
 }

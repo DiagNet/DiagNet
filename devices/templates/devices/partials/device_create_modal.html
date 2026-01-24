@@ -1,19 +1,27 @@
-<div class="modal fade" id="deviceCreationModal" tabindex="-1" aria-labelledby="deviceCreationModalLabel">
-	<div class="modal-dialog modal-lg">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h1 class="modal-title fs-5" id="deviceCreationModalLabel">
-					Create A Device</h1>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body" hx-get="{% url 'device-create' %}" hx-trigger="load" hx-target="this"
-				hx-swap="innerHTML">
-				<div class="text-center">
-					<div class="spinner-border" role="status">
-						<span class="visually-hidden">Loading form...</span>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+<div class="modal fade"
+     id="deviceCreationModal"
+     tabindex="-1"
+     aria-labelledby="deviceCreationModalLabel">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="deviceCreationModalLabel">Create A Device</h1>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body"
+                 hx-get="{% url 'device-create' %}"
+                 hx-trigger="load"
+                 hx-target="this"
+                 hx-swap="innerHTML">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading form...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

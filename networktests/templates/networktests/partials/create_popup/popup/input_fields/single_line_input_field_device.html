@@ -1,13 +1,20 @@
 <template id="parameterInputTemplateForDevices">
     <div class="form-floating mb-3 dropdown">
-        <input type="text" class="form-control param-input shadow-sm dropdown-toggle" id="floatingParam"
-               placeholder=" "/>
+        <input type="text"
+               class="form-control param-input shadow-sm dropdown-toggle"
+               id="floatingParam"
+               placeholder=" " />
         <label class="param-label fw-semibold text-secondary"></label>
-        <div class="position-absolute top-0 end-0 d-flex flex-row align-items-end gap-1 me-1 mt-1" style="max-width: calc(100% - 0.5rem); overflow: hidden;">
+        <div class="position-absolute top-0 end-0 d-flex flex-row align-items-end gap-1 me-1 mt-1"
+             style="max-width: calc(100% - 0.5rem);
+                    overflow: hidden">
             <span class="badge bg-secondary param-datatype"></span>
         </div>
-
-        <div id="dropdownMenu" class="dropdown-menu p-2" style="width: 100%; max-height: 200px; overflow-y: auto;">
+        <div id="dropdownMenu"
+             class="dropdown-menu p-2"
+             style="width: 100%;
+                    max-height: 200px;
+                    overflow-y: auto">
             <ul id="searchResults" class="list-group">
             </ul>
         </div>

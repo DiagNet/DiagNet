@@ -1,31 +1,27 @@
 {% extends "base.html" %}
-
 {% block title %}Devices - DiagNet{% endblock %}
-
 {% block content %}
-
-<div class="container py-5">
-    <div class="card mx-auto" style="max-width: 500px;">
-        <div class="card-body">
-            <h1 class="h4 mb-4 text-center">Import Devices</h1>
-
-            {% if error %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Error:</strong> {{ error }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="container py-5">
+        <div class="card mx-auto" style="max-width: 500px;">
+            <div class="card-body">
+                <h1 class="h4 mb-4 text-center">Import Devices</h1>
+                {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>Error:</strong> {{ error }}
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"></button>
+                    </div>
+                {% endif %}
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
             </div>
-            {% endif %}
-
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ form.as_p }}
-
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">Upload</button>
-                </div>
-            </form>
         </div>
     </div>
-</div>
-
 {% endblock %}

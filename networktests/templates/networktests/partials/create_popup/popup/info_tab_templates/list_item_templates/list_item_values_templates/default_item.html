@@ -1,53 +1,49 @@
 <template id="DefaultItem">
     <div class="d-flex flex-column p-2 border rounded shadow-sm mb-2"
-         style="min-width: 200px; max-width: 350px; position: relative; background-color: var(--bs-body-bg); border-color: var(--bs-border-color) !important;">
-
-        <span class="deviceBadge" style="
-            position: absolute;
-            top: 5px;
-            right: 8px;
-            background-color: var(--bs-primary);
-            color: var(--bs-white);
-            font-size: 0.65rem;
-            font-weight: 600;
-            padding: 0.15rem 0.4rem;
-            border-radius: var(--bs-border-radius-sm);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;">
-            Device
-        </span>
-
-        <span class="emptyBadge" style="
-            position: absolute;
-            top: 5px;
-            right: 8px;
-            background-color: var(--bs-danger);
-            color: var(--bs-white);
-            font-size: 0.65rem;
-            font-weight: 600;
-            padding: 0.15rem 0.4rem;
-            border-radius: var(--bs-border-radius-sm);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;">
-            Empty
-        </span>
-
+         style="min-width: 200px;
+                max-width: 350px;
+                position: relative;
+                background-color: var(--bs-body-bg);
+                border-color: var(--bs-border-color) !important">
+        <span class="deviceBadge"
+              style="position: absolute;
+                     top: 5px;
+                     right: 8px;
+                     background-color: var(--bs-primary);
+                     color: var(--bs-white);
+                     font-size: 0.65rem;
+                     font-weight: 600;
+                     padding: 0.15rem 0.4rem;
+                     border-radius: var(--bs-border-radius-sm);
+                     text-transform: uppercase;
+                     letter-spacing: 0.5px">Device</span>
+        <span class="emptyBadge"
+              style="position: absolute;
+                     top: 5px;
+                     right: 8px;
+                     background-color: var(--bs-danger);
+                     color: var(--bs-white);
+                     font-size: 0.65rem;
+                     font-weight: 600;
+                     padding: 0.15rem 0.4rem;
+                     border-radius: var(--bs-border-radius-sm);
+                     text-transform: uppercase;
+                     letter-spacing: 0.5px">Empty</span>
         <span id="name"
-              style="font-size: 0.85rem; font-weight: 500; color: var(--bs-secondary); margin-bottom: 0.15rem; line-height: 1.2;">
-            Name
-        </span>
-
+              style="font-size: 0.85rem;
+                     font-weight: 500;
+                     color: var(--bs-secondary);
+                     margin-bottom: 0.15rem;
+                     line-height: 1.2">Name</span>
         <span id="value"
               title=""
-              style="
-                  font-size: 1rem;
-                  font-weight: 600;
-                  color: var(--bs-body-color);
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                  display: block;
-                  width: 100%;">
-        </span>
+              style="font-size: 1rem;
+                     font-weight: 600;
+                     color: var(--bs-body-color);
+                     overflow: hidden;
+                     text-overflow: ellipsis;
+                     white-space: nowrap;
+                     display: block;
+                     width: 100%"></span>
     </div>
 </template>

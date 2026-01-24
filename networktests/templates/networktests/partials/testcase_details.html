@@ -1,69 +1,71 @@
-<p><strong>Base module:</strong> {{ testcase.test_module }}</p>
-<p><strong>Expected result:</strong>
-	{% if testcase.expected_result %}
-	<span class="badge rounded-pill bg-success">Pass</span>
-	{% else %}
-	<span class="badge rounded-pill bg-danger">Fail</span>
-	{% endif %}
+<p>
+    <strong>Base module:</strong> {{ testcase.test_module }}
 </p>
-<p><strong>Created:</strong> {{ testcase.created_at|date:"Y-m-d H:i" }}</p>
+<p>
+    <strong>Expected result:</strong>
+    {% if testcase.expected_result %}
+        <span class="badge rounded-pill bg-success">Pass</span>
+    {% else %}
+        <span class="badge rounded-pill bg-danger">Fail</span>
+    {% endif %}
+</p>
+<p>
+    <strong>Created:</strong> {{ testcase.created_at|date:"Y-m-d H:i" }}
+</p>
 <hr>
-
 <h4>Parameters</h4>
 {% if testcase.parameters.all %}
-<ul class="list-group mb-3">
-	{% for param in testcase.parameters.all %}
-	<li class="list-group-item d-flex justify-content-between align-items-center">
-		{{ param.name }}
-		<span class="badge bg-secondary">{{ param.value|default:"-" }}</span>
-	</li>
-	{% endfor %}
-</ul>
+    <ul class="list-group mb-3">
+        {% for param in testcase.parameters.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ param.name }}
+                <span class="badge bg-secondary">{{ param.value|default:"-" }}</span>
+            </li>
+        {% endfor %}
+    </ul>
 {% else %}
-<p class="text-muted">No parameters defined.</p>
+    <p class="text-muted">No parameters defined.</p>
 {% endif %}
 <hr>
-
 <h4>Devices</h4>
 {% if testcase.devices.all %}
-<ul class="list-group mb-3">
-	{% for device in testcase.devices.all %}
-	<li class="list-group-item d-flex justify-content-between align-items-center">
-		{{ device.name }}
-		<span class="badge bg-info">{{ device.device }}</span>
-	</li>
-	{% endfor %}
-</ul>
+    <ul class="list-group mb-3">
+        {% for device in testcase.devices.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ device.name }}
+                <span class="badge bg-info">{{ device.device }}</span>
+            </li>
+        {% endfor %}
+    </ul>
 {% else %}
-<p class="text-muted">No devices assigned.</p>
+    <p class="text-muted">No devices assigned.</p>
 {% endif %}
 <hr>
-
 <h4>Latest Result</h4>
 {% if testcase.results.last %}
-<p>
-	<strong>Attempt:</strong>
-	{{ testcase.results.last.attempt_id }}
-</p>
-<p>
-	<strong>Started:</strong>
-	{{ testcase.results.last.started_at|date:"Y-m-d H:i" }}
-</p>
-<p>
-	<strong>Finished:</strong>
-	{{ testcase.results.last.finished_at|date:"Y-m-d H:i" }}
-</p>
-<p>
-	<strong>Result:</strong>
-	{% if testcase.expected_result == testcase.results.last.result %}
-	<span class="badge rounded-pill bg-success">Pass</span>
-	{% else %}
-	<span class="badge rounded-pill bg-danger">Fail</span>
-	{% endif %}
-</p>
-{% if testcase.results.last.log %}
-<pre class="bg-secondary p-2 rounded small">{{ testcase.results.last.log | pprint }}</pre>
-{% endif %}
+    <p>
+        <strong>Attempt:</strong>
+        {{ testcase.results.last.attempt_id }}
+    </p>
+    <p>
+        <strong>Started:</strong>
+        {{ testcase.results.last.started_at|date:"Y-m-d H:i" }}
+    </p>
+    <p>
+        <strong>Finished:</strong>
+        {{ testcase.results.last.finished_at|date:"Y-m-d H:i" }}
+    </p>
+    <p>
+        <strong>Result:</strong>
+        {% if testcase.expected_result == testcase.results.last.result %}
+            <span class="badge rounded-pill bg-success">Pass</span>
+        {% else %}
+            <span class="badge rounded-pill bg-danger">Fail</span>
+        {% endif %}
+    </p>
+    {% if testcase.results.last.log %}
+        <pre class="bg-secondary p-2 rounded small">{{ testcase.results.last.log | pprint }}</pre>
+    {% endif %}
 {% else %}
-<p class="text-muted">No test results yet.</p>
+    <p class="text-muted">No test results yet.</p>
 {% endif %}
