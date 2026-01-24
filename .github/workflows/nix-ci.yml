@@ -15,4 +15,4 @@ jobs:
     name: Test code
     uses: ./.github/workflows/nix.yml
     with:
-      command: nix develop --command uv run manage.py test
+      command: nix develop --command python manage.py test
