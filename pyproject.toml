@@ -5,11 +5,15 @@ description = "Test Driven Networking"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
+    "daphne>=4.2.1",
     "django>=5.2.4",
     "django-stubs>=5.2.1",
     "netmiko>=4.6.0",
     "pyats[full]>=25.6",
 ]
+
+[tool.setuptools]
+packages = ["diagnet", "dashboard", "devices", "networktests", "testgroups"]
 
 [tool.basedpyright]
 typeCheckingMode = "standard"
