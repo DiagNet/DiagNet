@@ -20,7 +20,7 @@ typeCheckingMode = "standard"
 
 [dependency-groups]
 dev = [
-    "basedpyright>=1.31.2",
     "django-template-lsp>=1.2.0",
     "ruff>=0.12.9",
+    "ty>=0.0.13",
 ]
