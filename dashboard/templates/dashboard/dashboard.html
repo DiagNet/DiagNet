@@ -5,111 +5,16 @@
 {% block title %}Dashboard - DiagNet{% endblock %}
 {% block content %}
 
-<style>
-    #diagnet-dashboard {
-        --bg-main: #f5f7fa;
-        --bg-card: #ffffff;
-        --bg-card-2: #f0f2f5;
-        --border-soft: #d5d8dc;
 
-        --text-main: #1a1d21;
-        --text-muted: #6b7280;
 
-        --pass-color: #16a34a;
-        --fail-color: #dc2626;
-    }
-
-    #diagnet-dashboard {
-        background: var(--bg-main);
-        border-radius: 24px;
-        padding: 2.6rem;
-        margin-top: 2rem;
-    }
-
-    #diagnet-dashboard .card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-soft);
-        border-radius: 18px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    }
-
-    #diagnet-dashboard .card-header {
-        background: var(--bg-card-2) !important;
-        border-bottom: 1px solid var(--border-soft) !important;
-        color: var(--text-main) !important;
-    }
-
-    #diagnet-dashboard .form-select,
-    #diagnet-dashboard .form-control {
-        background: #ffffff !important;
-        color: var(--text-main) !important;
-        border: 1px solid var(--border-soft) !important;
-    }
-
-    #diagnet-dashboard .form-control::placeholder {
-        color: #9ca3af !important;
-    }
-
-    #diagnet-dashboard h1,
-    #diagnet-dashboard h2,
-    #diagnet-dashboard h3,
-    #diagnet-dashboard h4,
-    #diagnet-dashboard h5 {
-        color: var(--text-main) !important;
-    }
-
-    #diagnet-dashboard .text-muted {
-        color: var(--text-muted) !important;
-    }
-
-    .kpi-total-number { color: #000 !important; }
-    .kpi-pass { color: var(--pass-color) !important; }
-    .kpi-fail { color: var(--fail-color) !important; }
-
-    #diagnet-dashboard table thead th {
-        background: var(--bg-card-2) !important;
-        color: var(--text-main) !important;
-        border-bottom: 1px solid var(--border-soft) !important;
-    }
-
-    #diagnet-dashboard table tbody tr.table-danger {
-        background: rgba(255, 0, 0, 0.07) !important;
-        border-top: 1px solid rgba(255,0,0,0.15) !important;
-        border-bottom: 1px solid rgba(255,0,0,0.15) !important;
-    }
-
-    #diagnet-dashboard table tbody tr.table-success {
-        background: rgba(0, 200, 83, 0.07) !important;
-        border-top: 1px solid rgba(0,200,83,0.15) !important;
-        border-bottom: 1px solid rgba(0,200,83,0.15) !important;
-    }
-
-    #diagnet-dashboard table tbody tr:hover {
-        background: rgba(0,0,0,0.04);
-    }
-
-    .fade-in {
-        animation: fadeIn 0.6s ease-out forwards;
-        opacity: 0;
-        transform: translateY(14px);
-    }
-
-    @keyframes fadeIn {
-        to { opacity: 1; transform: translateY(0); }
-    }
-</style>
-
-<div id="diagnet-dashboard">
-    <div class="content">
-
-        <div class="mb-4 fade-in">
+<div class="mb-4">
             <h1 class="fw-bold">DiagNet Dashboard</h1>
             <p class="text-muted">Network test overview – {{ range_label }}.</p>
         </div>
 
         <div class="row g-4">
 
-            <div class="col-lg-4 fade-in">
+            <div class="col-lg-4">
 
                 <div class="card mb-4" style="height:350px;">
                     <div class="card-body d-flex flex-column">
@@ -180,7 +85,7 @@
 
             </div>
 
-            <div class="col-lg-8 fade-in">
+            <div class="col-lg-8">
                 {% include "dashboard/partials/dashboard_results.html" %}
             </div>
 
@@ -194,20 +99,16 @@
         {{ testcase_passes|json_script:"tc-passes" }}
         {{ testcase_fails|json_script:"tc-fails" }}
 
-    </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     (function () {
-        const root = document.getElementById("diagnet-dashboard");
-        if (!root) return;
+        const style = getComputedStyle(document.documentElement);
 
-        const passColor = getComputedStyle(root).getPropertyValue("--pass-color").trim();
-        const failColor = getComputedStyle(root).getPropertyValue("--fail-color").trim();
-        const textMuted = getComputedStyle(root).getPropertyValue("--text-muted").trim();
-        const gridColor = "rgba(0,0,0,0.1)";
+        const passColor = style.getPropertyValue("--bs-success");
+        const failColor = style.getPropertyValue("--bs-danger");
+        const textMuted = style.getPropertyValue("--bs-secondary-color");
+        const gridColor = style.getPropertyValue("--bs-border-color");
 
         function createPagedBarChart(canvasId, labels, passes, fails, pageSize, controls) {
             const canvas = document.getElementById(canvasId);
