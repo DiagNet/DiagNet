@@ -10,7 +10,7 @@
         <div class="card h-100 text-center">
             <div class="card-body py-4">
                 <div class="text-muted">Total</div>
-                <div class="display-5 fw-bold text-body">{{ total }}</div>
+                <div id="total-runs" class="display-5 fw-bold text-body"></div>
             </div>
         </div>
     </div>
@@ -18,7 +18,7 @@
         <div class="card h-100 text-center">
             <div class="card-body py-4">
                 <div class="fw-semibold text-success">Passed</div>
-                <div class="display-5 fw-bold text-success">{{ passes }}</div>
+                <div id="passed-runs" class="display-5 fw-bold text-success"></div>
             </div>
         </div>
     </div>
@@ -26,7 +26,7 @@
         <div class="card h-100 text-center">
             <div class="card-body py-4">
                 <div class="fw-semibold text-danger">Failed</div>
-                <div class="display-5 fw-bold text-danger">{{ fails }}</div>
+                <div id="failed-runs" class="display-5 fw-bold text-danger"></div>
             </div>
         </div>
     </div>
@@ -45,34 +45,7 @@
                     <th>Log Preview</th>
                 </tr>
             </thead>
-            <tbody>
-                {% if recent %}
-                    {% for r in recent %}
-                        <tr class="{% if r.result %}table-success{% else %}table-danger{% endif %}"
-                            data-testcase="{{ r.test_case.label|lower }}">
-                            <td class="text-nowrap">{{ r.started_at|date:"Y-m-d H:i" }}</td>
-                            <td>{{ r.test_case.label }}</td>
-                            <td>
-                                {% if r.result %}
-                                    <span class="fw-semibold text-success">PASS</span>
-                                {% else %}
-                                    <span class="fw-semibold text-danger">FAIL</span>
-                                {% endif %}
-                            </td>
-                            <td class="small">
-                                {% if r.log %}
-                                    <pre style="white-space:pre-wrap;margin:0;">{{ r.log|truncatechars:120 }}</pre>
-                                {% else %}
-                                    <span class="text-muted">—</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="4" class="text-muted">No test results found for this period.</td>
-                    </tr>
-                {% endif %}
+            <tbody id="recent-runs-table">
             </tbody>
         </table>
     </div>
