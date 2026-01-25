@@ -1,6 +1,7 @@
 import importlib.resources
 import json
 import logging
+from datetime import date
 from io import BytesIO
 
 from django.core.paginator import Paginator
@@ -315,4 +316,8 @@ def export_report_pdf(request):
     report = PDFReport(buffer)
     report.generate()
     buffer.seek(0)
-    return HttpResponse(buffer, content_type="application/pdf")
+    response = HttpResponse(buffer, content_type="application/pdf")
+    datestamp = date.today().strftime("%Y-%m-%d")
+    filename = f"DiagNet-Report-{datestamp}.pdf"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
