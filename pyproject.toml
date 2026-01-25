@@ -10,6 +10,7 @@ dependencies = [
     "django-stubs>=5.2.1",
     "netmiko>=4.6.0",
     "pyats[full]>=25.6",
+    "reportlab>=4.4.9",
 ]
 
 [tool.setuptools]
