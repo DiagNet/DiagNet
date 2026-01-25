@@ -157,7 +157,6 @@
             if (data.recent.length > 0) {
                 data.recent.forEach(r => {
                     const row = document.createElement("tr");
-                    row.className = r.result ? "table-success" : "table-danger";
                     row.dataset.testcase = r.test_case.toLowerCase();
 
                     const startedAt = new Date(r.started_at);
@@ -182,10 +181,7 @@
                         <td class="text-nowrap">${formattedStartedAt}</td>
                         <td>${r.test_case}</td>
                         <td>
-                            ${r.result
-                                ? '<span class="fw-semibold text-success">PASS</span>'
-                                : '<span class="fw-semibold text-danger">FAIL</span>'
-                            }
+                            <span class="badge ${r.result ? 'bg-success' : 'bg-danger'}">${r.result ? 'PASS' : 'FAIL'}</span>
                         </td>
                         <td class="small">${logPreview}</td>
                     `;
