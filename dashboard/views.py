@@ -1,27 +1,16 @@
+from datetime import timedelta
 from typing import List, Optional
 
+from django.db.models import QuerySet
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
-from django.db.models import QuerySet
-from datetime import timedelta
 
 from networktests.models import TestResult
 from testgroups.models import TestGroup
 
 
-def index(request):
-    """
-    Main Dashboard:
-    Left:
-        • TestGroup Chart (Pass/Fail)
-        • TestCase Chart (Pass/Fail) for selected group
-    Right:
-        • KPI cards
-        • Recent Test Runs table with filter
-    """
-
-    range_code = request.GET.get("range", "24h")
-
+def get_dashboard_data(range_code: str, group_name: Optional[str]):
     now = timezone.now()
     since: Optional[timezone.datetime] = None
     range_label = "all results"
@@ -75,12 +64,11 @@ def index(request):
         group_passes.append(group_pass_count)
         group_fails.append(group_fail_count)
 
-    selected_group_name = request.GET.get("tcgroup", None)
     selected_group = None
 
-    if selected_group_name:
+    if group_name:
         try:
-            selected_group = TestGroup.objects.get(name=selected_group_name)
+            selected_group = TestGroup.objects.get(name=group_name)
         except TestGroup.DoesNotExist:
             selected_group = None
 
@@ -101,21 +89,52 @@ def index(request):
             testcase_passes.append(case_pass)
             testcase_fails.append(case_fail)
 
-    context = {
+        recent_list = []
+
+        for r in recent:
+            recent_list.append(
+                {
+                    "test_case": r.test_case.label,
+                    "result": r.result,
+                    "started_at": r.started_at,
+                    "log": r.log,
+                }
+            )
+
+    return {
         "total": total,
         "passes": passes,
         "fails": fails,
-        "recent": recent,
+        "recent": recent_list,
         "range_code": range_code,
         "range_label": range_label,
         "group_labels": group_labels,
         "group_passes": group_passes,
         "group_fails": group_fails,
-        "selected_group": selected_group,
+        "selected_group": selected_group.name if selected_group else None,
         "testcase_labels": testcase_labels,
         "testcase_passes": testcase_passes,
         "testcase_fails": testcase_fails,
-        "groups": groups,
+        "groups": [g.name for g in groups],
     }
 
-    return render(request, "dashboard/dashboard.html", context)
+
+def dashboard_data(request):
+    range_code = request.GET.get("range", "24h")
+    group_name = request.GET.get("tcgroup", None)
+    data = get_dashboard_data(range_code, group_name)
+
+    return JsonResponse(data)
+
+
+def index(request):
+    """
+    Main Dashboard:
+    Left:
+        • TestGroup Chart (Pass/Fail)
+        • TestCase Chart (Pass/Fail) for selected group
+    Right:
+        • KPI cards
+        • Recent Test Runs table with filter
+    """
+    return render(request, "dashboard/dashboard.html")
