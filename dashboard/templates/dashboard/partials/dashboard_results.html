@@ -10,7 +10,7 @@
         <div class="card h-100 text-center">
             <div class="card-body py-4">
                 <div class="text-muted">Total</div>
-                <div class="display-5 fw-bold kpi-total-number">{{ total }}</div>
+                <div class="display-5 fw-bold text-body">{{ total }}</div>
             </div>
         </div>
     </div>
@@ -18,8 +18,8 @@
     <div class="col-md-4">
         <div class="card h-100 text-center">
             <div class="card-body py-4">
-                <div class="fw-semibold kpi-pass">Passed</div>
-                <div class="display-5 fw-bold kpi-pass">{{ passes }}</div>
+                <div class="fw-semibold text-success">Passed</div>
+                <div class="display-5 fw-bold text-success">{{ passes }}</div>
             </div>
         </div>
     </div>
@@ -27,8 +27,8 @@
     <div class="col-md-4">
         <div class="card h-100 text-center">
             <div class="card-body py-4">
-                <div class="fw-semibold kpi-fail">Failed</div>
-                <div class="display-5 fw-bold kpi-fail">{{ fails }}</div>
+                <div class="fw-semibold text-danger">Failed</div>
+                <div class="display-5 fw-bold text-danger">{{ fails }}</div>
             </div>
         </div>
     </div>
@@ -89,7 +89,7 @@
     document.getElementById("logFilter")?.addEventListener("input", function () {
         const filter = this.value.toLowerCase();
         document
-            .querySelectorAll("#diagnet-dashboard table tbody tr[data-testcase]")
+            .querySelectorAll("table tbody tr[data-testcase]")
             .forEach(row => {
                 const caseName = (row.dataset.testcase || "");
                 row.style.display = caseName.includes(filter) ? "" : "none";
