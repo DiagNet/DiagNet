@@ -1,7 +1,7 @@
 {
   "languages": {
     "Python": {
-      "language_servers": ["ty", "!basedpyright", "ruff"]
+      "language_servers": ["ty", "!basedpyright", "ruff", "..."]
     }
   },
   "file_types": {
