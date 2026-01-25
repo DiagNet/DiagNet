@@ -7,7 +7,12 @@ default:
 
 [group("django")]
 manage *args:
-    uv run manage.py {{args}}
+    #!/usr/bin/env bash
+    if [ -n "$IN_NIX_SHELL" ]; then
+        python manage.py {{args}}
+    else
+        uv run manage.py {{args}}
+    fi
 
 [group("django")]
 serve:
