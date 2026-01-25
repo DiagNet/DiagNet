@@ -1,11 +1,11 @@
 <!-- html -->
 <div class="d-flex justify-content-end mb-2">
-    <input id="logFilter" type="text" class="form-control form-control-sm"
+    <input id="logFilter"
+           type="text"
+           class="form-control form-control-sm"
            placeholder="Filter by testcase...">
 </div>
-
 <div class="row g-3 mb-3">
-
     <div class="col-md-4">
         <div class="card h-100 text-center">
             <div class="card-body py-4">
@@ -14,7 +14,6 @@
             </div>
         </div>
     </div>
-
     <div class="col-md-4">
         <div class="card h-100 text-center">
             <div class="card-body py-4">
@@ -23,7 +22,6 @@
             </div>
         </div>
     </div>
-
     <div class="col-md-4">
         <div class="card h-100 text-center">
             <div class="card-body py-4">
@@ -32,14 +30,11 @@
             </div>
         </div>
     </div>
-
 </div>
-
 <div class="card shadow-sm">
     <div class="card-header border-0">
         <h5 class="fw-semibold mb-0">Recent Test Runs</h5>
     </div>
-
     <div class="table-responsive">
         <table class="table align-middle mb-0">
             <thead>
@@ -75,16 +70,13 @@
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="4" class="text-muted">
-                            No test results found for this period.
-                        </td>
+                        <td colspan="4" class="text-muted">No test results found for this period.</td>
                     </tr>
                 {% endif %}
             </tbody>
         </table>
     </div>
 </div>
-
 <script>
     document.getElementById("logFilter")?.addEventListener("input", function () {
         const filter = this.value.toLowerCase();

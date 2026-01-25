@@ -1,107 +1,86 @@
 <!-- html -->
 {% extends "base.html" %}
 {% load static %}
-
 {% block title %}Dashboard - DiagNet{% endblock %}
 {% block content %}
-
-
-
-<div class="mb-4">
-            <h1 class="fw-bold">DiagNet Dashboard</h1>
-            <p class="text-muted">Network test overview – {{ range_label }}.</p>
-        </div>
-
-        <div class="row g-4">
-
-            <div class="col-lg-4">
-
-                <div class="card mb-4" style="height:350px;">
-                    <div class="card-body d-flex flex-column">
-
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="fw-semibold mb-0">Test Groups</h5>
-
-                            <div class="d-flex align-items-center gap-2">
-                                <button type="button" id="groupsPrev"
-                                        class="btn btn-sm btn-outline-secondary py-0 px-2">‹</button>
-                                <span id="groupsPageInfo" class="small text-muted"></span>
-                                <button type="button" id="groupsNext"
-                                        class="btn btn-sm btn-outline-secondary py-0 px-2">›</button>
-                            </div>
+    <div class="mb-4">
+        <h1 class="fw-bold">DiagNet Dashboard</h1>
+        <p class="text-muted">Network test overview – {{ range_label }}.</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card mb-4" style="height:350px;">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-semibold mb-0">Test Groups</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button"
+                                    id="groupsPrev"
+                                    class="btn btn-sm btn-outline-secondary py-0 px-2">‹</button>
+                            <span id="groupsPageInfo" class="small text-muted"></span>
+                            <button type="button"
+                                    id="groupsNext"
+                                    class="btn btn-sm btn-outline-secondary py-0 px-2">›</button>
                         </div>
-
-                        <form method="get">
-                            <select name="range" class="form-select form-select-sm"
-                                    onchange="this.form.submit()">
-                                <option value="24h" {% if range_code == '24h' %}selected{% endif %}>24 hours</option>
-                                <option value="7d" {% if range_code == '7d' %}selected{% endif %}>7 days</option>
-                                <option value="30d" {% if range_code == '30d' %}selected{% endif %}>30 days</option>
-                                <option value="all" {% if range_code == 'all' %}selected{% endif %}>All</option>
-                            </select>
-                        </form>
-
-                        <div class="mt-2" style="flex:1;">
-                            <canvas id="testgroupChart"></canvas>
-                        </div>
-
+                    </div>
+                    <form method="get">
+                        <select name="range"
+                                class="form-select form-select-sm"
+                                onchange="this.form.submit()">
+                            <option value="24h" {% if range_code == '24h' %}selected{% endif %}>24 hours</option>
+                            <option value="7d" {% if range_code == '7d' %}selected{% endif %}>7 days</option>
+                            <option value="30d" {% if range_code == '30d' %}selected{% endif %}>30 days</option>
+                            <option value="all" {% if range_code == 'all' %}selected{% endif %}>All</option>
+                        </select>
+                    </form>
+                    <div class="mt-2" style="flex:1;">
+                        <canvas id="testgroupChart"></canvas>
                     </div>
                 </div>
-
-                <div class="card" style="height:350px;">
-                    <div class="card-body d-flex flex-column">
-
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="fw-semibold mb-0">TestCases</h5>
-
-                            <div class="d-flex align-items-center gap-2">
-                                <button type="button" id="tcPrev"
-                                        class="btn btn-sm btn-outline-secondary py-0 px-2">‹</button>
-                                <span id="tcPageInfo" class="small text-muted"></span>
-                                <button type="button" id="tcNext"
-                                        class="btn btn-sm btn-outline-secondary py-0 px-2">›</button>
-                            </div>
+            </div>
+            <div class="card" style="height:350px;">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-semibold mb-0">TestCases</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button"
+                                    id="tcPrev"
+                                    class="btn btn-sm btn-outline-secondary py-0 px-2">‹</button>
+                            <span id="tcPageInfo" class="small text-muted"></span>
+                            <button type="button"
+                                    id="tcNext"
+                                    class="btn btn-sm btn-outline-secondary py-0 px-2">›</button>
                         </div>
-
-                        <form method="get">
-                            <input type="hidden" name="range" value="{{ range_code }}">
-                            <select name="tcgroup" class="form-select form-select-sm"
-                                    onchange="this.form.submit()">
-                                {% for g in groups %}
-                                    <option value="{{ g.name }}"
-                                            {% if selected_group and selected_group.name == g.name %}selected{% endif %}>
-                                        {{ g.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </form>
-
-                        <div class="mt-2" style="flex:1;">
-                            <canvas id="testcaseChart"></canvas>
-                        </div>
-
+                    </div>
+                    <form method="get">
+                        <input type="hidden" name="range" value="{{ range_code }}">
+                        <select name="tcgroup"
+                                class="form-select form-select-sm"
+                                onchange="this.form.submit()">
+                            {% for g in groups %}
+                                <option value="{{ g.name }}"
+                                        {% if selected_group and selected_group.name == g.name %}selected{% endif %}>
+                                    {{ g.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                    <div class="mt-2" style="flex:1;">
+                        <canvas id="testcaseChart"></canvas>
                     </div>
                 </div>
-
             </div>
-
-            <div class="col-lg-8">
-                {% include "dashboard/partials/dashboard_results.html" %}
-            </div>
-
         </div>
-
-        {{ group_labels|json_script:"group-labels" }}
-        {{ group_passes|json_script:"group-passes" }}
-        {{ group_fails|json_script:"group-fails" }}
-
-        {{ testcase_labels|json_script:"tc-labels" }}
-        {{ testcase_passes|json_script:"tc-passes" }}
-        {{ testcase_fails|json_script:"tc-fails" }}
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
+        <div class="col-lg-8">{% include "dashboard/partials/dashboard_results.html" %}</div>
+    </div>
+    {{ group_labels|json_script:"group-labels" }}
+    {{ group_passes|json_script:"group-passes" }}
+    {{ group_fails|json_script:"group-fails" }}
+    {{ testcase_labels|json_script:"tc-labels" }}
+    {{ testcase_passes|json_script:"tc-passes" }}
+    {{ testcase_fails|json_script:"tc-fails" }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
     (function () {
         const style = getComputedStyle(document.documentElement);
 
@@ -224,6 +203,5 @@
         }
 
     })();
-</script>
-
+    </script>
 {% endblock %}
