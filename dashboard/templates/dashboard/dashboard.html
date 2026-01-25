@@ -79,6 +79,8 @@
     {{ testcase_labels|json_script:"tc-labels" }}
     {{ testcase_passes|json_script:"tc-passes" }}
     {{ testcase_fails|json_script:"tc-fails" }}
+{% endblock %}
+{% block scripts %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
     (function () {
