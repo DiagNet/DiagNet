@@ -368,9 +368,9 @@ def export_report_pdf(request):
 
     now = timezone.now()
 
-    results = (
-        TestResult.objects.select_related("test_case").order_by("-started_at")[:50]
-    )
+    results = TestResult.objects.select_related("test_case").order_by("-started_at")[
+        :50
+    ]
 
     groups = TestGroup.objects.all().prefetch_related("testcases")
 
@@ -391,7 +391,11 @@ def export_report_pdf(request):
         group_fails_all.append(f)
 
     group_chart_chunks = [
-        (group_labels_all[i : i + 5], group_passes_all[i : i + 5], group_fails_all[i : i + 5])
+        (
+            group_labels_all[i : i + 5],
+            group_passes_all[i : i + 5],
+            group_fails_all[i : i + 5],
+        )
         for i in range(0, len(group_labels_all), 5)
     ]
 

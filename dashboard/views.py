@@ -38,9 +38,8 @@ def index(request):
     elif range_code == "all":
         since = None
 
-    results_qs: QuerySet = (
-        TestResult.objects.select_related("test_case")
-        .order_by("-started_at")
+    results_qs: QuerySet = TestResult.objects.select_related("test_case").order_by(
+        "-started_at"
     )
     if since is not None:
         results_qs = results_qs.filter(started_at__gte=since)
@@ -67,7 +66,9 @@ def index(request):
         if group_total == 0:
             continue
 
-        group_pass_count = results_qs.filter(test_case_id__in=case_ids, result=True).count()
+        group_pass_count = results_qs.filter(
+            test_case_id__in=case_ids, result=True
+        ).count()
         group_fail_count = group_total - group_pass_count
 
         group_labels.append(group.name)
