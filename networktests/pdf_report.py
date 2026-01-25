@@ -169,6 +169,7 @@ class PDFReport:
             tc = (r.test_case.label or "")[:24]
             raw = r.log
             msg = self.format_message_for_pdf(raw)
+            max_len = 60
 
             self.pdf.drawString(50, y, ts)
             self.pdf.drawString(160, y, tc)
@@ -176,6 +177,13 @@ class PDFReport:
             if r.result:
                 self.pdf.setFillColor(colors.HexColor("#16a34a"))
                 self.pdf.drawString(310, y, "PASS")
+                if msg == "Log format not recognized.":
+                    if raw:
+                        raw_as_string = str(raw)
+                        if len(raw_as_string) > max_len:
+                            msg = raw_as_string[: max_len - 3] + "..."
+                        else:
+                            msg = raw_as_string
             else:
                 self.pdf.setFillColor(colors.HexColor("#dc2626"))
                 self.pdf.drawString(310, y, "FAIL")
@@ -228,9 +236,15 @@ class PDFReport:
             try:
                 raw = json.loads(raw)
             except json.JSONDecodeError:
-                return raw[:max_len]
+                if len(raw) > max_len:
+                    return raw[: max_len - 3] + "..."
+                return raw
         if isinstance(raw, dict) and "tests" in raw:
             for testname, test in raw["tests"].items():
-                if test["status"] == "FAIL":
-                    return test["message"][:max_len]
+                if test.get("status") == "FAIL":
+                    message = test.get("message", "Unknown error")
+                    if len(message) > max_len:
+                        return message[: max_len - 3] + "..."
+                    return message
+            return "N/A"
         return "Log format not recognized."
