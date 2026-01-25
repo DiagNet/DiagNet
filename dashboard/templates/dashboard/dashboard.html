@@ -84,12 +84,43 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
     (function () {
+        const charts = [];
         const style = getComputedStyle(document.documentElement);
 
-        const passColor = style.getPropertyValue("--bs-success");
-        const failColor = style.getPropertyValue("--bs-danger");
-        const textMuted = style.getPropertyValue("--bs-secondary-color");
-        const gridColor = style.getPropertyValue("--bs-border-color");
+        const getChartColors = () => ({
+            passColor: style.getPropertyValue("--bs-success"),
+            failColor: style.getPropertyValue("--bs-danger"),
+            textMuted: style.getPropertyValue("--bs-secondary-color"),
+            gridColor: style.getPropertyValue("--bs-border-color"),
+        });
+
+        function updateCharts() {
+            const colors = getChartColors();
+            charts.forEach(chart => {
+                const legend = chart.options.plugins.legend;
+                if (legend) legend.labels.color = colors.textMuted;
+
+                const ticksX = chart.options.scales.x.ticks;
+                if (ticksX) ticksX.color = colors.textMuted;
+
+                const ticksY = chart.options.scales.y.ticks;
+                if (ticksY) ticksY.color = colors.textMuted;
+
+                const gridY = chart.options.scales.y.grid;
+                if (gridY) gridY.color = colors.gridColor;
+                chart.update();
+            });
+        }
+
+        const themeObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === "attributes" && mutation.attributeName === "data-bs-theme") {
+                    updateCharts();
+                }
+            }
+        });
+        themeObserver.observe(document.documentElement, { attributes: true });
+
 
         function createPagedBarChart(canvasId, labels, passes, fails, pageSize, controls) {
             const canvas = document.getElementById(canvasId);
@@ -109,31 +140,34 @@
             }
 
             const s = getSlice();
+            const colors = getChartColors();
+
 
             const chart = new Chart(canvas, {
                 type: "bar",
                 data: {
                     labels: s.labels,
                     datasets: [
-                        { label: "Pass", data: s.passes, backgroundColor: passColor, stack: "stack" },
-                        { label: "Fail", data: s.fails,  backgroundColor: failColor, stack: "stack" }
+                        { label: "Pass", data: s.passes, backgroundColor: colors.passColor, stack: "stack" },
+                        { label: "Fail", data: s.fails,  backgroundColor: colors.failColor, stack: "stack" }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: textMuted } } },
+                    plugins: { legend: { labels: { color: colors.textMuted } } },
                     scales: {
-                        x: { stacked: true, ticks: { color: textMuted }, grid: { display: false } },
+                        x: { stacked: true, ticks: { color: colors.textMuted }, grid: { display: false } },
                         y: {
                             stacked: true,
                             beginAtZero: true,
-                            ticks: { stepSize: 1, precision: 0, color: textMuted },
-                            grid: { color: gridColor }
+                            ticks: { stepSize: 1, precision: 0, color: colors.textMuted },
+                            grid: { color: colors.gridColor }
                         }
                     }
                 }
             });
+            charts.push(chart);
 
             function updatePaging() {
                 const { prev, next, info } = controls;
