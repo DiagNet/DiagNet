@@ -1,70 +1,69 @@
 <div class="mb-4">
-	<div class="row mb-3">
-		<div class="col-md-4 text-muted">Username</div>
-		<div class="col-md-8"><strong>{{ account.username }}</strong></div>
-	</div>
-	<div class="row mb-3">
-		<div class="col-md-4 text-muted">Email</div>
-		<div class="col-md-8">{{ account.email|default:"-" }}</div>
-	</div>
-	<div class="row mb-3">
-		<div class="col-md-4 text-muted">Status</div>
-		<div class="col-md-8">
-			{% if account.is_superuser %}
-			<span class="badge bg-danger">Superuser</span>
-			{% elif account.is_staff %}
-			<span class="badge bg-warning text-dark">Staff</span>
-			{% elif account.is_active %}
-			<span class="badge bg-success">Active</span>
-			{% else %}
-			<span class="badge bg-secondary">Inactive</span>
-			{% endif %}
-		</div>
-	</div>
-	<div class="row mb-3">
-		<div class="col-md-4 text-muted">Groups</div>
-		<div class="col-md-8">
-			{% for group in account.groups.all %}
-			<span class="badge bg-primary me-1">{{ group.name }}</span>
-			{% empty %}
-			<span class="text-muted">No groups assigned</span>
-			{% endfor %}
-		</div>
-	</div>
-	<div class="row mb-3">
-		<div class="col-md-4 text-muted">Date Joined</div>
-		<div class="col-md-8">{{ account.date_joined|date:"F j, Y, g:i a" }}</div>
-	</div>
-	<div class="row mb-3">
-		<div class="col-md-4 text-muted">Last Login</div>
-		<div class="col-md-8">{{ account.last_login|date:"F j, Y, g:i a"|default:"Never" }}</div>
-	</div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-muted">Username</div>
+        <div class="col-md-8">
+            <strong>{{ account.username }}</strong>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-muted">Email</div>
+        <div class="col-md-8">{{ account.email|default:"-" }}</div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-muted">Status</div>
+        <div class="col-md-8">
+            {% if account.is_superuser %}
+                <span class="badge bg-danger">Superuser</span>
+            {% elif account.is_staff %}
+                <span class="badge bg-warning text-dark">Staff</span>
+            {% elif account.is_active %}
+                <span class="badge bg-success">Active</span>
+            {% else %}
+                <span class="badge bg-secondary">Inactive</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-muted">Groups</div>
+        <div class="col-md-8">
+            {% for group in account.groups.all %}
+                <span class="badge bg-primary me-1">{{ group.name }}</span>
+            {% empty %}
+                <span class="text-muted">No groups assigned</span>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-muted">Date Joined</div>
+        <div class="col-md-8">{{ account.date_joined|date:"F j, Y, g:i a" }}</div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-muted">Last Login</div>
+        <div class="col-md-8">{{ account.last_login|date:"F j, Y, g:i a"|default:"Never" }}</div>
+    </div>
 </div>
-
 <hr>
-
 <h6 class="mb-3">Permissions</h6>
 {% if account.is_superuser %}
-<div class="alert alert-danger">
-	This user is a superuser and has all permissions.
-</div>
+    <div class="alert alert-danger">This user is a superuser and has all permissions.</div>
 {% else %}
-<div class="mb-3">
-	<strong>Group Permissions:</strong>
-	{% with perms=account.get_group_permissions %}
-	{% if perms %}
-	<ul class="list-unstyled mt-2">
-		{% for perm in perms %}
-		<li><span class="badge bg-light text-dark border">{{ perm }}</span></li>
-		{% endfor %}
-	</ul>
-	{% else %}
-	<p class="text-muted mt-2">No group permissions.</p>
-	{% endif %}
-	{% endwith %}
-</div>
+    <div class="mb-3">
+        <strong>Group Permissions:</strong>
+        {% with perms=account.get_group_permissions %}
+            {% if perms %}
+                <ul class="list-unstyled mt-2">
+                    {% for perm in perms %}
+                        <li>
+                            <span class="badge bg-light text-dark border">{{ perm }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mt-2">No group permissions.</p>
+            {% endif %}
+        {% endwith %}
+    </div>
 {% endif %}
-
 <div class="d-flex justify-content-end">
-	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 </div>

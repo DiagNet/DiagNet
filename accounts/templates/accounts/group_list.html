@@ -1,136 +1,155 @@
 {% extends "base.html" %}
-
 {% block title %}Groups - DiagNet{% endblock %}
-
 {% block content %}
-<div id="group-urls"
-	data-detail-url="{% url 'group-detail' 0 %}"
-	data-membership-url="{% url 'group-membership' 0 %}"
-	data-create-url="{% url 'group-create' %}">
-</div>
-
-<h1>Groups</h1>
-
-<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#groupCreateModal">
-	Add Group
-</button>
-
-<!-- Group Create Modal -->
-<div class="modal fade" id="groupCreateModal" tabindex="-1" aria-labelledby="groupCreateModalLabel">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h1 class="modal-title fs-5" id="groupCreateModalLabel">Create A Group</h1>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body" hx-get="{% url 'group-create' %}" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
-				<div class="text-center">
-					<div class="spinner-border" role="status">
-						<span class="visually-hidden">Loading form...</span>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-
-<!-- Group Details Modal -->
-<div class="modal fade" id="groupDetailModal" tabindex="-1" aria-labelledby="groupDetailModalLabel">
-	<div class="modal-dialog modal-lg">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h1 class="modal-title fs-5" id="groupDetailModalLabel">Group Details</h1>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body" id="groupDetailModalBody">
-				<div class="text-center">
-					<div class="spinner-border" role="status">
-						<span class="visually-hidden">Loading...</span>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-
-<!-- Group Membership Modal -->
-<div class="modal fade" id="groupMembershipModal" tabindex="-1" aria-labelledby="groupMembershipModalLabel">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h1 class="modal-title fs-5" id="groupMembershipModalLabel">Manage Members</h1>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body" id="groupMembershipModalBody">
-				<div class="text-center">
-					<div class="spinner-border" role="status">
-						<span class="visually-hidden">Loading...</span>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-
-<div hx-get="{% url 'group-list' %}" hx-trigger="refresh from:body" hx-swap="innerHTML" hx-select="#group-table-content" id="group-table">
-	<div id="group-table-content">
-		<div class="table-responsive">
-			<table class="table table-striped">
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Role Type</th>
-						<th>Members</th>
-						<th>Actions</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% if groups %}
-					{% for group in groups %}
-					<tr id="group-{{ group.pk }}">
-						<td class="align-middle">
-							<button class="btn btn-link detail-group-btn" data-group-id="{{ group.pk }}">{{ group.name }}</button>
-						</td>
-						<td class="align-middle">
-							{% if group.role_type == "Viewers" %}
-							<span class="badge bg-secondary">Read Only</span>
-							{% elif group.role_type == "Editors" %}
-							<span class="badge bg-info">View + Edit</span>
-							{% elif group.role_type == "Managers" %}
-							<span class="badge bg-warning text-dark">Full CRUD</span>
-							{% elif group.role_type == "Admins" %}
-							<span class="badge bg-danger">Full Access</span>
-							{% else %}
-							<span class="badge bg-dark">Custom</span>
-							{% endif %}
-						</td>
-						<td class="align-middle">{{ group.user_count }} user{{ group.user_count|pluralize }}</td>
-						<td class="align-middle">
-							<button title="Manage members" class="btn btn-sm btn-primary membership-group-btn" data-group-id="{{ group.pk }}">
-								<i class="bi bi-people"></i>
-							</button>
-							<button title="Delete group" class="btn btn-sm btn-danger"
-								hx-delete="{% url 'group-delete' group.pk %}"
-								hx-headers='{"X-CSRFToken": "{{ csrf_token|escapejs }}"}'
-								hx-confirm="Are you sure you want to delete the group '{{ group.name }}'?">
-								<i class="bi bi-trash"></i>
-							</button>
-						</td>
-					</tr>
-					{% endfor %}
-					{% else %}
-					<tr>
-						<td colspan="4">No groups yet.</td>
-					</tr>
-					{% endif %}
-				</tbody>
-			</table>
-		</div>
-	</div>
-</div>
+    <div id="group-urls"
+         data-detail-url="{% url 'group-detail' 0 %}"
+         data-membership-url="{% url 'group-membership' 0 %}"
+         data-create-url="{% url 'group-create' %}"></div>
+    <h1>Groups</h1>
+    <button class="btn btn-primary mb-3"
+            data-bs-toggle="modal"
+            data-bs-target="#groupCreateModal">Add Group</button>
+    <!-- Group Create Modal -->
+    <div class="modal fade"
+         id="groupCreateModal"
+         tabindex="-1"
+         aria-labelledby="groupCreateModalLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="groupCreateModalLabel">Create A Group</h1>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <div class="modal-body"
+                     hx-get="{% url 'group-create' %}"
+                     hx-trigger="load"
+                     hx-target="this"
+                     hx-swap="innerHTML">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading form...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Group Details Modal -->
+    <div class="modal fade"
+         id="groupDetailModal"
+         tabindex="-1"
+         aria-labelledby="groupDetailModalLabel">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="groupDetailModalLabel">Group Details</h1>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="groupDetailModalBody">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Group Membership Modal -->
+    <div class="modal fade"
+         id="groupMembershipModal"
+         tabindex="-1"
+         aria-labelledby="groupMembershipModalLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="groupMembershipModalLabel">Manage Members</h1>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="groupMembershipModalBody">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div hx-get="{% url 'group-list' %}"
+         hx-trigger="refresh from:body"
+         hx-swap="innerHTML"
+         hx-select="#group-table-content"
+         id="group-table">
+        <div id="group-table-content">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role Type</th>
+                            <th>Members</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if groups %}
+                            {% for group in groups %}
+                                <tr id="group-{{ group.pk }}">
+                                    <td class="align-middle">
+                                        <button class="btn btn-link detail-group-btn" data-group-id="{{ group.pk }}">{{ group.name }}</button>
+                                    </td>
+                                    <td class="align-middle">
+                                        {% if group.role_type == "Viewers" %}
+                                            <span class="badge bg-secondary">Read Only</span>
+                                        {% elif group.role_type == "Editors" %}
+                                            <span class="badge bg-info">View + Edit</span>
+                                        {% elif group.role_type == "Managers" %}
+                                            <span class="badge bg-warning text-dark">Full CRUD</span>
+                                        {% elif group.role_type == "Admins" %}
+                                            <span class="badge bg-danger">Full Access</span>
+                                        {% else %}
+                                            <span class="badge bg-dark">Custom</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle">{{ group.user_count }} user{{ group.user_count|pluralize }}</td>
+                                    <td class="align-middle">
+                                        <button title="Manage members"
+                                                class="btn btn-sm btn-primary membership-group-btn"
+                                                data-group-id="{{ group.pk }}">
+                                            <i class="bi bi-people"></i>
+                                        </button>
+                                        <button title="Delete group"
+                                                class="btn btn-sm btn-danger"
+                                                hx-delete="{% url 'group-delete' group.pk %}"
+                                                hx-headers='{"X-CSRFToken": "{{ csrf_token|escapejs }}"}'
+                                                hx-confirm="Are you sure you want to delete the group '{{ group.name }}'?">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4">No groups yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}
-
 {% block scripts %}
-{% load static %}
-<script src="{% static 'accounts/js/group_management.js' %}"></script>
+    {% load static %}
+    <script src="{% static 'accounts/js/group_management.js' %}"></script>
 {% endblock %}
