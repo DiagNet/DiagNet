@@ -2,6 +2,7 @@ import json
 import logging
 from datetime import datetime
 
+from django.db.models import Count, Q
 from reportlab.graphics import renderPDF
 from reportlab.graphics.charts.barcharts import VerticalBarChart
 from reportlab.graphics.shapes import Drawing
@@ -46,23 +47,21 @@ class PDFReport:
         self.results = TestResult.objects.select_related("test_case").order_by(
             "-started_at"
         )[:50]
-        self.groups = TestGroup.objects.all().prefetch_related("testcases")
 
-        group_labels_all: list[str] = []
-        group_passes_all: list[int] = []
-        group_fails_all: list[int] = []
+        groups_with_stats = (
+            TestGroup.objects.annotate(
+                total_count=Count("testcases__results"),
+                pass_count=Count(
+                    "testcases__results", filter=Q(testcases__results__result=True)
+                ),
+            )
+            .filter(total_count__gt=0)
+            .order_by("name")
+        )
 
-        for g in self.groups:
-            tcs = g.testcases.all()
-            p = TestResult.objects.filter(test_case__in=tcs, result=True).count()
-            f = TestResult.objects.filter(test_case__in=tcs, result=False).count()
-
-            if p == 0 and f == 0:
-                continue
-
-            group_labels_all.append(g.name)
-            group_passes_all.append(p)
-            group_fails_all.append(f)
+        group_labels_all = [g.name for g in groups_with_stats]
+        group_passes_all = [g.pass_count for g in groups_with_stats]
+        group_fails_all = [(g.total_count - g.pass_count) for g in groups_with_stats]
 
         self.group_chart_chunks = [
             (
