@@ -20,6 +20,13 @@ W, H = A4
 
 
 class PDFReport:
+    # Layout Constants
+    MARGIN_LEFT = 50
+    PAGE_WIDTH = W
+    PAGE_HEIGHT = H
+    MARGIN_RIGHT = PAGE_WIDTH - MARGIN_LEFT
+    CONTENT_WIDTH = MARGIN_RIGHT - MARGIN_LEFT
+
     def __init__(self, buffer):
         self.buffer = buffer
         self.pdf = canvas.Canvas(self.buffer, pagesize=A4)
@@ -74,20 +81,30 @@ class PDFReport:
         self.group_fails_all = group_fails_all
 
     def draw_header(self):
+        y_pos = self.PAGE_HEIGHT - 90
         self.pdf.setFont("Helvetica-Bold", 30)
-        self.pdf.drawString(50, H - 90, "DiagNet Test Report")
+        self.pdf.drawString(self.MARGIN_LEFT, y_pos, "DiagNet Test Report")
+
+        y_pos -= 35
         self.pdf.setFont("Helvetica", 16)
         self.pdf.setFillColor(colors.grey)
-        self.pdf.drawString(50, H - 125, "Automated Network Test Summary")
+        self.pdf.drawString(self.MARGIN_LEFT, y_pos, "Automated Network Test Summary")
+
+        y_pos -= 35
         self.pdf.setFillColor(colors.black)
         self.pdf.setFont("Helvetica", 12)
         self.pdf.drawString(
-            50, H - 160, f"Generated: {self.now.strftime('%Y-%m-%d %H:%M')}"
+            self.MARGIN_LEFT, y_pos, f"Generated: {self.now.strftime('%Y-%m-%d %H:%M')}"
         )
+
         try:
             logo = ImageReader("static/images/diagnet_logo.png")
             self.pdf.drawImage(
-                logo, W - 180, H - 170, width=130, preserveAspectRatio=True
+                logo,
+                self.PAGE_WIDTH - 180,
+                self.PAGE_HEIGHT - 170,
+                width=130,
+                preserveAspectRatio=True,
             )
         except (IOError, FileNotFoundError):
             logger.debug("DiagNet logo not found or could not be loaded")
@@ -95,28 +112,47 @@ class PDFReport:
             logger.error(f"Unexpected error while loading logo: {e}")
 
     def draw_overview(self):
+        y_pos = self.PAGE_HEIGHT - 210
         self.pdf.setFont("Helvetica-Bold", 14)
-        self.pdf.drawString(50, H - 210, "Overview")
+        self.pdf.drawString(self.MARGIN_LEFT, y_pos, "Overview")
+
+        y_pos -= 30
+        bullet_x = self.MARGIN_LEFT + 20
         self.pdf.setFont("Helvetica", 12)
-        self.pdf.drawString(70, H - 240, f"• Total Test Runs: {self.total_tests}")
-        self.pdf.drawString(70, H - 260, f"• Passed: {self.total_pass}")
-        self.pdf.drawString(70, H - 280, f"• Failed: {self.total_fail}")
-        self.pdf.drawString(70, H - 300, f"• TestGroups: {len(self.group_labels_all)}")
-        self.pdf.line(50, H - 320, W - 50, H - 320)
+        self.pdf.drawString(bullet_x, y_pos, f"• Total Test Runs: {self.total_tests}")
+        y_pos -= 20
+        self.pdf.drawString(bullet_x, y_pos, f"• Passed: {self.total_pass}")
+        y_pos -= 20
+        self.pdf.drawString(bullet_x, y_pos, f"• Failed: {self.total_fail}")
+        y_pos -= 20
+        self.pdf.drawString(
+            bullet_x, y_pos, f"• TestGroups: {len(self.group_labels_all)}"
+        )
+
+        y_pos -= 20
+        self.pdf.line(self.MARGIN_LEFT, y_pos, self.MARGIN_RIGHT, y_pos)
         self.pdf.showPage()
 
     def draw_group_charts(self):
+        chart_y = self.PAGE_HEIGHT - 360
+        legend_y = self.PAGE_HEIGHT - 390
+        pass_legend_x = self.MARGIN_LEFT + 10
+        fail_legend_x = self.MARGIN_LEFT + 80
+
         for idx, (labels, passes, fails) in enumerate(self.group_chart_chunks, start=1):
             self.pdf.setFont("Helvetica-Bold", 20)
-            self.pdf.drawString(50, H - 60, f"TestGroups – Pass/Fail (Block {idx})")
+            self.pdf.drawString(
+                self.MARGIN_LEFT,
+                self.PAGE_HEIGHT - 60,
+                f"TestGroups – Pass/Fail (Block {idx})",
+            )
 
-            drawing = Drawing(500, 280)
+            drawing = Drawing(self.CONTENT_WIDTH, 280)
             bc = VerticalBarChart()
             bc.x = 40
             bc.y = 50
-            bc.width = 420
+            bc.width = self.CONTENT_WIDTH - 80
             bc.height = 200
-
             bc.data = [passes, fails]
             bc.categoryAxis.categoryNames = labels
             bc.bars[0].fillColor = colors.HexColor("#16a34a")
@@ -129,40 +165,50 @@ class PDFReport:
             bc.valueAxis.valueStep = max(1, max_val // 4 or 1)
 
             drawing.add(bc)
-            renderPDF.draw(drawing, self.pdf, 50, H - 360)
+            renderPDF.draw(drawing, self.pdf, self.MARGIN_LEFT, chart_y)
 
             self.pdf.setFont("Helvetica", 11)
             self.pdf.setFillColor(colors.HexColor("#16a34a"))
-            self.pdf.rect(60, H - 390, 10, 10, fill=True)
+            self.pdf.rect(pass_legend_x, legend_y, 10, 10, fill=True)
             self.pdf.setFillColor(colors.black)
-            self.pdf.drawString(75, H - 388, "Pass")
+            self.pdf.drawString(pass_legend_x + 15, legend_y - 2, "Pass")
             self.pdf.setFillColor(colors.HexColor("#dc2626"))
-            self.pdf.rect(130, H - 390, 10, 10, fill=True)
+            self.pdf.rect(fail_legend_x, legend_y, 10, 10, fill=True)
             self.pdf.setFillColor(colors.black)
-            self.pdf.drawString(145, H - 388, "Fail")
+            self.pdf.drawString(fail_legend_x + 15, legend_y - 2, "Fail")
             self.pdf.showPage()
 
     def draw_recent_logs(self):
+        header_y = self.PAGE_HEIGHT - 110
+        y = header_y
+        col_ts = self.MARGIN_LEFT
+        col_tc = self.MARGIN_LEFT + 110
+        col_result = self.MARGIN_LEFT + 260
+        col_msg = self.MARGIN_LEFT + 320
+        line_height = 20
+        bottom_margin = 70
+
         self.pdf.setFont("Helvetica-Bold", 20)
-        self.pdf.drawString(50, H - 60, "Recent Logs – error messages")
-        y = H - 110
+        self.pdf.drawString(
+            self.MARGIN_LEFT, self.PAGE_HEIGHT - 60, "Recent Logs – error messages"
+        )
 
         def draw_logs_header():
             self.pdf.setFont("Helvetica-Bold", 11)
-            self.pdf.drawString(50, y, "Timestamp")
-            self.pdf.drawString(160, y, "TestCase")
-            self.pdf.drawString(310, y, "Result")
-            self.pdf.drawString(370, y, "Message")
-            self.pdf.line(50, y - 4, W - 50, y - 4)
+            self.pdf.drawString(col_ts, y, "Timestamp")
+            self.pdf.drawString(col_tc, y, "TestCase")
+            self.pdf.drawString(col_result, y, "Result")
+            self.pdf.drawString(col_msg, y, "Message")
+            self.pdf.line(self.MARGIN_LEFT, y - 4, self.MARGIN_RIGHT, y - 4)
 
         draw_logs_header()
         y -= 25
         self.pdf.setFont("Helvetica", 10)
 
         for r in self.results:
-            if y < 70:
+            if y < bottom_margin:
                 self.pdf.showPage()
-                y = H - 110
+                y = header_y
                 draw_logs_header()
                 y -= 25
                 self.pdf.setFont("Helvetica", 10)
@@ -173,12 +219,12 @@ class PDFReport:
             msg = self.format_message_for_pdf(raw)
             max_len = 60
 
-            self.pdf.drawString(50, y, ts)
-            self.pdf.drawString(160, y, tc)
+            self.pdf.drawString(col_ts, y, ts)
+            self.pdf.drawString(col_tc, y, tc)
 
             if r.result:
                 self.pdf.setFillColor(colors.HexColor("#16a34a"))
-                self.pdf.drawString(310, y, "PASS")
+                self.pdf.drawString(col_result, y, "PASS")
                 if msg == "Log format not recognized.":
                     if raw:
                         raw_as_string = str(raw)
@@ -188,47 +234,58 @@ class PDFReport:
                             msg = raw_as_string
             else:
                 self.pdf.setFillColor(colors.HexColor("#dc2626"))
-                self.pdf.drawString(310, y, "FAIL")
+                self.pdf.drawString(col_result, y, "FAIL")
             self.pdf.setFillColor(colors.black)
-            self.pdf.drawString(370, y, msg)
-            y -= 20
+            self.pdf.drawString(col_msg, y, msg)
+            y -= line_height
 
     def draw_group_summary(self):
+        y = self.PAGE_HEIGHT - 110
+        col_group = self.MARGIN_LEFT
+        col_pass = self.MARGIN_LEFT + 200
+        col_fail = self.MARGIN_LEFT + 270
+        col_total = self.MARGIN_LEFT + 330
+        pass_right_align = col_pass + 40
+        fail_right_align = col_fail + 30
+        total_right_align = col_total + 50
+        line_height = 20
+        header_line_spacing = 24
+        bottom_margin = 70
+        page_break_y_start = self.PAGE_HEIGHT - 80
+
         self.pdf.setFont("Helvetica-Bold", 20)
-        self.pdf.drawString(50, H - 60, "Group Summary")
-        y = H - 110
-        self.pdf.setFont("Helvetica-Bold", 12)
-        self.pdf.drawString(50, y, "Group")
-        self.pdf.drawString(250, y, "Pass")
-        self.pdf.drawString(320, y, "Fail")
-        self.pdf.drawString(380, y, "Total")
-        self.pdf.line(50, y - 4, W - 50, y - 4)
-        y -= 24
+        self.pdf.drawString(self.MARGIN_LEFT, self.PAGE_HEIGHT - 60, "Group Summary")
+
+        def draw_summary_header():
+            self.pdf.setFont("Helvetica-Bold", 12)
+            self.pdf.drawString(col_group, y, "Group")
+            self.pdf.drawString(col_pass, y, "Pass")
+            self.pdf.drawString(col_fail, y, "Fail")
+            self.pdf.drawString(col_total, y, "Total")
+            self.pdf.line(self.MARGIN_LEFT, y - 4, self.MARGIN_RIGHT, y - 4)
+
+        draw_summary_header()
+        y -= header_line_spacing
         self.pdf.setFont("Helvetica", 12)
 
         for name, p, f in zip(
             self.group_labels_all, self.group_passes_all, self.group_fails_all
         ):
-            if y < 70:
+            if y < bottom_margin:
                 self.pdf.showPage()
-                y = H - 80
-                self.pdf.setFont("Helvetica-Bold", 12)
-                self.pdf.drawString(50, y, "Group")
-                self.pdf.drawString(250, y, "Pass")
-                self.pdf.drawString(320, y, "Fail")
-                self.pdf.drawString(380, y, "Total")
-                self.pdf.line(50, y - 4, W - 50, y - 4)
-                y -= 24
+                y = page_break_y_start
+                draw_summary_header()
+                y -= header_line_spacing
                 self.pdf.setFont("Helvetica", 12)
 
-            self.pdf.drawString(50, y, name[:28])
+            self.pdf.drawString(col_group, y, name[:28])
             self.pdf.setFillColor(colors.HexColor("#16a34a"))
-            self.pdf.drawRightString(290, y, str(p))
+            self.pdf.drawRightString(pass_right_align, y, str(p))
             self.pdf.setFillColor(colors.HexColor("#dc2626"))
-            self.pdf.drawRightString(350, y, str(f))
+            self.pdf.drawRightString(fail_right_align, y, str(f))
             self.pdf.setFillColor(colors.black)
-            self.pdf.drawRightString(420, y, str(p + f))
-            y -= 20
+            self.pdf.drawRightString(total_right_align, y, str(p + f))
+            y -= line_height
         self.pdf.showPage()
 
     def format_message_for_pdf(self, raw, max_len=60):
