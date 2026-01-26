@@ -71,6 +71,7 @@ def get_dashboard_data(range_code: str, group_name: Optional[str]):
     testcase_labels: List[str] = []
     testcase_passes: List[int] = []
     testcase_fails: List[int] = []
+    recent_list: List[dict] = []
 
     if selected_group:
         testcase_results_filter = Q()
@@ -89,7 +90,6 @@ def get_dashboard_data(range_code: str, group_name: Optional[str]):
         testcase_passes = [tc.pass_count for tc in testcases_with_stats]
         testcase_fails = [tc.total_count - tc.pass_count for tc in testcases_with_stats]
 
-    recent_list = []
     for r in recent:
         recent_list.append(
             {
