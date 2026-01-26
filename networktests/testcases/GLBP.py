@@ -118,7 +118,7 @@ class GLBP(DiagNetTest):
         parsing_avg_section = False
 
         # Regex Patterns
-        re_header = re.compile(r"^(?P<intf>[\w/]+)\s+-\s+Group\s+(?P<grp>\d+)")
+        re_header = re.compile(r"^(?P<intf>\S+)\s+-\s+Group\s+(?P<grp>\d+)")
         re_state = re.compile(r"^\s+State is\s+(?P<state>\w+)")
         re_vip = re.compile(r"^\s+Virtual IP address is\s+(?P<vip>[\d\.]+)")
         re_prio = re.compile(r"^\s+Priority\s+(?P<prio>\d+)")
