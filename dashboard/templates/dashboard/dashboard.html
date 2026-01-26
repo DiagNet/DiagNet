@@ -139,7 +139,7 @@
             try {
                 const range = rangeSelect.value;
                 const tcgroup = tcGroupSelect.value;
-                const url = `/data/?range=${range}&tcgroup=${tcgroup}`;
+                const url = `{% url 'dashboard-data' %}?range=${range}&tcgroup=${tcgroup}`;
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
