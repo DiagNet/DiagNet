@@ -13,20 +13,24 @@ from testgroups.models import TestGroup
 
 def get_dashboard_data(range_code: str, group_name: Optional[str]):
     now = timezone.now()
-    since: Optional[timezone.datetime] = None
-    range_label = "all results"
 
-    if range_code == "24h":
-        since = now - timedelta(hours=24)
-        range_label = "last 24 hours"
-    elif range_code == "7d":
-        since = now - timedelta(days=7)
-        range_label = "last 7 days"
-    elif range_code == "30d":
-        since = now - timedelta(days=30)
-        range_label = "last 30 days"
-    elif range_code == "all":
-        since = None
+    RANGE_OPTIONS = {
+        "24h": {"delta": timedelta(hours=24), "label": "last 24 hours"},
+        "7d": {"delta": timedelta(days=7), "label": "last 7 days"},
+        "30d": {"delta": timedelta(days=30), "label": "last 30 days"},
+        "all": {"delta": None, "label": "all results"},
+    }
+    # The default in the dashboard_data view is '24h'. We honor that here.
+    DEFAULT_RANGE_CODE = "24h"
+
+    # If range_code is not a valid key, fall back to the default.
+    if range_code not in RANGE_OPTIONS:
+        range_code = DEFAULT_RANGE_CODE
+
+    selected_option = RANGE_OPTIONS[range_code]
+    range_label = selected_option["label"]
+    delta = selected_option["delta"]
+    since = now - delta if delta else None
 
     results_qs: QuerySet = TestResult.objects.select_related("test_case").order_by(
         "-started_at"
