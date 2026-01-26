@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import List, Optional
 
 from django.contrib.auth.decorators import permission_required
-from django.db.models import QuerySet
+from django.db.models import Count, Q, QuerySet
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
@@ -36,71 +36,69 @@ def get_dashboard_data(range_code: str, group_name: Optional[str]):
 
     total = results_qs.count()
     passes = results_qs.filter(result=True).count()
-    fails = results_qs.filter(result=False).count()
+    fails = total - passes
 
     recent = results_qs[:10]
 
-    groups = TestGroup.objects.prefetch_related("testcases").order_by("name")
+    all_groups = TestGroup.objects.prefetch_related("testcases").order_by("name")
+    group_results_filter = Q()
+    if since:
+        group_results_filter = Q(testcases__results__started_at__gte=since)
 
-    group_labels: List[str] = []
-    group_passes: List[int] = []
-    group_fails: List[int] = []
+    groups_with_stats = all_groups.annotate(
+        total_count=Count("testcases__results", filter=group_results_filter),
+        pass_count=Count(
+            "testcases__results",
+            filter=group_results_filter & Q(testcases__results__result=True),
+        ),
+    ).filter(total_count__gt=0)
 
-    for group in groups:
-        # fetch testcase ids once
-        case_ids = list(group.testcases.values_list("id", flat=True))
-        if not case_ids:
-            continue
-
-        group_total = results_qs.filter(test_case_id__in=case_ids).count()
-        if group_total == 0:
-            continue
-
-        group_pass_count = results_qs.filter(
-            test_case_id__in=case_ids, result=True
-        ).count()
-        group_fail_count = group_total - group_pass_count
-
-        group_labels.append(group.name)
-        group_passes.append(group_pass_count)
-        group_fails.append(group_fail_count)
+    group_labels: List[str] = [g.name for g in groups_with_stats]
+    group_passes: List[int] = [g.pass_count for g in groups_with_stats]
+    group_fails: List[int] = [g.total_count - g.pass_count for g in groups_with_stats]
 
     selected_group = None
 
     if group_name:
         try:
-            selected_group = TestGroup.objects.get(name=group_name)
+            selected_group = all_groups.get(name=group_name)
         except TestGroup.DoesNotExist:
             selected_group = None
 
-    if not selected_group and groups.exists():
-        selected_group = groups.first()
+    if not selected_group and all_groups.exists():
+        selected_group = all_groups.first()
 
     testcase_labels: List[str] = []
     testcase_passes: List[int] = []
     testcase_fails: List[int] = []
 
     if selected_group:
-        for case in selected_group.testcases.all():
-            case_total = results_qs.filter(test_case_id=case.id).count()
-            case_pass = results_qs.filter(test_case_id=case.id, result=True).count()
-            case_fail = case_total - case_pass
+        testcase_results_filter = Q()
+        if since:
+            testcase_results_filter = Q(results__started_at__gte=since)
 
-            testcase_labels.append(case.label)
-            testcase_passes.append(case_pass)
-            testcase_fails.append(case_fail)
+        testcases_with_stats = selected_group.testcases.annotate(
+            total_count=Count("results", filter=testcase_results_filter),
+            pass_count=Count(
+                "results",
+                filter=testcase_results_filter & Q(results__result=True),
+            ),
+        ).order_by("label")
 
-        recent_list = []
+        testcase_labels = [tc.label for tc in testcases_with_stats]
+        testcase_passes = [tc.pass_count for tc in testcases_with_stats]
+        testcase_fails = [tc.total_count - tc.pass_count for tc in testcases_with_stats]
 
-        for r in recent:
-            recent_list.append(
-                {
-                    "test_case": r.test_case.label,
-                    "result": r.result,
-                    "started_at": r.started_at,
-                    "log": r.log,
-                }
-            )
+    recent_list = []
+    for r in recent:
+        recent_list.append(
+            {
+                "test_case": r.test_case.label,
+                "result": r.result,
+                "started_at": r.started_at,
+                "log": r.log,
+            }
+        )
 
     return {
         "total": total,
@@ -116,7 +114,7 @@ def get_dashboard_data(range_code: str, group_name: Optional[str]):
         "testcase_labels": testcase_labels,
         "testcase_passes": testcase_passes,
         "testcase_fails": testcase_fails,
-        "groups": [g.name for g in groups],
+        "groups": [g.name for g in all_groups],
     }
 
 
