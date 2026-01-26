@@ -136,102 +136,112 @@
         const rangeLabel = document.getElementById("range-label");
 
         async function fetchData() {
-            const range = rangeSelect.value;
-            const tcgroup = tcGroupSelect.value;
-            const url = `/data/?range=${range}&tcgroup=${tcgroup}`;
-            const response = await fetch(url);
-            const data = await response.json();
-
-            rangeLabel.textContent = `Network test overview – ${data.range_label}.`;
-
-            groupChart.data.labels = data.group_labels;
-            groupChart.data.datasets[0].data = data.group_passes;
-            groupChart.data.datasets[1].data = data.group_fails;
-            groupChart.update();
-
-            testcaseChart.data.labels = data.testcase_labels;
-            testcaseChart.data.datasets[0].data = data.testcase_passes;
-            testcaseChart.data.datasets[1].data = data.testcase_fails;
-            testcaseChart.update();
-
-            document.getElementById("total-runs").innerHTML = data.total;
-            document.getElementById("passed-runs").innerHTML = data.passes;
-            document.getElementById("failed-runs").innerHTML = data.fails;
-
-            const recentRunsTable = document.getElementById("recent-runs-table");
-            recentRunsTable.innerHTML = "";
-            if (data.recent.length > 0) {
-                data.recent.forEach(r => {
-                    const row = document.createElement("tr");
-                    row.dataset.testcase = r.test_case.toLowerCase();
-
-                    const startedAt = new Date(r.started_at);
-                    const formattedStartedAt = startedAt.getFullYear() + '-' +
-                        ('0' + (startedAt.getMonth() + 1)).slice(-2) + '-' +
-                        ('0' + startedAt.getDate()).slice(-2) + ' ' +
-                        ('0' + startedAt.getHours()).slice(-2) + ':' +
-                        ('0' + startedAt.getMinutes()).slice(-2);
-
-                    const tdStartedAt = document.createElement("td");
-                    tdStartedAt.className = "text-nowrap";
-                    tdStartedAt.textContent = formattedStartedAt;
-                    row.appendChild(tdStartedAt);
-
-                    const tdTestCase = document.createElement("td");
-                    tdTestCase.textContent = r.test_case;
-                    row.appendChild(tdTestCase);
-
-                    const tdResult = document.createElement("td");
-                    const badge = document.createElement("span");
-                    badge.className = `badge ${r.result ? "bg-success" : "bg-danger"}`;
-                    badge.textContent = r.result ? "PASS" : "FAIL";
-                    tdResult.appendChild(badge);
-                    row.appendChild(tdResult);
-
-                    const tdLog = document.createElement("td");
-                    tdLog.className = "small";
-                    let logContent = null;
-                    if (r.log && typeof r.log === "object" && r.log.tests) {
-                        for (const testName in r.log.tests) {
-                            const test = r.log.tests[testName];
-                            if (test.status === "FAIL") {
-                                const pre = document.createElement("pre");
-                                pre.style.whiteSpace = "pre-wrap";
-                                pre.style.margin = "0";
-                                pre.textContent = test.message;
-                                logContent = pre;
-                                break;
+            try {
+                const range = rangeSelect.value;
+                const tcgroup = tcGroupSelect.value;
+                const url = `/data/?range=${range}&tcgroup=${tcgroup}`;
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                rangeLabel.textContent = `Network test overview – ${data.range_label}.`;
+                groupChart.data.labels = data.group_labels;
+                groupChart.data.datasets[0].data = data.group_passes;
+                groupChart.data.datasets[1].data = data.group_fails;
+                groupChart.update();
+                testcaseChart.data.labels = data.testcase_labels;
+                testcaseChart.data.datasets[0].data = data.testcase_passes;
+                testcaseChart.data.datasets[1].data = data.testcase_fails;
+                testcaseChart.update();
+                document.getElementById("total-runs").textContent = data.total;
+                document.getElementById("passed-runs").textContent = data.passes;
+                document.getElementById("failed-runs").textContent = data.fails;
+                const recentRunsTable = document.getElementById("recent-runs-table");
+                recentRunsTable.innerHTML = "";
+                if (data.recent.length > 0) {
+                    data.recent.forEach(r => {
+                        const row = document.createElement("tr");
+                        row.dataset.testcase = r.test_case.toLowerCase();
+                        const startedAt = new Date(r.started_at);
+                        const formattedStartedAt = startedAt.getFullYear() + '-' +
+                            ('0' + (startedAt.getMonth() + 1)).slice(-2) + '-' +
+                            ('0' + startedAt.getDate()).slice(-2) + ' ' +
+                            ('0' + startedAt.getHours()).slice(-2) + ':' +
+                            ('0' + startedAt.getMinutes()).slice(-2);
+                        const tdStartedAt = document.createElement("td");
+                        tdStartedAt.className = "text-nowrap";
+                        tdStartedAt.textContent = formattedStartedAt;
+                        row.appendChild(tdStartedAt);
+                        const tdTestCase = document.createElement("td");
+                        tdTestCase.textContent = r.test_case;
+                        row.appendChild(tdTestCase);
+                        const tdResult = document.createElement("td");
+                        const badge = document.createElement("span");
+                        badge.className = `badge ${r.result ? "bg-success" : "bg-danger"}`;
+                        badge.textContent = r.result ? "PASS" : "FAIL";
+                        tdResult.appendChild(badge);
+                        row.appendChild(tdResult);
+                        const tdLog = document.createElement("td");
+                        tdLog.className = "small";
+                        let logContent = null;
+                        if (r.log && typeof r.log === "object" && r.log.tests) {
+                            for (const testName in r.log.tests) {
+                                const test = r.log.tests[testName];
+                                if (test.status === "FAIL") {
+                                    const pre = document.createElement("pre");
+                                    pre.style.whiteSpace = "pre-wrap";
+                                    pre.style.margin = "0";
+                                    pre.textContent = test.message;
+                                    logContent = pre;
+                                    break;
+                                }
                             }
                         }
-                    }
-
-                    if (!logContent) {
-                        const span = document.createElement("span");
-                        span.className = "text-muted";
-                        span.textContent = "—";
-                        logContent = span;
-                    }
-                    tdLog.appendChild(logContent);
-                    row.appendChild(tdLog);
-
-                    recentRunsTable.appendChild(row);
-                });
-            } else {
-                recentRunsTable.innerHTML = '<tr><td colspan="4" class="text-muted">No test results found for this period.</td></tr>';
-            }
-
-            // Update the test case group selector
-            const currentTcGroup = tcGroupSelect.value;
-            tcGroupSelect.innerHTML = "";
-            data.groups.forEach(group => {
-                const option = document.createElement("option");
-                option.value = group;
-                option.textContent = group;
-                if (group === data.selected_group) {
-                    option.selected = true;
+                        if (!logContent) {
+                            const span = document.createElement("span");
+                            span.className = "text-muted";
+                            span.textContent = "—";
+                            logContent = span;
+                        }
+                        tdLog.appendChild(logContent);
+                        row.appendChild(tdLog);
+                        recentRunsTable.appendChild(row);
+                    });
+                } else {
+                    recentRunsTable.innerHTML = '<tr><td colspan="4" class="text-muted">No test results found for this period.</td></tr>';
                 }
-                tcGroupSelect.appendChild(option);
-            });
+                // Update the test case group selector
+                const currentTcGroup = tcGroupSelect.value;
+                tcGroupSelect.innerHTML = "";
+                data.groups.forEach(group => {
+                    const option = document.createElement("option");
+                    option.value = group;
+                    option.textContent = group;
+                    if (group === data.selected_group) {
+                        option.selected = true;
+                    }
+                    tcGroupSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+                rangeLabel.textContent = "Could not load dashboard data. Please try again later.";
+                groupChart.data.labels = [];
+                groupChart.data.datasets.forEach(dataset => {
+                    dataset.data = [];
+                });
+                groupChart.update();
+                testcaseChart.data.labels = [];
+                testcaseChart.data.datasets.forEach(dataset => {
+                    dataset.data = [];
+                });
+                testcaseChart.update();
+                document.getElementById("total-runs").textContent = "—";
+                document.getElementById("passed-runs").textContent = "—";
+                document.getElementById("failed-runs").textContent = "—";
+                const recentRunsTable = document.getElementById("recent-runs-table");
+                recentRunsTable.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading recent runs.</td></tr>';
+            }
         }
 
         rangeSelect.addEventListener("change", fetchData);
