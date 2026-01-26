@@ -24,33 +24,38 @@
         </title>
     </head>
     <body>
-        <nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-4">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{% url 'dashboard' %}">DiagNet</a>
                 <button class="navbar-toggler"
                         type="button"
                         data-bs-toggle="collapse"
-                        data-bs-target="#navbarNavAltMarkup"
-                        aria-controls="navbarNavAltMarkup"
+                        data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar"
                         aria-expanded="false"
                         aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                    <div class="navbar-nav me-auto">
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         {% if user.is_authenticated %}
-                            <a class="nav-link d-inline text-light" href="{% url 'devices-page' %}">Devices</a>
-                            <a class="nav-link d-inline text-light"
-                               href="{% url 'networktests-page' %}">Network Tests</a>
-                            <a class="nav-link d-inline text-light"
-                               href="{% url 'testgroup-page' %}">Test Groups</a>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'devices-page' %}">Devices</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'networktests-page' %}">Network Tests</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'testgroup-page' %}">Test Groups</a>
+                            </li>
                             {% if user.is_superuser or perms.auth.view_user or perms.auth.view_group %}
-                                <div class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle text-light"
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle"
                                        href="#"
                                        role="button"
-                                       data-bs-toggle="dropdown">Management</a>
-                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false">Management</a>
+                                    <ul class="dropdown-menu">
                                         <li>
                                             <a class="dropdown-item" href="{% url 'user-list' %}">Users</a>
                                         </li>
@@ -64,33 +69,39 @@
                                             <a class="dropdown-item" href="{% url 'admin:index' %}">Django Admin</a>
                                         </li>
                                     </ul>
-                                </div>
+                                </li>
                             {% endif %}
                         {% endif %}
-                    </div>
-                    {% if user.is_authenticated %}
-                        <div class="nav-item dropdown ms-auto">
-                            <a class="nav-link dropdown-toggle text-light"
-                               href="#"
-                               role="button"
-                               data-bs-toggle="dropdown">{{ user.username }}</a>
-                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'my-password-change' %}">Change Password</a>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li>
-                                    <form method="post" action="{% url 'logout' %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item">Sign Out</button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="vr d-none d-sm-block mx-2 text-light"></div>
-                    {% endif %}
+                    </ul>
+                    <hr class="d-lg-none text-white-50 my-2">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle"
+                                   href="#"
+                                   role="button"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false">{{ user.username }}</a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'my-password-change' %}">Change Password</a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <form method="post" action="{% url 'logout' %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item">Sign Out</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item d-none d-lg-block mx-2">
+                                <div class="vr h-100 text-light"></div>
+                            </li>
+                        {% endif %}
+                    </ul>
                     {% include "theme-switcher.html" %}
                 </div>
             </div>
