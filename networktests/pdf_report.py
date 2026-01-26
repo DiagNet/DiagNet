@@ -1,8 +1,8 @@
 import json
 import logging
-from datetime import datetime
 
 from django.db.models import Count, Q
+from django.utils import timezone
 from reportlab.graphics import renderPDF
 from reportlab.graphics.charts.barcharts import VerticalBarChart
 from reportlab.graphics.shapes import Drawing
@@ -31,7 +31,7 @@ class PDFReport:
     def __init__(self, buffer):
         self.buffer = buffer
         self.pdf = canvas.Canvas(self.buffer, pagesize=A4)
-        self.now = datetime.now()
+        self.now = timezone.now()
 
     def generate(self):
         self.fetch_data()
