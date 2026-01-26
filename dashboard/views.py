@@ -1,6 +1,7 @@
 from datetime import timedelta
 from typing import List, Optional
 
+from django.contrib.auth.decorators import permission_required
 from django.db.models import QuerySet
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -119,6 +120,13 @@ def get_dashboard_data(range_code: str, group_name: Optional[str]):
     }
 
 
+@permission_required(
+    [
+        "networktests.view_testcase",
+        "networktests.view_testresult",
+        "testgroups.view_testgroup",
+    ]
+)
 def dashboard_data(request):
     range_code = request.GET.get("range", "24h")
     group_name = request.GET.get("tcgroup", None)
@@ -127,6 +135,13 @@ def dashboard_data(request):
     return JsonResponse(data)
 
 
+@permission_required(
+    [
+        "networktests.view_testcase",
+        "networktests.view_testresult",
+        "testgroups.view_testgroup",
+    ]
+)
 def index(request):
     """
     Main Dashboard:
