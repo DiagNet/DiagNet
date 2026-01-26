@@ -40,27 +40,32 @@
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         {% if user.is_authenticated %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'devices-page' %}">Devices</a>
+                                <a class="nav-link {% if request.resolver_match.url_name == 'devices-page' %}active{% endif %}"
+                                   href="{% url 'devices-page' %}">Devices</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'networktests-page' %}">Network Tests</a>
+                                <a class="nav-link {% if request.resolver_match.url_name == 'networktests-page' %}active{% endif %}"
+                                   href="{% url 'networktests-page' %}">Network Tests</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'testgroup-page' %}">Test Groups</a>
+                                <a class="nav-link {% if request.resolver_match.url_name == 'testgroup-page' %}active{% endif %}"
+                                   href="{% url 'testgroup-page' %}">Test Groups</a>
                             </li>
                             {% if user.is_superuser or perms.auth.view_user or perms.auth.view_group %}
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle"
+                                    <a class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'user-list' or request.resolver_match.url_name == 'group-list' %}active{% endif %}"
                                        href="#"
                                        role="button"
                                        data-bs-toggle="dropdown"
                                        aria-expanded="false">Management</a>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a class="dropdown-item" href="{% url 'user-list' %}">Users</a>
+                                            <a class="dropdown-item {% if request.resolver_match.url_name == 'user-list' %}active{% endif %}"
+                                               href="{% url 'user-list' %}">Users</a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" href="{% url 'group-list' %}">Groups</a>
+                                            <a class="dropdown-item {% if request.resolver_match.url_name == 'group-list' %}active{% endif %}"
+                                               href="{% url 'group-list' %}">Groups</a>
                                         </li>
                                         <li>
                                             <hr class="dropdown-divider">
