@@ -4,6 +4,7 @@ import logging
 from datetime import date
 from io import BytesIO
 
+from django.contrib.auth.decorators import permission_required
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, QuerySet
 from django.http import HttpResponse, JsonResponse
@@ -311,6 +312,13 @@ def delete_testcase(request, pk):
     return HttpResponse(status=200)
 
 
+@permission_required(
+    [
+        "networktests.view_testcase",
+        "networktests.view_testresult",
+        "testgroups.view_testgroup",
+    ]
+)
 def export_report_pdf(request):
     buffer = BytesIO()
     report = PDFReport(buffer)
