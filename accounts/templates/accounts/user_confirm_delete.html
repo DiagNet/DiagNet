@@ -1,21 +1,17 @@
 {% extends "base.html" %}
-
 {% block title %}Delete User - DiagNet{% endblock %}
-
 {% block content %}
-<h1>Delete User</h1>
-
-<p>Are you sure you want to delete the user "<strong>{{ object.username }}</strong>"?</p>
-
-{% if object == request.user %}
-<div class="alert alert-warning">
-	You cannot delete your own account.
-</div>
-{% else %}
-<form method="post">
-	{% csrf_token %}
-	<button type="submit" class="btn btn-danger">Yes, delete</button>
-	<a href="{% url 'user-list' %}" class="btn btn-secondary">Cancel</a>
-</form>
-{% endif %}
+    <h1>Delete User</h1>
+    <p>
+        Are you sure you want to delete the user "<strong>{{ object.username }}</strong>"?
+    </p>
+    {% if object == request.user %}
+        <div class="alert alert-warning">You cannot delete your own account.</div>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Yes, delete</button>
+            <a href="{% url 'user-list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    {% endif %}
 {% endblock %}

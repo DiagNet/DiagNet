@@ -1,44 +1,36 @@
 <form method="post"
-	hx-post="{% url 'group-membership' group.pk %}"
-	hx-target="this"
-	hx-swap="outerHTML">
-	{% csrf_token %}
-
-	<div class="alert alert-info">
-		Managing members for group <strong>{{ group.name }}</strong>
-	</div>
-
-	<div class="mb-3">
-		<label class="form-label">Select Users</label>
-		{% if form.users.field.queryset.exists %}
-		<div class="border rounded p-2" style="max-height: 300px; overflow-y: auto;">
-			{% for checkbox in form.users %}
-			<div class="form-check">
-				{{ checkbox.tag }}
-				<label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
-			</div>
-			{% endfor %}
-		</div>
-		{% else %}
-		<p class="text-muted mb-0">No users available.</p>
-		{% endif %}
-		{% if form.users.errors %}
-		<div class="invalid-feedback d-block">
-			{{ form.users.errors|join:", " }}
-		</div>
-		{% endif %}
-	</div>
-
-	{% if form.non_field_errors %}
-	<div class="alert alert-danger">
-		{% for error in form.non_field_errors %}
-		<p class="mb-0">{{ error }}</p>
-		{% endfor %}
-	</div>
-	{% endif %}
-
-	<div class="d-flex justify-content-end gap-2">
-		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-		<button class="btn btn-primary" type="submit">Save Members</button>
-	</div>
+      hx-post="{% url 'group-membership' group.pk %}"
+      hx-target="this"
+      hx-swap="outerHTML">
+    {% csrf_token %}
+    <div class="alert alert-info">
+        Managing members for group <strong>{{ group.name }}</strong>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Select Users</label>
+        {% if form.users.field.queryset.exists %}
+            <div class="border rounded p-2"
+                 style="max-height: 300px;
+                        overflow-y: auto">
+                {% for checkbox in form.users %}
+                    <div class="form-check">
+                        {{ checkbox.tag }}
+                        <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">No users available.</p>
+        {% endif %}
+        {% if form.users.errors %}<div class="invalid-feedback d-block">{{ form.users.errors|join:", " }}</div>{% endif %}
+    </div>
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}<p class="mb-0">{{ error }}</p>{% endfor %}
+        </div>
+    {% endif %}
+    <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" type="submit">Save Members</button>
+    </div>
 </form>

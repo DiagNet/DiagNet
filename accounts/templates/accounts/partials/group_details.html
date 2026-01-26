@@ -1,81 +1,76 @@
 <div class="mb-4">
-	<div class="row mb-3">
-		<div class="col-md-4 text-muted">Group Name</div>
-		<div class="col-md-8"><strong>{{ group.name }}</strong></div>
-	</div>
-	<div class="row mb-3">
-		<div class="col-md-4 text-muted">Role Type</div>
-		<div class="col-md-8">
-			{% if role_type == "Viewers" %}
-			<span class="badge bg-secondary">Read Only</span>
-			{% elif role_type == "Editors" %}
-			<span class="badge bg-info">View + Edit</span>
-			{% elif role_type == "Managers" %}
-			<span class="badge bg-warning text-dark">Full CRUD</span>
-			{% elif role_type == "Admins" %}
-			<span class="badge bg-danger">Full Access</span>
-			{% else %}
-			<span class="badge bg-dark">Custom</span>
-			{% endif %}
-		</div>
-	</div>
-	<div class="row mb-3">
-		<div class="col-md-4 text-muted">Members</div>
-		<div class="col-md-8">
-			<span class="badge bg-primary rounded-pill">{{ members|length }} user{{ members|length|pluralize }}</span>
-		</div>
-	</div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-muted">Group Name</div>
+        <div class="col-md-8">
+            <strong>{{ group.name }}</strong>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-muted">Role Type</div>
+        <div class="col-md-8">
+            {% if role_type == "Viewers" %}
+                <span class="badge bg-secondary">Read Only</span>
+            {% elif role_type == "Editors" %}
+                <span class="badge bg-info">View + Edit</span>
+            {% elif role_type == "Managers" %}
+                <span class="badge bg-warning text-dark">Full CRUD</span>
+            {% elif role_type == "Admins" %}
+                <span class="badge bg-danger">Full Access</span>
+            {% else %}
+                <span class="badge bg-dark">Custom</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-muted">Members</div>
+        <div class="col-md-8">
+            <span class="badge bg-primary rounded-pill">{{ members|length }} user{{ members|length|pluralize }}</span>
+        </div>
+    </div>
 </div>
-
 <hr>
-
 <h6 class="mb-3">Group Members</h6>
 {% if members %}
-<div class="table-responsive">
-	<table class="table table-sm table-striped">
-		<thead>
-			<tr>
-				<th>Username</th>
-				<th>Email</th>
-				<th>Status</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for member in members %}
-			<tr>
-				<td>{{ member.username }}</td>
-				<td>{{ member.email|default:"-" }}</td>
-				<td>
-					{% if member.is_superuser %}
-					<span class="badge bg-danger">Superuser</span>
-					{% elif member.is_active %}
-					<span class="badge bg-success">Active</span>
-					{% else %}
-					<span class="badge bg-secondary">Inactive</span>
-					{% endif %}
-				</td>
-			</tr>
-			{% endfor %}
-		</tbody>
-	</table>
-</div>
+    <div class="table-responsive">
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                    <tr>
+                        <td>{{ member.username }}</td>
+                        <td>{{ member.email|default:"-" }}</td>
+                        <td>
+                            {% if member.is_superuser %}
+                                <span class="badge bg-danger">Superuser</span>
+                            {% elif member.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% else %}
-<p class="text-muted">No members in this group.</p>
+    <p class="text-muted">No members in this group.</p>
 {% endif %}
-
 <hr>
-
 <h6 class="mb-3">Permissions</h6>
 {% if permissions %}
-<div class="d-flex flex-wrap gap-1 mb-3">
-	{% for perm in permissions %}
-	<span class="badge bg-light text-dark border">{{ perm.codename }}</span>
-	{% endfor %}
-</div>
+    <div class="d-flex flex-wrap gap-1 mb-3">
+        {% for perm in permissions %}<span class="badge bg-light text-dark border">{{ perm.codename }}</span>{% endfor %}
+    </div>
 {% else %}
-<p class="text-muted">No permissions assigned to this group.</p>
+    <p class="text-muted">No permissions assigned to this group.</p>
 {% endif %}
-
 <div class="d-flex justify-content-end">
-	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 </div>

@@ -39,47 +39,57 @@
                 <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                     <div class="navbar-nav me-auto">
                         {% if user.is_authenticated %}
-                        <a class="nav-link d-inline text-light" href="{% url 'devices-page' %}">Devices</a>
-                        <a class="nav-link d-inline text-light"
-                           href="{% url 'networktests-page' %}">Network Tests</a>
-                        <a class="nav-link d-inline text-light"
-                           href="{% url 'testgroup-page' %}">Test Groups</a>
-                        {% if user.is_superuser or perms.auth.view_user or perms.auth.view_group %}
-                        <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown">
-                                Management
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><a class="dropdown-item" href="{% url 'user-list' %}">Users</a></li>
-                                <li><a class="dropdown-item" href="{% url 'group-list' %}">Groups</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="{% url 'admin:index' %}">Django Admin</a></li>
-                            </ul>
-                        </div>
-                        {% endif %}
+                            <a class="nav-link d-inline text-light" href="{% url 'devices-page' %}">Devices</a>
+                            <a class="nav-link d-inline text-light"
+                               href="{% url 'networktests-page' %}">Network Tests</a>
+                            <a class="nav-link d-inline text-light"
+                               href="{% url 'testgroup-page' %}">Test Groups</a>
+                            {% if user.is_superuser or perms.auth.view_user or perms.auth.view_group %}
+                                <div class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-light"
+                                       href="#"
+                                       role="button"
+                                       data-bs-toggle="dropdown">Management</a>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'user-list' %}">Users</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'group-list' %}">Groups</a>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'admin:index' %}">Django Admin</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            {% endif %}
                         {% endif %}
                     </div>
                     {% if user.is_authenticated %}
-                    <div class="nav-item dropdown ms-auto">
-                        <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown">
-                            {{ user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{% url 'my-password-change' %}">Change Password</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <form method="post" action="{% url 'logout' %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item">Sign Out</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="vr d-none d-sm-block mx-2 text-light"></div>
+                        <div class="nav-item dropdown ms-auto">
+                            <a class="nav-link dropdown-toggle text-light"
+                               href="#"
+                               role="button"
+                               data-bs-toggle="dropdown">{{ user.username }}</a>
+                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'my-password-change' %}">Change Password</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <form method="post" action="{% url 'logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">Sign Out</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="vr d-none d-sm-block mx-2 text-light"></div>
                     {% endif %}
                     {% include "theme-switcher.html" %}
                 </div>

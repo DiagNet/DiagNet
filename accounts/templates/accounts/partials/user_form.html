@@ -1,72 +1,55 @@
 <form method="post"
-	hx-post="{% if object %}{% url 'user-update' object.pk %}{% else %}{% url 'user-create' %}{% endif %}"
-	hx-target="this"
-	hx-swap="outerHTML">
-	{% csrf_token %}
-
-	{% for field in form %}
-	{% if field.name == "is_active" %}
-	<div class="form-check mb-3">
-		{{ field }}
-		<label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-		{% if field.help_text %}
-		<div class="form-text">{{ field.help_text }}</div>
-		{% endif %}
-		{% if field.errors %}
-		<div class="alert alert-danger py-2 mt-2">
-			{{ field.errors|join:", " }}
-		</div>
-		{% endif %}
-	</div>
-	{% elif field.name == "groups" %}
-	<div class="mb-3">
-		<label class="form-label">{{ field.label }}</label>
-		{% if field.field.queryset.exists %}
-		<div class="border rounded p-2">
-			{% for checkbox in field %}
-			<div class="form-check">
-				{{ checkbox.tag }}
-				<label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
-			</div>
-			{% endfor %}
-		</div>
-		{% else %}
-		<p class="text-muted mb-0">No groups available.</p>
-		{% endif %}
-		{% if field.errors %}
-		<div class="invalid-feedback d-block">
-			{{ field.errors|join:", " }}
-		</div>
-		{% endif %}
-	</div>
-	{% else %}
-	<div class="form-floating mb-3">
-		{{ field }}
-		<label for="{{ field.id_for_label }}">{{ field.label }}</label>
-		{% if field.help_text %}
-		<div class="form-text">{{ field.help_text }}</div>
-		{% endif %}
-		{% if field.errors %}
-		<div class="invalid-feedback d-block">
-			{{ field.errors|join:", " }}
-		</div>
-		{% endif %}
-	</div>
-	{% endif %}
-	{% endfor %}
-
-	{% if form.non_field_errors %}
-	<div class="alert alert-danger">
-		{% for error in form.non_field_errors %}
-		<p class="mb-0">{{ error }}</p>
-		{% endfor %}
-	</div>
-	{% endif %}
-
-	<div class="d-flex justify-content-end gap-2">
-		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-		<button class="btn btn-success" type="submit">
-			{% if object %}Save Changes{% else %}Create User{% endif %}
-		</button>
-	</div>
+      hx-post="{% if object %}{% url 'user-update' object.pk %}{% else %}{% url 'user-create' %}{% endif %}"
+      hx-target="this"
+      hx-swap="outerHTML">
+    {% csrf_token %}
+    {% for field in form %}
+        {% if field.name == "is_active" %}
+            <div class="form-check mb-3">
+                {{ field }}
+                <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% if field.errors %}<div class="alert alert-danger py-2 mt-2">{{ field.errors|join:", " }}</div>{% endif %}
+            </div>
+        {% elif field.name == "groups" %}
+            <div class="mb-3">
+                <label class="form-label">{{ field.label }}</label>
+                {% if field.field.queryset.exists %}
+                    <div class="border rounded p-2">
+                        {% for checkbox in field %}
+                            <div class="form-check">
+                                {{ checkbox.tag }}
+                                <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No groups available.</p>
+                {% endif %}
+                {% if field.errors %}<div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>{% endif %}
+            </div>
+        {% else %}
+            <div class="form-floating mb-3">
+                {{ field }}
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% if field.errors %}<div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>{% endif %}
+            </div>
+        {% endif %}
+    {% endfor %}
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}<p class="mb-0">{{ error }}</p>{% endfor %}
+        </div>
+    {% endif %}
+    <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" type="submit">
+            {% if object %}
+                Save Changes
+            {% else %}
+                Create User
+            {% endif %}
+        </button>
+    </div>
 </form>
