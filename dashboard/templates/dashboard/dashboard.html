@@ -27,7 +27,7 @@
                             <option value="all">All</option>
                         </select>
                     </form>
-                    <div class="mt-2" style="flex:1;">
+                    <div class="mt-2 flex-grow-1">
                         <canvas id="testgroupChart"></canvas>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
                                 class="form-select form-select-sm"
                                 aria-label="Test case group filter"></select>
                     </form>
-                    <div class="mt-2" style="flex:1;">
+                    <div class="mt-2 flex-grow-1">
                         <canvas id="testcaseChart"></canvas>
                     </div>
                 </div>
@@ -190,8 +190,7 @@
                                 const test = r.log.tests[testName];
                                 if (test.status === "FAIL") {
                                     const pre = document.createElement("pre");
-                                    pre.style.whiteSpace = "pre-wrap";
-                                    pre.style.margin = "0";
+                                    pre.className = "text-wrap m-0";
                                     pre.textContent = test.message;
                                     logContent = pre;
                                     break;
