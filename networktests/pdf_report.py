@@ -89,8 +89,10 @@ class PDFReport:
             self.pdf.drawImage(
                 logo, W - 180, H - 170, width=130, preserveAspectRatio=True
             )
-        except Exception:
-            logger.debug("diagnet logo not found or could not be loaded")
+        except (IOError, FileNotFoundError):
+            logger.debug("DiagNet logo not found or could not be loaded")
+        except Exception as e:
+            logger.error(f"Unexpected error while loading logo: {e}")
 
     def draw_overview(self):
         self.pdf.setFont("Helvetica-Bold", 14)
