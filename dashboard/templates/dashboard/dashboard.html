@@ -172,25 +172,48 @@
                         ('0' + startedAt.getHours()).slice(-2) + ':' +
                         ('0' + startedAt.getMinutes()).slice(-2);
 
-                    let logPreview = '<span class="text-muted">—</span>';
-                    if (r.log && typeof r.log === 'object' && r.log.tests) {
+                    const tdStartedAt = document.createElement("td");
+                    tdStartedAt.className = "text-nowrap";
+                    tdStartedAt.textContent = formattedStartedAt;
+                    row.appendChild(tdStartedAt);
+
+                    const tdTestCase = document.createElement("td");
+                    tdTestCase.textContent = r.test_case;
+                    row.appendChild(tdTestCase);
+
+                    const tdResult = document.createElement("td");
+                    const badge = document.createElement("span");
+                    badge.className = `badge ${r.result ? "bg-success" : "bg-danger"}`;
+                    badge.textContent = r.result ? "PASS" : "FAIL";
+                    tdResult.appendChild(badge);
+                    row.appendChild(tdResult);
+
+                    const tdLog = document.createElement("td");
+                    tdLog.className = "small";
+                    let logContent = null;
+                    if (r.log && typeof r.log === "object" && r.log.tests) {
                         for (const testName in r.log.tests) {
                             const test = r.log.tests[testName];
-                            if (test.status === 'FAIL') {
-                                logPreview = `<pre style="white-space:pre-wrap;margin:0;">${test.message}</pre>`;
+                            if (test.status === "FAIL") {
+                                const pre = document.createElement("pre");
+                                pre.style.whiteSpace = "pre-wrap";
+                                pre.style.margin = "0";
+                                pre.textContent = test.message;
+                                logContent = pre;
                                 break;
                             }
                         }
                     }
 
-                    row.innerHTML = `
-                        <td class="text-nowrap">${formattedStartedAt}</td>
-                        <td>${r.test_case}</td>
-                        <td>
-                            <span class="badge ${r.result ? 'bg-success' : 'bg-danger'}">${r.result ? 'PASS' : 'FAIL'}</span>
-                        </td>
-                        <td class="small">${logPreview}</td>
-                    `;
+                    if (!logContent) {
+                        const span = document.createElement("span");
+                        span.className = "text-muted";
+                        span.textContent = "—";
+                        logContent = span;
+                    }
+                    tdLog.appendChild(logContent);
+                    row.appendChild(tdLog);
+
                     recentRunsTable.appendChild(row);
                 });
             } else {
