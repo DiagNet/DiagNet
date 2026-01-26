@@ -13,10 +13,8 @@ from django.views import generic
 from django.views.decorators.http import require_http_methods
 
 from devices.models import Device
-from networktests.models import TestCase
-
-from .models import TestDevice, TestParameter
-from .pdf_report import PDFReport
+from networktests.models import TestCase, TestDevice, TestParameter
+from networktests.pdf_report import PDFReport
 
 logger = logging.getLogger(__name__)
 
