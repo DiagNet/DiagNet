@@ -319,6 +319,7 @@ def delete_testcase(request, pk):
         "testgroups.view_testgroup",
     ]
 )
+@require_http_methods(["GET"])
 def export_report_pdf(request):
     buffer = BytesIO()
     report = PDFReport(buffer)
