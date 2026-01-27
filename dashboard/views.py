@@ -62,12 +62,8 @@ def get_dashboard_data(range_code: str, group_name: Optional[str]):
     group_fails: List[int] = [g.total_count - g.pass_count for g in groups_with_stats]
 
     selected_group = None
-
     if group_name:
-        try:
-            selected_group = all_groups.get(name=group_name)
-        except TestGroup.DoesNotExist:
-            selected_group = None
+        selected_group = all_groups.filter(name=group_name).first()
 
     if not selected_group and all_groups.exists():
         selected_group = all_groups.first()
