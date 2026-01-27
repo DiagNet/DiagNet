@@ -210,6 +210,11 @@ class MPLS(DiagNetTest):
             if hasattr(target_device, "ip_address") and target_device.ip_address:
                 possible_ips.add(str(target_device.ip_address))
 
+            if not possible_ips:
+                errors.append(
+                    f"Cannot validate LDP session to '{target_device.name}': device has no configured IP addresses."
+                )
+                continue
             # Try to find a match in the active LDP peers
             found_peer_key = None
             for ip in possible_ips:
