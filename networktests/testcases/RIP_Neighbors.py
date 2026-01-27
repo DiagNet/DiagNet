@@ -142,22 +142,19 @@ class RIP_Neighbors(DiagNetTest):
         )
 
         try:
-            device_a_protocols = (
-                self.device_a.get_genie_device_object().parse(command)
-            )
+            device_a_protocols = self.device_a.get_genie_device_object().parse(command)
         except Exception as exc:
             raise ValueError(
                 f"Failed to parse '{command}' on device {self.device_a.name}: {exc}"
             )
 
         try:
-            device_b_protocols = (
-                self.device_b.get_genie_device_object().parse(command)
-            )
+            device_b_protocols = self.device_b.get_genie_device_object().parse(command)
         except Exception as exc:
             raise ValueError(
                 f"Failed to parse '{command}' on device {self.device_b.name}: {exc}"
             )
+
         def extract_active_neighbors(data: Dict) -> Dict:
             try:
                 return data["protocols"]["rip"]["vrf"][vrf_name]["address_family"][
