@@ -175,13 +175,19 @@ class EIGRP_Neighbors(DiagNetTest):
 
         try:
             data_a = self.device_a.get_genie_device_object().parse(command)
-        except Exception:
-            data_a = {}
+        except Exception as error:
+            raise ValueError(
+                f"EIGRP adjacency verification failed on {self.device_a.name} "
+                f"while parsing '{command}': {error}"
+            )
 
         try:
             data_b = self.device_b.get_genie_device_object().parse(command)
-        except Exception:
-            data_b = {}
+        except Exception as error:
+            raise ValueError(
+                f"EIGRP adjacency verification failed on {self.device_b.name} "
+                f"while parsing '{command}': {error}"
+            )
 
         neighbors_on_a = self._get_active_neighbors(data_a, vrf_name)
         neighbors_on_b = self._get_active_neighbors(data_b, vrf_name)
