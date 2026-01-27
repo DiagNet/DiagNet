@@ -150,8 +150,14 @@ class DMVPN(DiagNetTest):
     def _parse_dmvpn_output(self, raw_output: str) -> Dict[str, Dict[str, str]]:
         # Input Validation
         parsed_peers = {}
-        if not raw_output or "Invalid input" in raw_output:
+        if not raw_output:
+            # No output from device; treat as no peers discovered.
             return {}
+        if "Invalid input" in raw_output:
+            # The DMVPN table command is not supported or was entered incorrectly.
+            raise ValueError(
+                "DMVPN table command is not supported or returned 'Invalid input' on the device."
+            )
 
         # Regex Parsing Loop
         pattern = re.compile(
