@@ -16,7 +16,7 @@ class MPLS(DiagNetTest):
 
         <section style="margin-top: 10px;">
             <p style="font-size: 1.05rem; color: #475569;">
-                The <strong>MPLS_Core</strong> test class validates the fundamental building blocks of the Label Switching architecture.
+                The <strong>MPLS</strong> test class validates the fundamental building blocks of the Label Switching architecture.
                 It ensures that the Label Distribution Protocol (LDP) is correctly establishing sessions with peers and that MPLS encapsulation is active on the intended transport interfaces.
             </p>
         </section>
