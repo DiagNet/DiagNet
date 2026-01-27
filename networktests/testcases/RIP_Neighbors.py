@@ -16,7 +16,7 @@ class RIP_Neighbors(DiagNetTest):
 
         <section style="margin-top: 10px;">
             <p style="font-size: 1.05rem; color: #475569;">
-                The <strong>RIP_Session</strong> test validates that RIP updates are actively being received from the peer.
+                The <strong>RIP_Neighbors</strong> test validates that RIP updates are actively being received from the peer.
                 Since RIP is stateless, this checks the <code>Routing Information Sources</code> table to confirm the peer is alive and sending updates.
             </p>
         </section>
