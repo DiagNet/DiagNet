@@ -205,8 +205,8 @@ class DMVPN(DiagNetTest):
                     "nbma_ip": resolved_ip,
                 }
                 self.resolved_targets.append(target_data)
-            except ValueError as e:
-                raise ValueError(str(e))
+            except ValueError:
+                raise
 
         return True
 
