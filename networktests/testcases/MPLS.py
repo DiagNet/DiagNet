@@ -96,7 +96,7 @@ class MPLS(DiagNetTest):
     ]
 
     def _get_clean_peer_id(self, raw_id: str) -> str:
-        """Removes label space suffix (z.B. '10.10.10.100:0' -> '10.10.10.100')"""
+        """Removes label space suffix (e.g. '10.10.10.100:0' -> '10.10.10.100')"""
         return raw_id.split(":")[0].strip()
 
     def test_device_connection(self) -> bool:
