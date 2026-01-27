@@ -153,9 +153,10 @@ class EIGRP_Neighbors(DiagNetTest):
         except Exception as error:
             raise ValueError(f"Topology discovery failed: {error}")
 
-        self.int_a, self.ip_a, self.int_b, self.ip_b = self._find_overlap_and_ips(
+        int_a, ip_a, int_b, ip_b = self._find_overlap_and_ips(
             device_a_data, device_b_data
         )
+        self.ip_a, self.ip_b = ip_a, ip_b
 
         if not self.ip_a or not self.ip_b:
             raise ValueError(
