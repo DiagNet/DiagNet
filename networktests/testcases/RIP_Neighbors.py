@@ -35,6 +35,10 @@ class RIP_Neighbors(DiagNetTest):
                 <span><strong>Update Verification:</strong> Ensures the Peer-IP is listed as a valid source in <code>show ip protocols</code>.</span>
             </li>
         </ul>
+
+        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 20px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+            Authored by: Luka Pacar
+        </p>
     </div>
     """
 
