@@ -139,7 +139,7 @@ class MPLS(DiagNetTest):
 
         if not self.intf_data:
             raise ValueError(
-                "Skipping interface validation: 'show mpls interfaces' returned no data."
+                "Interface validation failed: 'show mpls interfaces' returned no data."
             )
 
         vrf = getattr(self, "vrf", "default") or "default"
