@@ -4,29 +4,30 @@
 {% block title %}Dashboard - DiagNet{% endblock %}
 {% block content %}
     <div class="mb-4">
-        <h1 class="fw-bold">DiagNet Dashboard</h1>
-        <p class="text-muted placeholder-glow" id="range-label">
-            <span class="placeholder col-4"></span>
-        </p>
+        <h1 class="fw-bold">Welcome to DiagNet</h1>
+    </div>
+    <div class="mb-3">
+        <div class="d-flex align-items-center">
+            <span class="me-2">Here's a summary of network tests</span>
+            <select name="range"
+                    id="range-select"
+                    class="form-select form-select-sm"
+                    style="width: auto"
+                    aria-label="Time range filter">
+                <option value="24h">from the last 24 hours</option>
+                <option value="7d">from the last 7 days</option>
+                <option value="30d">from the last 30 days</option>
+                <option value="all">of all time</option>
+            </select>
+        </div>
     </div>
     <div class="row g-4">
         <div class="col-lg-4">
             <div class="card mb-4" style="height:350px;">
                 <div class="card-body d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h2 class="fs-5 fw-semibold mb-0">Test Groups</h2>
+                        <h2 class="fs-5 fw-semibold mb-0">Test Group Results</h2>
                     </div>
-                    <form>
-                        <select name="range"
-                                id="range-select"
-                                class="form-select form-select-sm"
-                                aria-label="Time range filter">
-                            <option value="24h">24 hours</option>
-                            <option value="7d">7 days</option>
-                            <option value="30d">30 days</option>
-                            <option value="all">All</option>
-                        </select>
-                    </form>
                     <div class="mt-2 flex-grow-1">
                         <canvas id="testgroupChart"></canvas>
                     </div>
@@ -35,7 +36,7 @@
             <div class="card" style="height:350px;">
                 <div class="card-body d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h2 class="fs-5 fw-semibold mb-0">TestCases</h2>
+                        <h2 class="fs-5 fw-semibold mb-0">Test Case Results</h2>
                     </div>
                     <form>
                         <select name="tcgroup"
@@ -133,7 +134,6 @@
 
         const rangeSelect = document.getElementById("range-select");
         const tcGroupSelect = document.getElementById("tcgroup-select");
-        const rangeLabel = document.getElementById("range-label");
 
         async function fetchData() {
             try {
@@ -145,7 +145,6 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                rangeLabel.textContent = `Network test overview – ${data.range_label}.`;
                 groupChart.data.labels = data.group_labels;
                 groupChart.data.datasets[0].data = data.group_passes;
                 groupChart.data.datasets[1].data = data.group_fails;
