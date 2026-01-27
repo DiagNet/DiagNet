@@ -1,5 +1,4 @@
 import json
-import logging
 
 from django.db.models import Count, Q
 from django.utils import timezone
@@ -8,14 +7,10 @@ from reportlab.graphics.charts.barcharts import VerticalBarChart
 from reportlab.graphics.shapes import Drawing
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 from networktests.models import TestResult
 from testgroups.models import TestGroup
-
-logger = logging.getLogger(__name__)
-
 
 W, H = A4
 
@@ -95,20 +90,6 @@ class PDFReport:
         self.pdf.drawString(
             self.MARGIN_LEFT, y_pos, f"Generated: {self.now.strftime('%Y-%m-%d %H:%M')}"
         )
-
-        try:
-            logo = ImageReader("static/images/diagnet_logo.png")
-            self.pdf.drawImage(
-                logo,
-                self.PAGE_WIDTH - 180,
-                self.PAGE_HEIGHT - 170,
-                width=130,
-                preserveAspectRatio=True,
-            )
-        except (IOError, FileNotFoundError):
-            logger.debug("DiagNet logo not found or could not be loaded")
-        except Exception as e:
-            logger.error(f"Unexpected error while loading logo: {e}")
 
     def draw_overview(self):
         y_pos = self.PAGE_HEIGHT - 210
