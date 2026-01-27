@@ -223,7 +223,6 @@
                 });
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
-                rangeLabel.textContent = "Could not load dashboard data. Please try again later.";
                 groupChart.data.labels = [];
                 groupChart.data.datasets.forEach(dataset => {
                     dataset.data = [];
