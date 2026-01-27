@@ -121,7 +121,7 @@ class RIP_Neighbors(DiagNetTest):
         except Exception as error:
             raise ValueError(f"Topology discovery failed: {error}")
 
-        self.int_a, self.ip_a, self.int_b, self.ip_b = self._find_overlap_and_ips(
+        _, self.ip_a, _, self.ip_b = self._find_overlap_and_ips(
             device_a_data, device_b_data
         )
 
