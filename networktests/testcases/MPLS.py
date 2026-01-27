@@ -190,7 +190,7 @@ class MPLS(DiagNetTest):
 
         if not self.ldp_data:
             raise ValueError(
-                "Skipping LDP neighbor validation: 'show mpls ldp neighbor detail' returned no data."
+                "LDP neighbor validation failed: 'show mpls ldp neighbor detail' returned no data."
             )
 
         vrf = getattr(self, "vrf", "default") or "default"
