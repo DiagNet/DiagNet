@@ -38,8 +38,12 @@ def get_dashboard_data(range_code: str, group_name: Optional[str]):
     if since is not None:
         results_qs = results_qs.filter(started_at__gte=since)
 
-    total = results_qs.count()
-    passes = results_qs.filter(result=True).count()
+    stats = results_qs.aggregate(
+        total=Count("id"),
+        passes=Count("id", filter=Q(result=True)),
+    )
+    total = stats["total"]
+    passes = stats["passes"]
     fails = total - passes
 
     recent = results_qs[:10]
