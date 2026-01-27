@@ -15,10 +15,10 @@ def get_dashboard_data(range_code: str, group_name: Optional[str]):
     now = timezone.now()
 
     RANGE_OPTIONS = {
-        "24h": {"delta": timedelta(hours=24), "label": "last 24 hours"},
-        "7d": {"delta": timedelta(days=7), "label": "last 7 days"},
-        "30d": {"delta": timedelta(days=30), "label": "last 30 days"},
-        "all": {"delta": None, "label": "all results"},
+        "24h": {"delta": timedelta(hours=24), "label": "in the last 24 hours"},
+        "7d": {"delta": timedelta(days=7), "label": "in the last 7 days"},
+        "30d": {"delta": timedelta(days=30), "label": "in the last 30 days"},
+        "all": {"delta": None, "label": "of all time"},
     }
     # The default in the dashboard_data view is '24h'. We honor that here.
     DEFAULT_RANGE_CODE = "24h"
