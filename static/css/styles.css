@@ -1,3 +1,15 @@
+:root {
+  --diagnet-header-color: #0d6efd;
+}
+
+[data-bs-theme="dark"] {
+  --diagnet-header-color: #2c3e50;
+}
+
+.diagnet-header {
+  background-color: var(--diagnet-header-color) !important;
+}
+
 .htmx-indicator {
   display: none;
 }
