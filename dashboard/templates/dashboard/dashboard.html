@@ -163,11 +163,14 @@
                         const row = document.createElement("tr");
                         row.dataset.testcase = r.test_case.toLowerCase();
                         const startedAt = new Date(r.started_at);
-                        const formattedStartedAt = startedAt.getFullYear() + '-' +
-                            ('0' + (startedAt.getMonth() + 1)).slice(-2) + '-' +
-                            ('0' + startedAt.getDate()).slice(-2) + ' ' +
-                            ('0' + startedAt.getHours()).slice(-2) + ':' +
-                            ('0' + startedAt.getMinutes()).slice(-2);
+                        const formattedStartedAt = startedAt.toLocaleString(undefined, {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        });
                         const tdStartedAt = document.createElement("td");
                         tdStartedAt.className = "text-nowrap";
                         tdStartedAt.textContent = formattedStartedAt;
