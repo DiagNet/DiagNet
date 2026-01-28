@@ -48,7 +48,10 @@ class Device(models.Model):
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
 
-    enablepassword = models.CharField(max_length=100)
+    enablepassword = models.CharField(
+        max_length=100,
+        default="",
+    )
 
     class Meta:
         constraints = [
@@ -136,12 +139,23 @@ class Device(models.Model):
     def get_genie_device_dict(self) -> dict[str, dict[str, Any]]:
         return {
             self.name: {
-                "ip": self.ip_address,
-                "port": self.port,
-                "protocol": self.protocol,
-                "username": self.username,
-                "password": self.password,
                 "os": self.device_type.split("_")[1],
+                "connections": {
+                    "cli": {
+                        "protocol": self.protocol,
+                        "ip": self.ip_address,
+                        "port": self.port,
+                    },
+                },
+                "credentials": {
+                    "default": {
+                        "username": self.username,
+                        "password": self.password,
+                    },
+                    "enable": {
+                        "password": self.enablepassword,
+                    },
+                },
             }
         }
 
@@ -167,7 +181,7 @@ class Device(models.Model):
             "host": self.ip_address,
             "username": self.username,
             "password": self.password,
-            # "secret": "enablepass",
+            "secret": self.enablepassword,
             "port": self.port,
         }
         try:
