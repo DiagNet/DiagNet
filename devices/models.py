@@ -48,6 +48,8 @@ class Device(models.Model):
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
 
+    enablepassword = models.CharField(max_length=100)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
