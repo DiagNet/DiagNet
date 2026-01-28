@@ -17,7 +17,7 @@ class IPSec_VPN(DiagNetTest):
 
         <section style="margin-top: 10px;">
             <p style="font-size: 1.05rem; color: #475569;">
-                The <strong>IPsec_Tunnel</strong> test performs a deep inspection of VPN connectivity.
+                The <strong>IPSec_VPN</strong> test performs a deep inspection of VPN connectivity.
                 It validates the stability of the secure tunnel to the peer device and audits the data plane for traffic blackholes or unidirectional flow issues.
             </p>
         </section>
