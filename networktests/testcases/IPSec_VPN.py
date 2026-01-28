@@ -141,10 +141,8 @@ class IPSec_VPN(DiagNetTest):
     def test_validate_tunnel(self) -> bool:
         genie_dev = self.device.get_genie_device_object()
 
-        # Fetch IPsec SAs mit Retry & Timeout
         raw_ipsec = ""
         try:
-            # Timeout auf 60s erhöht, da show crypto... oft langsam ist
             raw_ipsec = genie_dev.execute("show crypto ipsec sa", timeout=60)
         except (TimeoutError, SubCommandFailure, Exception):
             raise ValueError("Operational data fetch failed")
