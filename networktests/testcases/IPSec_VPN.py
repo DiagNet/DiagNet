@@ -58,13 +58,6 @@ class IPSec_VPN(DiagNetTest):
             "requirement": "required",
         },
         {
-            "name": "vrf",
-            "display_name": "VRF",
-            "type": "str",
-            "default": "default",
-            "requirement": "optional",
-        },
-        {
             "name": "expect_traffic",
             "display_name": "Expect Traffic Flow",
             "type": "choice",
