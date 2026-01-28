@@ -27,6 +27,7 @@ class DeviceForm(forms.ModelForm):
             "device_type",
             "username",
             "password",
+            "enablepassword"
         ]
         widgets = {
             "name": forms.TextInput(
