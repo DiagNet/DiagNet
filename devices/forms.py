@@ -10,6 +10,13 @@ class DeviceForm(forms.ModelForm):
         required=False,
     )
 
+    enablepassword = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={"class": "form-control", "placeholder": "Enable Password"}
+        ),
+        required=False,
+    )
+
     class Meta:
         model = Device
         fields = [
