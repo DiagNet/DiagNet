@@ -48,10 +48,7 @@ class Device(models.Model):
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
 
-    enablepassword = models.CharField(
-        max_length=100,
-        default="",
-    )
+    enable_password = models.CharField(max_length=100)
 
     class Meta:
         constraints = [
@@ -153,7 +150,7 @@ class Device(models.Model):
                         "password": self.password,
                     },
                     "enable": {
-                        "password": self.enablepassword,
+                        "password": self.enable_password,
                     },
                 },
             }
@@ -181,7 +178,7 @@ class Device(models.Model):
             "host": self.ip_address,
             "username": self.username,
             "password": self.password,
-            "secret": self.enablepassword,
+            "secret": self.enable_password,
             "port": self.port,
         }
         try:
