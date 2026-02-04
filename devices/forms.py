@@ -50,6 +50,18 @@ class DeviceForm(forms.ModelForm):
             ),
         }
 
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+        if not password and self.instance.pk:
+            return self.instance.password
+        return password
+
+    def clean_enable_password(self):
+        password = self.cleaned_data.get("enable_password")
+        if not password and self.instance.pk:
+            return self.instance.enable_password
+        return password
+
 
 class UploadFileForm(forms.Form):
     yaml_file = forms.FileField(
