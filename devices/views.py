@@ -1,4 +1,5 @@
 import yaml
+import json
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
@@ -13,6 +14,7 @@ STATE_MAP = {
     "unknown": "❓",
     "reachable": "✅",
     "unreachable": "❌",
+    "decryption_error": "🔐",
 }
 
 
@@ -32,7 +34,8 @@ class DeviceListView(generic.ListView):
         session_devices = self.request.session.get("devices", {})
         for device in context["device_list"]:
             status = session_devices.get(str(device.pk), {}).get("status", "unknown")
-            device.session_status = STATE_MAP[status]
+            # Fallback to unknown if status is not in map (e.g. old session data)
+            device.session_status = STATE_MAP.get(status, STATE_MAP["unknown"])
 
         return context
 
@@ -97,7 +100,19 @@ class DeviceDelete(DeleteView):
 
 def device_check(request, pk):
     device = get_object_or_404(Device, pk=pk)
-    new_status = "reachable" if device.can_connect() else "unreachable"
+
+    # We use test_connection specifically to catch decryption errors
+    # which can_connect (restored to original) would crash on if not handled.
+    success, error_msg = device.test_connection()
+
+    is_key_error = "Decryption Error" in error_msg or "Encryption Error" in error_msg
+
+    if success:
+        new_status = "reachable"
+    elif is_key_error:
+        new_status = "decryption_error"
+    else:
+        new_status = "unreachable"
 
     if "devices" not in request.session:
         request.session["devices"] = {}
@@ -105,11 +120,23 @@ def device_check(request, pk):
     request.session["devices"][str(pk)] = {"status": new_status}
     request.session.modified = True
 
-    return render(
+    response = render(
         request,
         "devices/partials/device_status_cell.html",
         {"status": STATE_MAP[new_status]},
     )
+
+    # Only show popup for key errors
+    if is_key_error:
+        trigger_data = {
+            "showMessage": {
+                "message": f"Security Error: {error_msg}",
+                "level": "danger",
+            }
+        }
+        response["HX-Trigger"] = json.dumps(trigger_data)
+
+    return response
 
 
 def export_devices_from_yaml(request):
