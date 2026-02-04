@@ -13,15 +13,41 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+import dotenv
+from cryptography.fernet import Fernet
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+dotenv.load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-m$in6@67y+qrf!cw%imjawn2^)x732%w_+h7ggta1=e16fms@("
+SECRET_KEY = os.environ.get("SECRET_KEY")
+DEVICE_ENCRYPTION_KEY = os.environ.get("DEVICE_ENCRYPTION_KEY")
+
+if not SECRET_KEY or not DEVICE_ENCRYPTION_KEY:
+    raise ImproperlyConfigured(
+        "CRITICAL ERROR: The application cannot start.\n"
+        "Mandatory security keys are missing from the .env file or environment variables:\n"
+        f"- SECRET_KEY: {'SET' if SECRET_KEY else 'MISSING'}\n"
+        f"- DEVICE_ENCRYPTION_KEY: {'SET' if DEVICE_ENCRYPTION_KEY else 'MISSING'}\n"
+        "Please ensure a valid .env file exists and defines these keys."
+    )
+
+try:
+    Fernet(DEVICE_ENCRYPTION_KEY)
+except Exception as e:
+    raise ImproperlyConfigured(
+        "CRITICAL ERROR: Invalid DEVICE_ENCRYPTION_KEY provided.\n"
+        f"Error details: {e}\n"
+        "The key must be 32 url-safe base64-encoded bytes.\n"
+        "You can generate a valid key using: \n"
+        "python3 -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'"
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
