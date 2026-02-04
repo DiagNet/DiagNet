@@ -1,12 +1,14 @@
 from typing import Any
 
+import netmiko
+from cryptography.fernet import Fernet, InvalidToken
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Q
+from django.db.models.functions import Lower
 from django.urls import reverse  # To generate URLS by reversing URL patterns
 from genie.testbed import load
-from django.db.models.functions import Lower
-from django.db.models import Q
-import netmiko
 
 device_connections = {}
 
@@ -63,6 +65,46 @@ class Device(models.Model):
                 violation_error_message="Telnet is not allowed for IOSXE devices.",
             ),
         ]
+
+    def _get_cipher_suite(self):
+        key = settings.DEVICE_ENCRYPTION_KEY
+        return Fernet(key)
+
+    def _encrypt_value(self, value: str) -> str:
+        """Encrypts the value if it's not already encrypted."""
+        if not value:
+            return value
+
+        f = self._get_cipher_suite()
+        try:
+            # If we can decrypt it, it's already encrypted
+            f.decrypt(value.encode())
+            return value
+        except (InvalidToken, ValueError):
+            # Not encrypted, so encrypt it
+            return f.encrypt(value.encode()).decode()
+
+    def _decrypt_value(self, value: str) -> str:
+        """Decrypts the value. Returns original if decryption fails (e.g. plain text)."""
+        if not value:
+            return value
+
+        f = self._get_cipher_suite()
+        try:
+            return f.decrypt(value.encode()).decode()
+        except (InvalidToken, ValueError):
+            return value
+
+    def get_decrypted_password(self):
+        return self._decrypt_value(self.password)
+
+    def get_decrypted_enable_password(self):
+        return self._decrypt_value(self.enable_password)
+
+    def save(self, *args, **kwargs):
+        self.password = self._encrypt_value(self.password)
+        self.enable_password = self._encrypt_value(self.enable_password)
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return f"{self.name} ({self.ip_address})"
@@ -124,7 +166,7 @@ class Device(models.Model):
             value = getattr(self, field.name)
 
             # Mask password for display
-            if field.name == "password":
+            if field.name in ["password", "enable_password"]:
                 value = "*******"
             # Use human-readable labels for choice fields
             elif field.choices:
@@ -147,10 +189,10 @@ class Device(models.Model):
                 "credentials": {
                     "default": {
                         "username": self.username,
-                        "password": self.password,
+                        "password": self.get_decrypted_password(),
                     },
                     "enable": {
-                        "password": self.enable_password,
+                        "password": self.get_decrypted_enable_password(),
                     },
                 },
             }
@@ -177,8 +219,8 @@ class Device(models.Model):
             "device_type": self.get_netmiko_type(),
             "host": self.ip_address,
             "username": self.username,
-            "password": self.password,
-            "secret": self.enable_password,
+            "password": self.get_decrypted_password(),
+            "secret": self.get_decrypted_enable_password(),
             "port": self.port,
         }
         try:
