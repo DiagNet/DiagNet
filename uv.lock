@@ -481,8 +481,10 @@ dependencies = [
     { name = "daphne" },
     { name = "django" },
     { name = "django-stubs" },
+    { name = "fernet" },
     { name = "netmiko" },
     { name = "pyats", extra = ["full"] },
+    { name = "python-dotenv" },
     { name = "reportlab" },
 ]
 
@@ -498,8 +500,10 @@ requires-dist = [
     { name = "daphne", specifier = ">=4.2.1" },
     { name = "django", specifier = ">=5.2.4" },
     { name = "django-stubs", specifier = ">=5.2.1" },
+    { name = "fernet", specifier = ">=1.0.1" },
     { name = "netmiko", specifier = ">=4.6.0" },
     { name = "pyats", extras = ["full"], specifier = ">=25.6" },
+    { name = "python-dotenv", specifier = ">=1.2.1" },
     { name = "reportlab", specifier = ">=4.4.9" },
 ]
 
@@ -609,6 +613,15 @@ sdist = { url = "https://files.pythonhosted.org/packages/20/b5/23b216d9d985a9566
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cb/a8/20d0723294217e47de6d9e2e40fd4a9d2f7c4b6ef974babd482a59743694/fastjsonschema-2.21.2-py3-none-any.whl", hash = "sha256:1c797122d0a86c5cace2e54bf4e819c36223b552017172f32c5c024a6b77e463", size = 24024, upload-time = "2025-08-14T18:49:34.776Z" },
 ]
+
+[[package]]
+name = "fernet"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyaes" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/70/ab/59678e91d691a6121b98b3272d563da84160e03d865a236df93fb2910684/fernet-1.0.1.tar.gz", hash = "sha256:c50a51c997e09199695b51761bdc090ccf4129917520681e69dcfff4355325c7", size = 1909, upload-time = "2016-09-18T15:02:22.712Z" }
 
 [[package]]
 name = "frozenlist"
@@ -1371,6 +1384,12 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/1d/c7/28220d37e041fe1df03e857fe48f768dcd30cd151480bf6f00da8713214a/py-ubjson-0.16.1.tar.gz", hash = "sha256:b9bfb8695a1c7e3632e800fb83c943bf67ed45ddd87cd0344851610c69a5a482", size = 50316, upload-time = "2020-04-18T15:05:57.698Z" }
 
 [[package]]
+name = "pyaes"
+version = "1.6.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/44/66/2c17bae31c906613795711fc78045c285048168919ace2220daa372c7d72/pyaes-1.6.1.tar.gz", hash = "sha256:02c1b1405c38d3c370b085fb952dd8bea3fadcee6411ad99f312cc129c536d8f", size = 28536, upload-time = "2017-09-20T21:17:54.23Z" }
+
+[[package]]
 name = "pyasn1"
 version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1858,6 +1877,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/66/c0/0c8b6ad9f17a802ee498c46e004a0eb49bc148f2fd230864601a86dcf6db/python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3", size = 342432, upload-time = "2024-03-01T18:36:20.211Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427", size = 229892, upload-time = "2024-03-01T18:36:18.57Z" },
+]
+
+[[package]]
+name = "python-dotenv"
+version = "1.2.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f0/26/19cadc79a718c5edbec86fd4919a6b6d3f681039a2f6d66d14be94e75fb9/python_dotenv-1.2.1.tar.gz", hash = "sha256:42667e897e16ab0d66954af0e60a9caa94f0fd4ecf3aaf6d2d260eec1aa36ad6", size = 44221, upload-time = "2025-10-26T15:12:10.434Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/14/1b/a298b06749107c305e1fe0f814c6c74aea7b2f1e10989cb30f544a1b3253/python_dotenv-1.2.1-py3-none-any.whl", hash = "sha256:b81ee9561e9ca4004139c6cbba3a238c32b03e4894671e181b671e8cb8425d61", size = 21230, upload-time = "2025-10-26T15:12:09.109Z" },
 ]
 
 [[package]]
