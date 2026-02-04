@@ -60,7 +60,7 @@ class Command(BaseCommand):
                                 device.password.encode()
                             ).decode()
                         except InvalidToken:
-                            if not device.password.startswith("gAAAA"):
+                            if not device._is_potentially_encrypted(device.password):
                                 plain_password = device.password
                             else:
                                 raise CommandError(
@@ -73,7 +73,9 @@ class Command(BaseCommand):
                                 device.enable_password.encode()
                             ).decode()
                         except InvalidToken:
-                            if not device.enable_password.startswith("gAAAA"):
+                            if not device._is_potentially_encrypted(
+                                device.enable_password
+                            ):
                                 plain_enable = device.enable_password
                             else:
                                 raise CommandError(
