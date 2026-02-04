@@ -15,4 +15,7 @@ jobs:
     name: Test code
     uses: ./.github/workflows/nix.yml
     with:
-      command: nix develop --command python manage.py test
+      command: >-
+        SECRET_KEY='ci-test-key-not-for-production'
+        DEVICE_ENCRYPTION_KEY='FYRiKLAYI7zmPwfm-NNqqj2BVwAKF37YptJpmKAsuIU='
+        nix develop --command python manage.py test
