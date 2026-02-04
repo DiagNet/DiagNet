@@ -255,6 +255,31 @@ class Device(models.Model):
         except Exception:
             return False
 
+    def test_connection(self) -> tuple[bool, str]:
+        """
+        Tests connectivity to the device.
+        Returns (True, "") on success.
+        Returns (False, error_message) on failure.
+        """
+        try:
+            # We access credentials inside the try block so that
+            # Decryption Errors (ValueError) are caught.
+            device_params = {
+                "device_type": self.get_netmiko_type(),
+                "host": self.ip_address,
+                "username": self.username,
+                "password": self.get_decrypted_password(),
+                "secret": self.get_decrypted_enable_password(),
+                "port": self.port,
+            }
+            connection = netmiko.ConnectHandler(**device_params)
+            connection.enable()
+            connection.cleanup()
+            connection.disconnect()
+            return True, ""
+        except Exception as e:
+            return False, str(e)
+
     def get_genie_device_object(self):
         if (
             self.name in device_connections
