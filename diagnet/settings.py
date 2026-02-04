@@ -29,25 +29,63 @@ dotenv.load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.environ.get("SECRET_KEY")
 DEVICE_ENCRYPTION_KEY = os.environ.get("DEVICE_ENCRYPTION_KEY")
 
+
+def get_security_help_message(missing_secret, missing_device):
+    msg = ["\n" + "=" * 80, "DIAGNET SECURITY CONFIGURATION ERROR", "=" * 80]
+    env_suggestions = []
+
+    if missing_secret:
+        msg.extend(
+            [
+                "- MISSING: SECRET_KEY",
+                "  This is required for Django's session security.",
+            ]
+        )
+        env_suggestions.append(f"SECRET_KEY={Fernet.generate_key().decode()}")
+
+    if missing_device:
+        msg.extend(
+            [
+                "- MISSING or INVALID: DEVICE_ENCRYPTION_KEY",
+                "  This is required to securely store device passwords.",
+                "  It must be a 32-byte url-safe base64-encoded string.",
+            ]
+        )
+        env_suggestions.append(
+            f"DEVICE_ENCRYPTION_KEY={Fernet.generate_key().decode()}"
+        )
+
+    msg.extend(
+        [
+            "",
+            "Recommended .env content (Copy & Paste this block):",
+            "--------------------------------------------------",
+        ]
+    )
+    msg.extend(env_suggestions)
+    msg.append("--------------------------------------------------")
+
+    msg.extend(
+        [
+            "=" * 80,
+            "1. Open your .env file in the project root.",
+            "2. Paste the configuration block above.",
+            "3. Save the file and restart the application.",
+            "=" * 80 + "\n",
+        ]
+    )
+    return "\n".join(msg)
+
+
 if not SECRET_KEY or not DEVICE_ENCRYPTION_KEY:
     raise ImproperlyConfigured(
-        "CRITICAL ERROR: The application cannot start.\n"
-        "Mandatory security keys are missing from the .env file or environment variables:\n"
-        f"- SECRET_KEY: {'SET' if SECRET_KEY else 'MISSING'}\n"
-        f"- DEVICE_ENCRYPTION_KEY: {'SET' if DEVICE_ENCRYPTION_KEY else 'MISSING'}\n"
-        "Please ensure a valid .env file exists and defines these keys."
+        get_security_help_message(not SECRET_KEY, not DEVICE_ENCRYPTION_KEY)
     )
 
 try:
     Fernet(DEVICE_ENCRYPTION_KEY)
-except Exception as e:
-    raise ImproperlyConfigured(
-        "CRITICAL ERROR: Invalid DEVICE_ENCRYPTION_KEY provided.\n"
-        f"Error details: {e}\n"
-        "The key must be 32 url-safe base64-encoded bytes.\n"
-        "You can generate a valid key using: \n"
-        "python3 -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'"
-    )
+except Exception:
+    raise ImproperlyConfigured(get_security_help_message(False, True))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
