@@ -31,8 +31,8 @@ class Command(BaseCommand):
             return
 
         try:
-            fernet_old = Fernet(old_key_input)
-            fernet_new = Fernet(new_key_input)
+            fernet_old = Fernet(old_key_input.encode())
+            fernet_new = Fernet(new_key_input.encode())
         except Exception as e:
             raise CommandError(f"Invalid key format: {e}")
 
