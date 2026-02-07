@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
+from django.core.management.utils import get_random_secret_key
 import dotenv
 from cryptography.fernet import Fernet
 
@@ -43,7 +44,7 @@ def get_security_help_message(missing_secret, missing_device):
                 "  This is required for Django's session security.",
             ]
         )
-        env_suggestions.append(f"SECRET_KEY={Fernet.generate_key().decode()}")
+        env_suggestions.append(f'SECRET_KEY="{get_random_secret_key()}"')
 
     if missing_device:
         msg.extend(
@@ -54,7 +55,7 @@ def get_security_help_message(missing_secret, missing_device):
             ]
         )
         env_suggestions.append(
-            f"DEVICE_ENCRYPTION_KEY={Fernet.generate_key().decode()}"
+            f'DEVICE_ENCRYPTION_KEY="{Fernet.generate_key().decode()}"'
         )
 
     msg.extend(
