@@ -28,6 +28,8 @@ dotenv.load_dotenv(BASE_DIR / ".env")
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
 DEVICE_ENCRYPTION_KEY = os.environ.get("DEVICE_ENCRYPTION_KEY")
+if DEVICE_ENCRYPTION_KEY is not None:
+    DEVICE_ENCRYPTION_KEY = DEVICE_ENCRYPTION_KEY.encode()
 
 
 def get_security_help_message(missing_secret, missing_device):
