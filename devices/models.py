@@ -1,4 +1,3 @@
-import base64
 from typing import Any
 
 import netmiko
@@ -15,6 +14,8 @@ device_connections = {}
 
 
 class Device(models.Model):
+    ENCRYPTION_PREFIX = "enc:"
+
     DEVICE_TYPES = [
         ("router_ios", "Router (IOS)"),
         ("router_iosxe", "Router (IOSXE)"),
@@ -71,48 +72,42 @@ class Device(models.Model):
         key = settings.DEVICE_ENCRYPTION_KEY
         return Fernet(key)
 
-    def _is_potentially_encrypted(self, value: str) -> bool:
-        """Checks if the value looks like a Fernet token."""
-        # Fernet tokens are url-safe base64 and start with version 0x80 (128)
-        if len(value) < 50:
-            return False
-        try:
-            decoded = base64.urlsafe_b64decode(value)
-            return decoded[0] == 0x80
-        except Exception:
-            return False
-
     def _encrypt_value(self, value: str) -> str:
         """Encrypts the value if it's not already encrypted."""
         if not value:
             return value
 
         f = self._get_cipher_suite()
-        try:
-            # If we can decrypt it, it's already encrypted with the CURRENT key
-            f.decrypt(value.encode())
-            return value
-        except (InvalidToken, ValueError):
-            # If it looks like a token but failed to decrypt, the key might be wrong.
-            if self._is_potentially_encrypted(value):
+
+        if value.startswith(self.ENCRYPTION_PREFIX):
+            actual_value = value[len(self.ENCRYPTION_PREFIX) :]
+            try:
+                f.decrypt(actual_value.encode())
+                return value
+            except (InvalidToken, ValueError):
                 raise ValueError(
-                    "Encryption Error: Data appears to be encrypted but cannot be decrypted "
+                    "Encryption Error: Data marked as encrypted cannot be decrypted "
                     "with the current key. Please verify DEVICE_ENCRYPTION_KEY."
                 )
-            # Not encrypted (plain text), so encrypt it
-            return f.encrypt(value.encode()).decode()
+
+        return f"{self.ENCRYPTION_PREFIX}{f.encrypt(value.encode()).decode()}"
 
     def _decrypt_value(self, value: str) -> str:
         """Decrypts the value."""
         if not value:
             return value
 
+        if not value.startswith(self.ENCRYPTION_PREFIX):
+            raise ValueError(
+                f"Decryption Error: Possible data corruption detected. Stored value is missing the "
+                f"required '{self.ENCRYPTION_PREFIX}' prefix."
+            )
+
+        actual_value = value[len(self.ENCRYPTION_PREFIX) :]
         f = self._get_cipher_suite()
         try:
-            return f.decrypt(value.encode()).decode()
+            return f.decrypt(actual_value.encode()).decode()
         except (InvalidToken, ValueError):
-            # Decryption failed. This usually means the key is invalid.
-            # We raise an error so the user knows something is wrong.
             raise ValueError(
                 "Decryption Error: Cannot decrypt data. "
                 "The encryption key may be invalid or the data is corrupted."

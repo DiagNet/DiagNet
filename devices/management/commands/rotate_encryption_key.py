@@ -51,60 +51,38 @@ class Command(BaseCommand):
         try:
             with transaction.atomic():
                 for device in devices:
-                    plain_password = ""
-                    plain_enable = ""
+                    for field_name in ["password", "enable_password"]:
+                        val = getattr(device, field_name)
+                        if not val:
+                            continue
 
-                    if device.password:
+                        if not val.startswith(Device.ENCRYPTION_PREFIX):
+                            raise CommandError(
+                                f"Possible data corruption detected: '{field_name}' for device '{device.name}' (ID: {device.id}) "
+                                f"is missing the required '{Device.ENCRYPTION_PREFIX}' prefix."
+                            )
+
+                        actual_encrypted = val[len(Device.ENCRYPTION_PREFIX) :]
                         try:
-                            plain_password = fernet_old.decrypt(
-                                device.password.encode()
+                            plain = fernet_old.decrypt(
+                                actual_encrypted.encode()
                             ).decode()
-                        except InvalidToken:
-                            if not device._is_potentially_encrypted(device.password):
-                                plain_password = device.password
-                            else:
-                                raise CommandError(
-                                    f"Fatal: Device '{device.name}' (ID: {device.id}) cannot be decrypted with the provided Old Key. Aborting entire operation."
-                                )
+                        except (InvalidToken, ValueError):
+                            raise CommandError(
+                                f"Decryption Error: Cannot decrypt '{field_name}' for device '{device.name}'. "
+                                "The old encryption key may be invalid or the data is corrupted."
+                            )
 
-                    if device.enable_password:
-                        try:
-                            plain_enable = fernet_old.decrypt(
-                                device.enable_password.encode()
-                            ).decode()
-                        except InvalidToken:
-                            if not device._is_potentially_encrypted(
-                                device.enable_password
-                            ):
-                                plain_enable = device.enable_password
-                            else:
-                                raise CommandError(
-                                    f"Fatal: Device '{device.name}' (ID: {device.id}) enable_password cannot be decrypted. Aborting."
-                                )
-
-                    new_password_enc = (
-                        fernet_new.encrypt(plain_password.encode()).decode()
-                        if plain_password
-                        else ""
-                    )
-                    new_enable_enc = (
-                        fernet_new.encrypt(plain_enable.encode()).decode()
-                        if plain_enable
-                        else ""
-                    )
+                        # Re-encrypt with new key and add prefix
+                        new_enc = f"{Device.ENCRYPTION_PREFIX}{fernet_new.encrypt(plain.encode()).decode()}"
+                        setattr(device, field_name, new_enc)
 
                     Device.objects.filter(pk=device.pk).update(
-                        password=new_password_enc,
-                        enable_password=new_enable_enc,
+                        password=device.password,
+                        enable_password=device.enable_password,
                     )
 
                     processed_count += 1
-
-                    if processed_count % 10 == 0:
-                        self.stdout.write(
-                            f"Processed {processed_count}/{count}...",
-                            ending="\r",
-                        )
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"\n\nERROR: {e}"))
