@@ -96,16 +96,6 @@
               py-ubjson = prev.py-ubjson.overrideAttrs (old: {
                 nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ final.setuptools ];
               });
-
-              # Fix 9: pyaes
-              pyaes = prev.pyaes.overrideAttrs (old: {
-                nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ final.setuptools ];
-              });
-
-              # Fix 10: fernet
-              fernet = prev.fernet.overrideAttrs (old: {
-                nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ final.setuptools ];
-              });
             })
           ]
         );
