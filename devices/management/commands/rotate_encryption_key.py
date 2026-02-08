@@ -103,5 +103,7 @@ class Command(BaseCommand):
                 "IMPORTANT: The database is now encrypted with the NEW KEY."
             )
         )
-        self.stdout.write("Update your .env file immediately:\n")
-        self.stdout.write(f"DEVICE_ENCRYPTION_KEY={new_key_input}")
+        self.stdout.write("Update your .env file immediately.\n")
+        self.stdout.write(
+            "Set DEVICE_ENCRYPTION_KEY to the new key you just entered and store it securely."
+        )
