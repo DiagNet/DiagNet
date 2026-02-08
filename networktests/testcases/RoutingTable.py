@@ -8,56 +8,114 @@ __author__ = "Luka Pacar"
 
 class RoutingTable(DiagNetTest):
     """
-    <div class="p-4 bg-white rounded shadow-sm" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; border: 1px solid #e2e8f0; color: #1e293b;">
-        <div style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); padding: 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 25px -25px; border-bottom: 4px solid #8b5cf6;">
-            <h2 style="color: #ffffff; margin: 0; font-weight: 700; letter-spacing: -0.025em;">Global Routing Table</h2>
-            <p style="color: #e9d5ff; margin: 8px 0 0 0; font-size: 1rem; font-weight: 500;">RIB State Consistency & Path Verification</p>
-        </div>
+    <div class="card shadow-sm border-0 my-3">
+        <div class="card-body p-4">
 
-        <section style="margin-top: 10px;">
-            <p style="font-size: 1.05rem; color: #475569;">
-                The <strong>RoutingTable</strong> test class serves as the ultimate source of truth for the device's forwarding logic.
-                Unlike protocol-specific tests, this validates the <strong>Global RIB</strong> (Routing Information Base), ensuring that learned routes are actually installed and selectable for traffic forwarding.
-            </p>
-        </section>
-
-        <h4 style="color: #2e1065; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
-            <span style="background: #8b5cf6; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
-            Validation Scope
-        </h4>
-        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-            <div style="flex: 1; background: #f5f3ff; padding: 15px; border-radius: 8px; border-left: 4px solid #7c3aed;">
-                <strong style="color: #4c1d95;">Protocol Agnostic</strong><br>
-                <span style="font-size: 0.85rem; color: #5b21b6;">Validates routes from any source: Connected, Static, OSPF, BGP, EIGRP, or ISIS within IPv4 or IPv6 families.</span>
+            <div class="d-flex align-items-center mb-4 border-bottom border-opacity-10 pb-3">
+                <div class="bg-purple text-white rounded-circle d-flex justify-content-center align-items-center shadow-sm" style="width: 50px; height: 50px; background-color: #6f42c1;">
+                    <i class="bi bi-signpost-split fs-4"></i>
+                </div>
+                <div class="ms-3">
+                    <h3 class="mb-0 fw-bold">Global Routing Table</h3>
+                    <div class="mt-1">
+                        <span class="badge text-white" style="background-color: #00267F; border-color: #00267F;">Cisco</span>
+                        <span class="badge text-white bg-opacity-75 border border-opacity-25" style="background-color: #59359a; border-color: #59359a;">Network Testcase</span>
+                        <span class="badge bg-secondary bg-opacity-75 border border-secondary border-opacity-25">Routing / Forwarding</span>
+                    </div>
+                </div>
             </div>
-            <div style="flex: 1; background: #f5f3ff; padding: 15px; border-radius: 8px; border-left: 4px solid #8b5cf6;">
-                <strong style="color: #4c1d95;">Deep Attribute Check</strong><br>
-                <span style="font-size: 0.85rem; color: #5b21b6;">Enforces strict compliance for Metric, Administrative Distance (Preference), and Route Tags.</span>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-uppercase text-body-secondary fw-bold small mb-2">Overview</h6>
+                    <p class="text-body mb-3">
+                        This test checks the Global Routing Table to ensure the device has the correct paths to reach specific networks.
+                        It validates that routes learned from protocols like OSPF or BGP are actually installed and active, checking details like the next hop IP and outgoing interface.
+                    </p>
+
+                    <div class="p-3 rounded border border-opacity-25 bg-purple bg-opacity-10" style="border-color: #6f42c1;">
+                        <h6 class="fw-bold mb-1" style="color: #59359a;">
+                            <i class="bi bi-shield-check me-2"></i>Why run this?
+                        </h6>
+                        <p class="small text-body mb-0 ps-1">
+                            It confirms that the router knows exactly where to send traffic to reach its destination.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <h6 class="text-uppercase text-body-secondary fw-bold small border-bottom border-opacity-10 pb-2 mb-0">Configuration Parameters</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="small text-uppercase text-body-tertiary">
+                            <tr>
+                                <th scope="col" style="width: 35%;">Name</th>
+                                <th scope="col">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small text-body">
+                            <tr>
+                                <td class="fw-bold font-monospace">device <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">The network device to query</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">vrf</td>
+                                <td class="text-body-secondary">The Virtual Routing and Forwarding instance</td>
+                            </tr>
+                             <tr>
+                                <td class="fw-bold font-monospace">address_family <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">The IP version. IPv4 or IPv6</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">routes <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">A list of specific route entries to verify</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ network <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary fst-italic">The destination prefix</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ match_strategy <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary fst-italic">Exact match or check if included in a subnet</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ protocol</td>
+                                <td class="text-body-secondary fst-italic">The source protocol like OSPF or BGP</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ next_hop</td>
+                                <td class="text-body-secondary fst-italic">The specific IP address of the next gateway</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ outgoing_interface</td>
+                                <td class="text-body-secondary fst-italic">The interface traffic leaves through</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ metric</td>
+                                <td class="text-body-secondary fst-italic">The cost value of the route</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ preference</td>
+                                <td class="text-body-secondary fst-italic">The Administrative Distance</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ tag</td>
+                                <td class="text-body-secondary fst-italic">The numeric tag associated with the route</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2 text-end">
+                    <small class="text-danger opacity-75" style="font-size: 0.75rem;">* Required field</small>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top border-opacity-10 d-flex justify-content-end align-items-center">
+                <span class="small text-uppercase fw-bold text-body-secondary me-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">Authored by</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary-emphasis border border-primary border-opacity-10 rounded-pill px-3 py-1">Luka Pacar</span>
             </div>
         </div>
-
-        <h4 style="color: #2e1065; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
-            <span style="background: #8b5cf6; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
-            Verification Pillars
-        </h4>
-        <ul style="list-style: none; padding-left: 0;">
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #7c3aed; margin-right: 10px;">✔</span>
-                <span><strong>Flexible Matching:</strong> Supports <code>Exact</code> CIDR matching or <code>Included</code> logic to verify subnet existence within aggregates.</span>
-            </li>
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #7c3aed; margin-right: 10px;">✔</span>
-                <span><strong>Path Precision:</strong> Validates specific <strong>Next-Hop IPs</strong> and <strong>Outgoing Interfaces</strong> to prevent sub-optimal routing (ECMP validation supported).</span>
-            </li>
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #7c3aed; margin-right: 10px;">✔</span>
-                <span><strong>Policy Compliance:</strong> Confirms that Route Tags and Admin Distances are preserved correctly across redistribution points.</span>
-            </li>
-        </ul>
-
-        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 25px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-            Authored by: Luka Pacar
-        </p>
     </div>
     """
 

@@ -8,37 +8,78 @@ __author__ = "Luka Pacar"
 
 class RIP_Neighbors(DiagNetTest):
     """
-    <div class="p-4 bg-white rounded shadow-sm" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; border: 1px solid #e2e8f0; color: #1e293b;">
-        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 25px -25px; border-bottom: 4px solid #b45309;">
-            <h2 style="color: #ffffff; margin: 0; font-weight: 700; letter-spacing: -0.025em;">RIP Neighbors</h2>
-            <p style="color: #fef3c7; margin: 8px 0 0 0; font-size: 1rem; font-weight: 500;">Validating Routing Information Sources</p>
+    <div class="card shadow-sm border-0 my-3">
+        <div class="card-body p-4">
+
+            <div class="d-flex align-items-center mb-4 border-bottom border-opacity-10 pb-3">
+                <div class="bg-warning text-dark rounded-circle d-flex justify-content-center align-items-center shadow-sm" style="width: 50px; height: 50px;">
+                    <i class="bi bi-broadcast fs-4"></i>
+                </div>
+                <div class="ms-3">
+                    <h3 class="mb-0 fw-bold">RIP Neighbors</h3>
+                    <div class="mt-1">
+                        <span class="badge text-white" style="background-color: #00267F; border-color: #00267F;">Cisco</span>
+                        <span class="badge bg-warning text-dark bg-opacity-75 border border-warning border-opacity-25">Network Testcase</span>
+                        <span class="badge bg-secondary bg-opacity-75 border border-secondary border-opacity-25">RIP / Routing</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-uppercase text-body-secondary fw-bold small mb-2">Overview</h6>
+                    <p class="text-body mb-3">
+                        This test validates that RIP routing updates are being exchanged between two devices.
+                        It automatically finds the shared network link and confirms that the peer is listed as a valid source of routing information.
+                    </p>
+
+                    <div class="p-3 rounded border border-warning border-opacity-25 bg-warning bg-opacity-10">
+                        <h6 class="fw-bold text-body-emphasis mb-1">
+                            <i class="bi bi-shield-check me-2"></i>Why run this?
+                        </h6>
+                        <p class="small text-body mb-0 ps-1">
+                            It ensures that the routers are talking to each other and sharing network routes properly.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <h6 class="text-uppercase text-body-secondary fw-bold small border-bottom border-opacity-10 pb-2 mb-0">Configuration Parameters</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="small text-uppercase text-body-tertiary">
+                            <tr>
+                                <th scope="col" style="width: 35%;">Name</th>
+                                <th scope="col">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small text-body">
+                            <tr>
+                                <td class="fw-bold font-monospace">device_a <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">The first device</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">device_b <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">The second device</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">vrf</td>
+                                <td class="text-body-secondary">VRF Context. Default is default</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2 text-end">
+                    <small class="text-danger opacity-75" style="font-size: 0.75rem;">* Required field</small>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top border-opacity-10 d-flex justify-content-end align-items-center">
+                <span class="small text-uppercase fw-bold text-body-secondary me-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">Authored by</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary-emphasis border border-primary border-opacity-10 rounded-pill px-3 py-1">Luka Pacar</span>
+            </div>
         </div>
-
-        <section style="margin-top: 10px;">
-            <p style="font-size: 1.05rem; color: #475569;">
-                The <strong>RIP_Neighbors</strong> test validates that RIP updates are actively being received from the peer.
-                Since RIP is stateless, this checks the <code>Routing Information Sources</code> table to confirm the peer is alive and sending updates.
-            </p>
-        </section>
-
-        <h4 style="color: #b45309; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
-            <span style="background: #f59e0b; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
-            Validation Steps
-        </h4>
-        <ul style="list-style: none; padding-left: 0;">
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #d97706; margin-right: 10px;">✔</span>
-                <span><strong>IP Discovery:</strong> Identifies the Peer-IP on the shared link.</span>
-            </li>
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #d97706; margin-right: 10px;">✔</span>
-                <span><strong>Update Verification:</strong> Ensures the Peer-IP is listed as a valid source in <code>show ip protocols</code>.</span>
-            </li>
-        </ul>
-
-        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 20px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 10px;">
-            Authored by: Luka Pacar
-        </p>
     </div>
     """
 

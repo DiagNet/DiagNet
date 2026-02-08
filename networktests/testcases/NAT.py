@@ -7,51 +7,113 @@ __author__ = "Luka Pacar"
 
 class NAT(DiagNetTest):
     """
-    <div class="p-4 bg-white rounded shadow-sm" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; border: 1px solid #e2e8f0; color: #1e293b;">
-        <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 25px -25px; border-bottom: 4px solid #34d399;">
-            <h2 style="color: #ffffff; margin: 0; font-weight: 700; letter-spacing: -0.025em;">NAT Operations Audit</h2>
-            <p style="color: #ecfdf5; margin: 8px 0 0 0; font-size: 1rem; font-weight: 500;">Interface Roles, Translation Logic & Pool Integrity</p>
-        </div>
+    <div class="card shadow-sm border-0 my-3">
+        <div class="card-body p-4">
 
-        <section style="margin-top: 20px;">
-            <p style="font-size: 1.05rem; color: #475569;">
-                The <strong>NAT</strong> test class performs a comprehensive audit of the Network Address Translation (NAT) subsystem.
-                It verifies that traffic flows are correctly translated according to the configured policy (Static, Dynamic, or Overload) and ensures that underlying resources (Pools, Interfaces) are correctly allocated.
-            </p>
-        </section>
-
-        <h4 style="color: #064e3b; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
-            <span style="background: #34d399; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
-            Validation Capabilities
-        </h4>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-            <div style="background: #ecfdf5; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
-                <strong style="color: #064e3b; display: block; margin-bottom: 5px;">1. Static Mapping</strong>
-                <span style="font-size: 0.9rem; color: #047857;">
-                    Strictly validates 1:1 translations. Ensures specific <em>Inside Local</em> IPs correspond to the correct <em>Inside Global</em> IPs in the active table.
-                </span>
+            <div class="d-flex align-items-center mb-4 border-bottom border-opacity-10 pb-3">
+                <div class="bg-warning text-dark rounded-circle d-flex justify-content-center align-items-center shadow-sm" style="width: 50px; height: 50px; background-color: #f59e0b;">
+                    <i class="bi bi-arrow-left-right fs-4"></i>
+                </div>
+                <div class="ms-3">
+                    <h3 class="mb-0 fw-bold">NAT</h3>
+                    <div class="mt-1">
+                        <span class="badge text-white" style="background-color: #00267F; border-color: #00267F;">Cisco</span>
+                        <span class="badge text-dark bg-opacity-75 border border-opacity-25" style="background-color: #fbbf24; border-color: #fbbf24;">Network Testcase</span>
+                        <span class="badge bg-secondary bg-opacity-75 border border-secondary border-opacity-25">NAT / Addressing</span>
+                    </div>
+                </div>
             </div>
 
-            <div style="background: #ecfdf5; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
-                <strong style="color: #064e3b; display: block; margin-bottom: 5px;">2. Dynamic Pools</strong>
-                <span style="font-size: 0.9rem; color: #047857;">
-                    Audits IP Pools for configuration compliance (Start/End/Netmask) and health. Fails if the pool has recorded allocation <strong>misses</strong> (exhaustion).
-                </span>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-uppercase text-body-secondary fw-bold small mb-2">Overview</h6>
+                    <p class="text-body mb-3">
+                        This test checks your Network Address Translation (NAT) settings.
+                        It confirms that interfaces are correctly marked as inside or outside.
+                        It also validates specific rules for Static NAT, Dynamic pools, or Port Address Translation (PAT).
+                    </p>
+
+                    <div class="p-3 rounded border border-warning border-opacity-25 bg-warning bg-opacity-10">
+                        <h6 class="fw-bold text-body-emphasis mb-1">
+                            <i class="bi bi-shield-check me-2"></i>Why run this?
+                        </h6>
+                        <p class="small text-body mb-0 ps-1">
+                            It ensures devices can access the internet and external users can reach public servers.
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            <div style="background: #ecfdf5; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
-                <strong style="color: #064e3b; display: block; margin-bottom: 5px;">3. PAT / Overload</strong>
-                <span style="font-size: 0.9rem; color: #047857;">
-                    Verifies that Port Address Translation is active and strictly bound to the expected <strong>Overload Interface</strong>.
-                </span>
+            <div class="mb-2">
+                <h6 class="text-uppercase text-body-secondary fw-bold small border-bottom border-opacity-10 pb-2 mb-0">Configuration Parameters</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="small text-uppercase text-body-tertiary">
+                            <tr>
+                                <th scope="col" style="width: 35%;">Name</th>
+                                <th scope="col">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small text-body">
+                            <tr>
+                                <td class="fw-bold font-monospace">device <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">The NAT Device</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">vrf</td>
+                                <td class="text-body-secondary">VRF Context. Default is default</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">validation_mode <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">Select the type of NAT to check</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">nat_interfaces</td>
+                                <td class="text-body-secondary">List of interfaces using NAT</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ interface <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary fst-italic">Interface Name</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ direction <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary fst-italic">Ingoing or Outgoing</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">static_rules</td>
+                                <td class="text-body-secondary">Required for Static mode. List of specific IP mappings</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ inside_local <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary fst-italic">Inside Local IP</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ inside_global <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary fst-italic">Inside Global IP</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">min_active_translations</td>
+                                <td class="text-body-secondary">Fail if active translations are below this count</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">pool_name</td>
+                                <td class="text-body-secondary">Required for Dynamic mode. The name of the address pool</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">overload_interface</td>
+                                <td class="text-body-secondary">Required for Overload mode. The interface sharing the IP</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2 text-end">
+                    <small class="text-danger opacity-75" style="font-size: 0.75rem;">* Required field</small>
+                </div>
             </div>
 
-            <div style="background: #ecfdf5; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
-                <strong style="color: #064e3b; display: block; margin-bottom: 5px;">4. Interface Roles</strong>
-                <span style="font-size: 0.9rem; color: #047857;">
-                    Pre-check audit to confirm that interfaces are correctly flagged as <code>ip nat inside</code> or <code>ip nat outside</code> before testing logic.
-                </span>
+            <div class="mt-4 pt-3 border-top border-opacity-10 d-flex justify-content-end align-items-center">
+                <span class="small text-uppercase fw-bold text-body-secondary me-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">Authored by</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary-emphasis border border-primary border-opacity-10 rounded-pill px-3 py-1">Luka Pacar</span>
             </div>
         </div>
     </div>

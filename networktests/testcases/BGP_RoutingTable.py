@@ -8,56 +8,111 @@ __author__ = "Luka Pacar"
 
 class BGP_RoutingTable(DiagNetTest):
     """
-    <div class="p-4 bg-white rounded shadow-sm" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; border: 1px solid #e2e8f0; color: #1e293b;">
-        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 25px -25px; border-bottom: 4px solid #3b82f6;">
-            <h2 style="color: #ffffff; margin: 0; font-weight: 700; letter-spacing: -0.025em;">BGP Routing Table</h2>
-            <p style="color: #94a3b8; margin: 8px 0 0 0; font-size: 1rem; font-weight: 500;">Loc-RIB Integrity & Policy Compliance</p>
-        </div>
+    <div class="card shadow-sm border-0 my-3">
+        <div class="card-body p-4">
 
-        <section style="margin-top: 10px;">
-            <p style="font-size: 1.05rem; color: #475569;">
-                The <strong>BGP_RoutingTable</strong> test class performs a deep-dive inspection of the BGP Local RIB.
-                It validates that specific prefixes are not only present but are optimally selected and originated from the correct Autonomous Systems.
-            </p>
-        </section>
-
-        <h4 style="color: #0f172a; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
-            <span style="background: #3b82f6; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
-            Core Match Strategies
-        </h4>
-        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-            <div style="flex: 1; background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #cbd5e1;">
-                <strong style="color: #334155;">Exact Match</strong><br>
-                <span style="font-size: 0.85rem; color: #64748b;">The prefix must match the specific entry in the BGP table exactly, including the mask length.</span>
+            <div class="d-flex align-items-center mb-4 border-bottom border-opacity-10 pb-3">
+                <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center shadow-sm" style="width: 50px; height: 50px;">
+                    <i class="bi bi-globe fs-4"></i>
+                </div>
+                <div class="ms-3">
+                    <h3 class="mb-0 fw-bold">BGP Routing Table</h3>
+                    <div class="mt-1">
+                        <span class="badge text-white" style="background-color: #00267F; border-color: #00267F;">Cisco</span>
+                        <span class="badge bg-info text-dark bg-opacity-75 border border-info border-opacity-25">Network Testcase</span>
+                        <span class="badge bg-secondary bg-opacity-75 border border-secondary border-opacity-25">BGP / Loc-RIB</span>
+                    </div>
+                </div>
             </div>
-            <div style="flex: 1; background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6;">
-                <strong style="color: #334155;">Included Match</strong><br>
-                <span style="font-size: 0.85rem; color: #64748b;">Validates if the target subnet is a subset covered by a larger aggregate or summary route.</span>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-uppercase text-body-secondary fw-bold small mb-2">Overview</h6>
+                    <p class="text-body mb-3">
+                        This test checks the BGP routing table on your device.
+                        It confirms that specific networks are present and selected as the best path.
+                        It can also block any unexpected routes to ensure the table only contains what is allowed.
+                    </p>
+
+                    <div class="p-3 rounded border border-info border-opacity-25 bg-info bg-opacity-10">
+                        <h6 class="fw-bold text-primary-emphasis mb-1">
+                            <i class="bi bi-shield-check me-2"></i>Why run this?
+                        </h6>
+                        <p class="small text-body mb-0 ps-1">
+                            It prevents connection issues by ensuring the router prefers the correct paths to outside networks.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <h6 class="text-uppercase text-body-secondary fw-bold small border-bottom border-opacity-10 pb-2 mb-0">Configuration Parameters</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="small text-uppercase text-body-tertiary">
+                            <tr>
+                                <th scope="col" style="width: 35%;">Name</th>
+                                <th scope="col">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small text-body">
+                            <tr>
+                                <td class="fw-bold font-monospace">bgp_device <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">The device to check</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">vrf</td>
+                                <td class="text-body-secondary">VRF instance. Default is global</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">address_family <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">IPv4 or IPv6</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">allow_other_routes <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">If False it fails if extra routes are found</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">entries <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">List of prefixes to validate</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ network <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary fst-italic">Destination Network</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ match_strategy <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary fst-italic">Exact match or included subnet</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ is_local_origin</td>
+                                <td class="text-body-secondary fst-italic">True if route is created locally</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ next_hop</td>
+                                <td class="text-body-secondary fst-italic">Expected Next-Hop IP</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ best_option <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary fst-italic">Enforce Best-Option or Back-Up-Path</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ expected_origin_as</td>
+                                <td class="text-body-secondary fst-italic">Expected Origin Autonomous System</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2 text-end">
+                    <small class="text-danger opacity-75" style="font-size: 0.75rem;">* Required field</small>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top border-opacity-10 d-flex justify-content-end align-items-center">
+                <span class="small text-uppercase fw-bold text-body-secondary me-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">Authored by</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary-emphasis border border-primary border-opacity-10 rounded-pill px-3 py-1">Luka Pacar</span>
             </div>
         </div>
-
-        <h4 style="color: #0f172a; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
-            <span style="background: #3b82f6; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
-            Verification Pillars
-        </h4>
-        <ul style="list-style: none; padding-left: 0;">
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #3b82f6; margin-right: 10px;">✔</span>
-                <span><strong>Best Path Status:</strong> Verifies if the route is selected (<code>></code>) or held as a Backup path.</span>
-            </li>
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #3b82f6; margin-right: 10px;">✔</span>
-                <span><strong>Origin AS:</strong> Traces the AS-Path to confirm the route originated from the expected ASN.</span>
-            </li>
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #3b82f6; margin-right: 10px;">✔</span>
-                <span><strong>Strict Enforcement:</strong> Optionally fails if any undefined routes are found, preventing unauthorized route leaks.</span>
-            </li>
-        </ul>
-
-        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 25px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-            Authored by: Luka Pacar
-        </p>
     </div>
     """
 

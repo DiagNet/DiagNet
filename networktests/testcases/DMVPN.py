@@ -8,33 +8,99 @@ __author__ = "Luka Pacar"
 
 class DMVPN(DiagNetTest):
     """
-    <div class="p-4 bg-white rounded shadow-sm" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; border: 1px solid #e2e8f0; color: #1e293b;">
-        <div style="background: linear-gradient(135deg, #374151 0%, #111827 100%); padding: 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 25px -25px; border-bottom: 4px solid #6366f1;">
-            <h2 style="color: #ffffff; margin: 0; font-weight: 700; letter-spacing: -0.025em;">DMVPN</h2>
-            <p style="color: #9ca3af; margin: 8px 0 0 0; font-size: 1rem; font-weight: 500;">Device-Centric Tunnel Validation</p>
+    <div class="card shadow-sm border-0 my-3">
+        <div class="card-body p-4">
+
+            <div class="d-flex align-items-center mb-4 border-bottom border-opacity-10 pb-3">
+                <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center shadow-sm" style="width: 50px; height: 50px;">
+                    <i class="bi bi-cloud-check-fill fs-4"></i>
+                </div>
+                <div class="ms-3">
+                    <h3 class="mb-0 fw-bold">DMVPN</h3>
+                    <div class="mt-1">
+                        <span class="badge text-white" style="background-color: #00267F; border-color: #00267F;">Cisco</span>
+                        <span class="badge bg-info text-dark bg-opacity-75 border border-info border-opacity-25">Network Testcase</span>
+                        <span class="badge bg-secondary bg-opacity-75 border border-secondary border-opacity-25">WAN / Overlay</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-uppercase text-body-secondary fw-bold small mb-2">Overview</h6>
+                    <p class="text-body mb-3">
+                        This test checks your DMVPN network to ensure the Hub and Spokes are connected.
+                        It verifies that the secure tunnels are active and that devices are registered correctly with each other.
+                    </p>
+
+                    <div class="p-3 rounded border border-info border-opacity-25 bg-info bg-opacity-10">
+                        <h6 class="fw-bold text-primary-emphasis mb-1">
+                            <i class="bi bi-shield-check me-2"></i>Why run this?
+                        </h6>
+                        <p class="small text-body mb-0 ps-1">
+                            It ensures branch sites are online and can communicate securely with the main site.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <h6 class="text-uppercase text-body-secondary fw-bold small border-bottom border-opacity-10 pb-2 mb-0">Configuration Parameters</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="small text-uppercase text-body-tertiary">
+                            <tr>
+                                <th scope="col" style="width: 35%;">Name</th>
+                                <th scope="col">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small text-body">
+                            <tr>
+                                <td class="fw-bold font-monospace">device <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">The DMVPN Device</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">role <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">Device Role: Hub or Spoke</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">vrf</td>
+                                <td class="text-body-secondary">VRF Context. Default is default</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">expected_spokes</td>
+                                <td class="text-body-secondary">List of Spoke devices. Hub Mode only</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">hub_connection</td>
+                                <td class="text-body-secondary">Hub connection details. Spoke Mode only</td>
+                            </tr>
+
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ spoke_device</td>
+                                <td class="text-body-secondary fst-italic">The remote Spoke Device object</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ hub_device</td>
+                                <td class="text-body-secondary fst-italic">The remote Hub Device object</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ wan_interface</td>
+                                <td class="text-body-secondary fst-italic">Interface with Public IP</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2 text-end">
+                    <small class="text-danger opacity-75" style="font-size: 0.75rem;">* Required field</small>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top border-opacity-10 d-flex justify-content-end align-items-center">
+                <span class="small text-uppercase fw-bold text-body-secondary me-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">Authored by</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary-emphasis border border-primary border-opacity-10 rounded-pill px-3 py-1">Luka Pacar</span>
+            </div>
         </div>
-
-        <section style="margin-top: 10px;">
-            <p style="font-size: 1.05rem; color: #475569;">
-                The <strong>DMVPN_Connectivity</strong> test performs an end-to-end validation of mGRE tunnels.
-                It leverages <strong>Device Objects</strong> to verify registration status on the DUT without exposing sensitive IP data in reports.
-            </p>
-        </section>
-
-        <h4 style="color: #111827; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
-            <span style="background: #6366f1; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
-            Capabilities
-        </h4>
-        <ul style="list-style: none; padding-left: 0;">
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #6366f1; margin-right: 10px;">✔</span>
-                <span><strong>Secure Validation:</strong> Verifies connectivity using resolved WAN identifiers while sanitizing error outputs.</span>
-            </li>
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #6366f1; margin-right: 10px;">✔</span>
-                <span><strong>Role Awareness:</strong> Adapts validation logic for <strong>Hub</strong> (expecting dynamic peers) and <strong>Spoke</strong> (expecting static Hub connection).</span>
-            </li>
-        </ul>
     </div>
     """
 
