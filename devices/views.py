@@ -121,8 +121,8 @@ class DeviceDelete(DeleteView):
 def device_check(request, pk):
     device = get_object_or_404(Device, pk=pk)
 
-    # We use test_connection specifically to catch decryption errors
-    # which can_connect (restored to original) would crash on if not handled.
+    # We use test_connection to get the detailed error message,
+    # allowing us to distinguish decryption failures from connectivity issues.
     success, error_msg = device.test_connection()
 
     is_decryption_error = (
