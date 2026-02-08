@@ -2,6 +2,13 @@
       hx-post="{% if object %}{% url 'device-update' object.pk %}{% else %}{% url 'device-create' %}{% endif %}">
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:", " }}</div>{% endif %}
+    {% if encryption_error %}
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Warning:</strong> The current credentials cannot be decrypted with the active encryption key.
+            You <strong>must</strong> provide new passwords to successfully update this device.
+        </div>
+    {% endif %}
     {% for field in form %}
         {% if field.label != "Id" %}
             <div class="form-floating mb-3">
