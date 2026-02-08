@@ -51,9 +51,9 @@ class Device(models.Model):
         choices=DEVICE_TYPES,
     )
     username = models.CharField(max_length=100)
-    password = models.CharField(max_length=100)
+    password = models.CharField(max_length=255)
 
-    enable_password = models.CharField(max_length=100)
+    enable_password = models.CharField(max_length=255)
 
     class Meta:
         constraints = [
