@@ -15,8 +15,9 @@ class BGP_Attributes(DiagNetTest):
                     <i class="bi bi-diagram-3-fill fs-4"></i>
                 </div>
                 <div class="ms-3">
-                    <h3 class="mb-0 fw-bold">BGP Attribute Validation</h3>
+                    <h3 class="mb-0 fw-bold">BGP Attributes</h3>
                     <div class="mt-1">
+                        <span class="badge text-white" style="background-color: #00267F; border-color: #00267F;">Cisco</span>
                         <span class="badge bg-info text-dark bg-opacity-75 border border-info border-opacity-25">Network Testcase</span>
                         <span class="badge bg-secondary bg-opacity-75 border border-secondary border-opacity-25">BGP / Routing</span>
                     </div>

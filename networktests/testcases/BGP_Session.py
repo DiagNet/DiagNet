@@ -7,58 +7,103 @@ __author__ = "Luka Pacar"
 
 class BGP_Session(DiagNetTest):
     """
-    <div class="p-4 bg-white rounded shadow-sm"
-         style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; border: 1px solid #e0e6ed; color: #334155;">
+    <div class="card shadow-sm border-0 my-3">
+        <div class="card-body p-4">
 
-        <div style="background: linear-gradient(90deg, #1e293b 0%, #334155 100%); padding: 20px; border-radius: 8px 8px 0 0; margin: -25px -25px 20px -25px;">
-            <h2 style="color: #f8fafc; margin: 0; font-weight: 600; letter-spacing: 0.5px;">BGP Session Validation</h2>
-            <p style="color: #cbd5e1; margin: 5px 0 0 0; font-size: 0.95rem;">Peer-to-Peer Connectivity & State Verification</p>
-        </div>
-
-        <section style="margin-top: 10px;">
-            <p>
-                The <strong>BGP_Session</strong> test ensures reliable peering between network nodes. It verifies the
-                BGP Finite State Machine (FSM) and ensures consistency across Autonomous Systems (AS).
-            </p>
-        </section>
-
-        <h4 style="color: #0f172a; border-left: 4px solid #3b82f6; padding-left: 10px; margin-top: 25px;">Validation Modes</h4>
-        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-            <div style="flex: 1; background: #f1f5f9; padding: 15px; border-radius: 6px; border-top: 3px solid #64748b;">
-                <strong style="display: block; margin-bottom: 5px; color: #475569;">One-Way Check</strong>
-                <span style="font-size: 0.85rem;">Validates that the primary device sees the neighbor in the target state.</span>
+            <div class="d-flex align-items-center mb-4 border-bottom border-opacity-10 pb-3">
+                <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center shadow-sm" style="width: 50px; height: 50px;">
+                    <i class="bi bi-arrow-left-right fs-4"></i>
+                </div>
+                <div class="ms-3">
+                    <h3 class="mb-0 fw-bold">BGP Session</h3>
+                    <div class="mt-1">
+                        <span class="badge text-white" style="background-color: #00267F; border-color: #00267F;">Cisco</span>
+                        <span class="badge bg-info text-dark bg-opacity-75 border border-info border-opacity-25">Network Testcase</span>
+                        <span class="badge bg-secondary bg-opacity-75 border border-secondary border-opacity-25">BGP / Peering</span>
+                    </div>
+                </div>
             </div>
-            <div style="flex: 1; background: #eff6ff; padding: 15px; border-radius: 6px; border-top: 3px solid #3b82f6;">
-                <strong style="display: block; margin-bottom: 5px; color: #1d4ed8;">Two-Way Check</strong>
-                <span style="font-size: 0.85rem;">Ensures bidirectional establishment by verifying the state from both peers.</span>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-uppercase text-body-secondary fw-bold small mb-2">Overview</h6>
+                    <p class="text-body mb-3">
+                        This test checks the connection status between BGP neighbors.
+                        It ensures the session is fully established and ready to exchange routes.
+                        It also verifies that the Autonomous System numbers match your configuration.
+                    </p>
+
+                    <div class="p-3 rounded border border-info border-opacity-25 bg-info bg-opacity-10">
+                        <h6 class="fw-bold text-primary-emphasis mb-1">
+                            <i class="bi bi-shield-check me-2"></i>Why run this?
+                        </h6>
+                        <p class="small text-body mb-0 ps-1">
+                            It detects broken connections and ensures neighbors are talking to each other to prevent traffic loss.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <h6 class="text-uppercase text-body-secondary fw-bold small border-bottom border-opacity-10 pb-2 mb-0">Configuration Parameters</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="small text-uppercase text-body-tertiary">
+                            <tr>
+                                <th scope="col" style="width: 35%;">Name</th>
+                                <th scope="col">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small text-body">
+                            <tr>
+                                <td class="fw-bold font-monospace">two_way_check <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">Test Mode: One-Way-Check or Two-Way-Check</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">vrf</td>
+                                <td class="text-body-secondary">Default VRF context. Default is default</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">expected_session_state <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">Target State. Default is Established</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">bgp_peer_one <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">The primary BGP device</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">peer_one_vrf</td>
+                                <td class="text-body-secondary">VRF override for Peer 1 if different from default</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">peer_one_as</td>
+                                <td class="text-body-secondary">Expected AS Number for Peer 1</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">bgp_peer_two <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">Remote Peer. Device Object or IP Address</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">peer_two_vrf</td>
+                                <td class="text-body-secondary">VRF override for Peer 2. Two-Way-Check only</td>
+                            </tr>
+                             <tr>
+                                <td class="fw-bold font-monospace">peer_two_as</td>
+                                <td class="text-body-secondary">Expected AS Number for Peer 2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2 text-end">
+                    <small class="text-danger opacity-75" style="font-size: 0.75rem;">* Required field</small>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top border-opacity-10 d-flex justify-content-end align-items-center">
+                <span class="small text-uppercase fw-bold text-body-secondary me-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">Authored by</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary-emphasis border border-primary border-opacity-10 rounded-pill px-3 py-1">Luka Pacar</span>
             </div>
         </div>
-
-        <h4 style="color: #0f172a; border-left: 4px solid #3b82f6; padding-left: 10px;">Verification Pillars</h4>
-        <ul style="list-style: none; padding-left: 0;">
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #10b981; margin-right: 10px;">✔</span>
-                <span><strong>FSM State Accuracy:</strong> Confirms the session has reached <code>Established</code>.</span>
-            </li>
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #10b981; margin-right: 10px;">✔</span>
-                <span><strong>AS Integrity:</strong> Matches Local and Remote AS numbers to prevent configuration errors.</span>
-            </li>
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #10b981; margin-right: 10px;">✔</span>
-                <span><strong>Multi-Context Awareness:</strong> Full support for <strong>VRF Overrides</strong>.</span>
-            </li>
-        </ul>
-
-        <h4 style="color: #0f172a; border-left: 4px solid #3b82f6; padding-left: 10px; margin-top: 25px;">Why It Matters</h4>
-        <p style="background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 6px; font-size: 0.9rem; color: #92400e;">
-            <strong>Crucial for Redundancy:</strong> This test identifies "half-open" sessions that look "Up" on one side but
-            stuck in "Connect" on the other, preventing silent traffic blackholes.
-        </p>
-
-        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 20px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 10px;">
-            Authored by: Luka Pacar
-        </p>
     </div>
     """
 

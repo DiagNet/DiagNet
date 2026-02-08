@@ -6,56 +6,79 @@ __author__ = "Luka Pacar"
 
 class OSPF_Interfaces(DiagNetTest):
     """
-    <div class="p-4 bg-white rounded shadow-sm" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; border: 1px solid #e2e8f0; color: #1e293b;">
-        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 25px -25px; border-bottom: 4px solid #f59e0b;">
-            <h2 style="color: #ffffff; margin: 0; font-weight: 700; letter-spacing: -0.025em;">OSPF Interfaces</h2>
-            <p style="color: #94a3b8; margin: 8px 0 0 0; font-size: 1rem; font-weight: 500;">Passive-First Policy & Security Auditor</p>
-        </div>
+    <div class="card shadow-sm border-0 my-3">
+        <div class="card-body p-4">
 
-        <section style="margin-top: 10px;">
-            <p style="font-size: 1.05rem; color: #475569;">
-                The <strong>OSPF_Interfaces</strong> test class performs a rigorous audit of OSPF interface states.
-                It enforces a "Passive-First" logic, ensuring that edge segments are secured before transit security policies are evaluated.
-            </p>
-        </section>
-
-        <h4 style="color: #0f172a; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
-            <span style="background: #f59e0b; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
-            Audit Hierarchy
-        </h4>
-        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-            <div style="flex: 1; background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #cbd5e1;">
-                <strong style="color: #334155;">Passive Enforcement</strong><br>
-                <span style="font-size: 0.85rem; color: #64748b;">Any interface with zero active neighbors must be passive to prevent rogue adjacencies and CPU waste.</span>
+            <div class="d-flex align-items-center mb-4 border-bottom border-opacity-10 pb-3">
+                <div class="bg-teal text-white rounded-circle d-flex justify-content-center align-items-center shadow-sm" style="width: 50px; height: 50px; background-color: #0d9488;">
+                    <i class="bi bi-hdd-network fs-4"></i>
+                </div>
+                <div class="ms-3">
+                    <h3 class="mb-0 fw-bold">OSPF Interface</h3>
+                    <div class="mt-1">
+                        <span class="badge text-white" style="background-color: #00267F; border-color: #00267F;">Cisco</span>
+                        <span class="badge text-white bg-opacity-75 border border-opacity-25" style="background-color: #0f766e; border-color: #0f766e;">Network Testcase</span>
+                        <span class="badge bg-secondary bg-opacity-75 border border-secondary border-opacity-25">OSPF / Security</span>
+                    </div>
+                </div>
             </div>
-            <div style="flex: 1; background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
-                <strong style="color: #334155;">Transit Security</strong><br>
-                <span style="font-size: 0.85rem; color: #64748b;">Enforce Cryptographic or Simple authentication specifically on active, non-passive transit links.</span>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-uppercase text-body-secondary fw-bold small mb-2">Overview</h6>
+                    <p class="text-body mb-3">
+                        This test checks your OSPF interfaces to ensure they are configured securely.
+                        It verifies that interfaces without neighbors are set to passive so they do not send unnecessary data.
+                        It also checks that active links connecting to other routers are using the required password or encryption settings.
+                    </p>
+
+                    <div class="p-3 rounded border border-opacity-25 bg-teal bg-opacity-10" style="border-color: #0d9488;">
+                        <h6 class="fw-bold mb-1" style="color: #0d9488;">
+                            <i class="bi bi-shield-check me-2"></i>Why run this?
+                        </h6>
+                        <p class="small text-body mb-0 ps-1">
+                            It stops unauthorized devices from connecting to your network and improves overall security.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <h6 class="text-uppercase text-body-secondary fw-bold small border-bottom border-opacity-10 pb-2 mb-0">Configuration Parameters</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="small text-uppercase text-body-tertiary">
+                            <tr>
+                                <th scope="col" style="width: 35%;">Name</th>
+                                <th scope="col">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small text-body">
+                            <tr>
+                                <td class="fw-bold font-monospace">target_device <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">The Device to Audit</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">vrf</td>
+                                <td class="text-body-secondary">VRF Context. Default is default</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">required_auth_type</td>
+                                <td class="text-body-secondary">The security level required. Options are Ignore, Simple Password, or Encrypted</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2 text-end">
+                    <small class="text-danger opacity-75" style="font-size: 0.75rem;">* Required field</small>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top border-opacity-10 d-flex justify-content-end align-items-center">
+                <span class="small text-uppercase fw-bold text-body-secondary me-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">Authored by</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary-emphasis border border-primary border-opacity-10 rounded-pill px-3 py-1">Luka Pacar</span>
             </div>
         </div>
-
-        <h4 style="color: #0f172a; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
-            <span style="background: #f59e0b; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
-            Verification Pillars
-        </h4>
-        <ul style="list-style: none; padding-left: 0;">
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #f59e0b; margin-right: 10px;">✔</span>
-                <span><strong>Security Compliance:</strong> Supports granular enforcement of authentication levels, allowing for per-network policy adjustments.</span>
-            </li>
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #f59e0b; margin-right: 10px;">✔</span>
-                <span><strong>Topology Optimization:</strong> Automatically identifies 'Broadcast' segments that should logically be 'Point-to-Point' for faster convergence.</span>
-            </li>
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #f59e0b; margin-right: 10px;">✔</span>
-                <span><strong>Silent Interface Detection:</strong> Hard-fails on active interfaces that lack neighbors, identifying potential configuration oversights.</span>
-            </li>
-        </ul>
-
-        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 25px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-            Authored by: Luka Pacar
-        </p>
     </div>
     """
 

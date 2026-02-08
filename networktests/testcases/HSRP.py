@@ -7,33 +7,100 @@ __author__ = "Luka Pacar"
 
 class HSRP(DiagNetTest):
     """
-    <div class="p-4 bg-white rounded shadow-sm" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 800px; border: 1px solid #e2e8f0; color: #1e293b;">
-        <div style="background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); padding: 25px; border-radius: 12px 12px 0 0; margin: -25px -25px 25px -25px; border-bottom: 4px solid #9a3412;">
-            <h2 style="color: #ffffff; margin: 0; font-weight: 700; letter-spacing: -0.025em;">HSRP State Validation</h2>
-            <p style="color: #fed7aa; margin: 8px 0 0 0; font-size: 1rem; font-weight: 500;">Availability & Redundancy Check</p>
+    <div class="card shadow-sm border-0 my-3">
+        <div class="card-body p-4">
+
+            <div class="d-flex align-items-center mb-4 border-bottom border-opacity-10 pb-3">
+                <div class="bg-info text-white rounded-circle d-flex justify-content-center align-items-center shadow-sm" style="width: 50px; height: 50px;">
+                    <i class="bi bi-shield-plus fs-4"></i>
+                </div>
+                <div class="ms-3">
+                    <h3 class="mb-0 fw-bold">HSRP Validation</h3>
+                    <div class="mt-1">
+                        <span class="badge text-white" style="background-color: #00267F; border-color: #00267F;">Cisco</span>
+                        <span class="badge bg-info text-dark bg-opacity-75 border border-info border-opacity-25">Network Testcase</span>
+                        <span class="badge bg-secondary bg-opacity-75 border border-secondary border-opacity-25">FHRP / Routing</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-uppercase text-body-secondary fw-bold small mb-2">Overview</h6>
+                    <p class="text-body mb-3">
+                        This test checks the status of your HSRP configuration.
+                        It confirms that your router is acting as the Active or Standby gateway as expected.
+                        It also verifies important settings like the Virtual IP address, Priority, and Preemption.
+                    </p>
+
+                    <div class="p-3 rounded border border-info border-opacity-25 bg-info bg-opacity-10">
+                        <h6 class="fw-bold text-info-emphasis mb-1">
+                            <i class="bi bi-shield-check me-2"></i>Why run this?
+                        </h6>
+                        <p class="small text-body mb-0 ps-1">
+                            It ensures that if one router fails, the other takes over immediately to keep the network running.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <h6 class="text-uppercase text-body-secondary fw-bold small border-bottom border-opacity-10 pb-2 mb-0">Configuration Parameters</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="small text-uppercase text-body-tertiary">
+                            <tr>
+                                <th scope="col" style="width: 35%;">Name</th>
+                                <th scope="col">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small text-body">
+                            <tr>
+                                <td class="fw-bold font-monospace">device <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">The target device to validate HSRP on</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">hsrp_groups <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">List of HSRP groups to validate</td>
+                            </tr>
+
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ interface <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary fst-italic">The interface where HSRP is configured</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ group_id <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary fst-italic">The HSRP Group ID to inspect</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ expected_state <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary fst-italic">The operational state this device should be in</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ virtual_ip</td>
+                                <td class="text-body-secondary fst-italic">The expected Virtual IP address</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ priority</td>
+                                <td class="text-body-secondary fst-italic">The expected HSRP priority value</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4 font-monospace text-body-tertiary">↳ preempt</td>
+                                <td class="text-body-secondary fst-italic">Validate if preemption is enabled</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2 text-end">
+                    <small class="text-danger opacity-75" style="font-size: 0.75rem;">* Required field</small>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top border-opacity-10 d-flex justify-content-end align-items-center">
+                <span class="small text-uppercase fw-bold text-body-secondary me-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">Authored by</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary-emphasis border border-primary border-opacity-10 rounded-pill px-3 py-1">Luka Pacar</span>
+            </div>
         </div>
-
-        <section style="margin-top: 10px;">
-            <p style="font-size: 1.05rem; color: #475569;">
-                The <strong>HSRP_State</strong> test class validates the First Hop Redundancy Protocol status.
-                It ensures that routers are correctly assuming their <strong>Active</strong> or <strong>Standby</strong> roles and that attributes like Priority and Virtual IP are consistent with the design.
-            </p>
-        </section>
-
-        <h4 style="color: #9a3412; font-size: 1.1rem; margin-top: 30px; display: flex; align-items: center;">
-            <span style="background: #ea580c; width: 8px; height: 24px; border-radius: 4px; display: inline-block; margin-right: 12px;"></span>
-            Verification Pillars
-        </h4>
-        <ul style="list-style: none; padding-left: 0;">
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #ea580c; margin-right: 10px;">✔</span>
-                <span><strong>Role Enforcement:</strong> Strict validation of <code>Active</code>, <code>Standby</code>, or <code>Listen</code> states per group.</span>
-            </li>
-            <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                <span style="color: #ea580c; margin-right: 10px;">✔</span>
-                <span><strong>Configuration Consistency:</strong> Checks <code>Priority</code>, <code>Preemption</code>, and <code>Virtual IP</code> against expectations.</span>
-            </li>
-        </ul>
     </div>
     """
 
