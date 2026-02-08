@@ -146,7 +146,7 @@ def device_check(request, pk):
     if is_key_error:
         trigger_data = {
             "showMessage": {
-                "message": f"Security Error: {error_msg}",
+                "message": error_msg,
                 "level": "danger",
             }
         }
