@@ -96,7 +96,11 @@ class DeviceUpdate(UpdateView):
             return render(
                 self.request,
                 "devices/partials/device_form.html",
-                {"form": form, "object": self.object},
+                {
+                    "form": form,
+                    "object": self.object,
+                    "encryption_error": not self.object.has_valid_encryption,
+                },
             )
         return super().form_invalid(form)
 
