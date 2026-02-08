@@ -310,11 +310,11 @@ class Device(models.Model):
         except Exception:
             return False
 
-    def test_connection(self) -> tuple[bool, str]:
+    def test_connection(self) -> tuple[bool, str, str]:
         """
         Tests connectivity to the device.
-        Returns (True, "") on success.
-        Returns (False, error_message) on failure.
+        Returns (True, "", "") on success.
+        Returns (False, error_message, error_category) on failure.
         """
         try:
             device_params = {
@@ -329,12 +329,12 @@ class Device(models.Model):
             connection.enable()
             connection.cleanup()
             connection.disconnect()
-            return True, ""
+            return True, "", ""
         except (ValidationError, ImproperlyConfigured) as e:
             msg = e.messages[0] if hasattr(e, "messages") else str(e)
-            return False, msg
+            return False, msg, "decryption_error"
         except Exception as e:
-            return False, str(e)
+            return False, str(e), "connection_error"
 
     def get_genie_device_object(self):
         if (
