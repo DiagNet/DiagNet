@@ -359,13 +359,18 @@ class Device(models.Model):
 
         The output yaml structure looks like this:
 
-        devices
-            ip: <ip_address>
-            port: <port>
+        <hostname>
             protocol: <protocol>
-            username: <username>
-            password: <password>
+            ip_address: <ip_address>
+            port: <port>
             device_type: <device_type>
+            username: <username>
+            password: <encrypted_password>
+            enable_password: <encrypted_enable_password>
+
+        Note: Credentials are exported in their encrypted format (prefixed with 'enc:').
+        To be usable after import, the destination system must use the same
+        DEVICE_ENCRYPTION_KEY.
         """
 
         data = {
