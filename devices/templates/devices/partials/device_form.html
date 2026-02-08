@@ -1,6 +1,7 @@
 <form method="post"
       hx-post="{% if object %}{% url 'device-update' object.pk %}{% else %}{% url 'device-create' %}{% endif %}">
     {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:", " }}</div>{% endif %}
     {% for field in form %}
         {% if field.label != "Id" %}
             <div class="form-floating mb-3">

@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
+from django.core.exceptions import ImproperlyConfigured
 from devices.forms import DeviceForm, UploadFileForm
 
 from .models import Device
@@ -46,7 +47,12 @@ class DeviceCreate(CreateView):
     template_name = "devices/partials/device_form.html"
 
     def form_valid(self, form):
-        self.object = form.save()
+        try:
+            self.object = form.save()
+        except ImproperlyConfigured as e:
+            form.add_error(None, str(e))
+            return self.form_invalid(form)
+
         if self.request.headers.get("HX-Request") == "true":
             response = HttpResponse(status=204)
             response["HX-Trigger"] = "deviceCreated"
@@ -66,7 +72,12 @@ class DeviceUpdate(UpdateView):
         return reverse_lazy("device-update", kwargs={"pk": self.object.pk})
 
     def form_valid(self, form):
-        self.object = form.save()
+        try:
+            self.object = form.save()
+        except ImproperlyConfigured as e:
+            form.add_error(None, str(e))
+            return self.form_invalid(form)
+
         if self.request.headers.get("HX-Request") == "true":
             return render(
                 self.request,
@@ -105,7 +116,7 @@ def device_check(request, pk):
     # which can_connect (restored to original) would crash on if not handled.
     success, error_msg = device.test_connection()
 
-    is_key_error = "Decryption Error" in error_msg or "Encryption Error" in error_msg
+    is_key_error = "Security Error" in error_msg
 
     if success:
         new_status = "reachable"
