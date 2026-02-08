@@ -8,6 +8,7 @@ class DeviceForm(forms.ModelForm):
             attrs={"class": "form-control", "placeholder": "Password"}
         ),
         required=False,
+        max_length=256,
     )
 
     enable_password = forms.CharField(
@@ -15,6 +16,7 @@ class DeviceForm(forms.ModelForm):
             attrs={"class": "form-control", "placeholder": "Enable Password"}
         ),
         required=False,
+        max_length=256,
     )
 
     class Meta:
