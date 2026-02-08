@@ -264,15 +264,15 @@ class Device(models.Model):
         return f"{ios_type}{connection_type}"
 
     def can_connect(self) -> bool:
-        device = {
-            "device_type": self.get_netmiko_type(),
-            "host": self.ip_address,
-            "username": self.username,
-            "password": self.get_decrypted_password(),
-            "secret": self.get_decrypted_enable_password(),
-            "port": self.port,
-        }
         try:
+            device = {
+                "device_type": self.get_netmiko_type(),
+                "host": self.ip_address,
+                "username": self.username,
+                "password": self.get_decrypted_password(),
+                "secret": self.get_decrypted_enable_password(),
+                "port": self.port,
+            }
             connection = netmiko.ConnectHandler(**device)
             connection.enable()
             connection.cleanup()
@@ -301,8 +301,9 @@ class Device(models.Model):
             connection.cleanup()
             connection.disconnect()
             return True, ""
-        except ValidationError as e:
-            return False, "; ".join(e.messages)
+        except (ValidationError, ImproperlyConfigured) as e:
+            msg = e.messages[0] if hasattr(e, "messages") else str(e)
+            return False, msg
         except Exception as e:
             return False, str(e)
 
@@ -313,11 +314,10 @@ class Device(models.Model):
         ):
             return device_connections[self.name]
 
-        conn_info = self.get_genie_device_dict()
-        testbed = load({"devices": conn_info})
-        device = testbed.devices[list(conn_info)[0]]
-
         try:
+            conn_info = self.get_genie_device_dict()
+            testbed = load({"devices": conn_info})
+            device = testbed.devices[list(conn_info)[0]]
             device.connect()
             device_connections[self.name] = device
             return device
