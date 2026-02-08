@@ -3,6 +3,7 @@ from typing import Any
 import netmiko
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
@@ -72,6 +73,24 @@ class Device(models.Model):
         key = settings.DEVICE_ENCRYPTION_KEY
         return Fernet(key)
 
+    def _is_fernet_token(self, value: str) -> bool:
+        """
+        Check if a string strictly follows the Fernet token format.
+        - Minimum length check
+        - Valid URL-safe base64
+        - Correct version byte (0x80)
+        """
+        if len(value) < 90:
+            return False
+
+        import base64
+
+        try:
+            decoded = base64.urlsafe_b64decode(value.encode())
+            return len(decoded) > 0 and decoded[0] == 0x80
+        except Exception:
+            return False
+
     def _encrypt_value(self, value: str) -> str:
         """Encrypts the value if it's not already encrypted."""
         if not value:
@@ -81,14 +100,15 @@ class Device(models.Model):
 
         if value.startswith(self.ENCRYPTION_PREFIX):
             actual_value = value[len(self.ENCRYPTION_PREFIX) :]
-            try:
-                f.decrypt(actual_value.encode())
-                return value
-            except (InvalidToken, ValueError):
-                raise ValueError(
-                    "Encryption Error: Data marked as encrypted cannot be decrypted "
-                    "with the current key. Please verify DEVICE_ENCRYPTION_KEY."
-                )
+            if self._is_fernet_token(actual_value):
+                try:
+                    f.decrypt(actual_value.encode())
+                    return value
+                except (InvalidToken, ValueError):
+                    raise ImproperlyConfigured(
+                        "Security Error: Data marked as encrypted looks like a valid token "
+                        "but cannot be decrypted with the current key. Please verify DEVICE_ENCRYPTION_KEY."
+                    )
 
         return f"{self.ENCRYPTION_PREFIX}{f.encrypt(value.encode()).decode()}"
 
@@ -98,19 +118,25 @@ class Device(models.Model):
             return value
 
         if not value.startswith(self.ENCRYPTION_PREFIX):
-            raise ValueError(
-                f"Decryption Error: Possible data corruption detected. Stored value is missing the "
+            raise ValidationError(
+                f"Decryption Error: Data corruption detected. Stored value is missing the "
                 f"required '{self.ENCRYPTION_PREFIX}' prefix."
             )
 
         actual_value = value[len(self.ENCRYPTION_PREFIX) :]
+
+        if not self._is_fernet_token(actual_value):
+            raise ValidationError(
+                "Decryption Error: Data marked as encrypted does not follow the expected format."
+            )
+
         f = self._get_cipher_suite()
         try:
             return f.decrypt(actual_value.encode()).decode()
         except (InvalidToken, ValueError):
-            raise ValueError(
-                "Decryption Error: Cannot decrypt data. "
-                "The encryption key may be invalid or the data is corrupted."
+            raise ImproperlyConfigured(
+                "Security Error: Data marked as encrypted looks like a valid token "
+                "but cannot be decrypted with the current key. Please verify DEVICE_ENCRYPTION_KEY."
             )
 
     def get_decrypted_password(self):
@@ -227,7 +253,7 @@ class Device(models.Model):
             device_type = self.device_type.split("_")[1]
             ios_type = type_map[device_type]
         except (IndexError, KeyError):
-            raise ValueError(f"Unsupported device type: {self.device_type}")
+            raise ValidationError(f"Unsupported device type: {self.device_type}")
 
         connection_type = "" if self.protocol == "ssh" else "_telnet"
         return f"{ios_type}{connection_type}"
@@ -257,8 +283,6 @@ class Device(models.Model):
         Returns (False, error_message) on failure.
         """
         try:
-            # We access credentials inside the try block so that
-            # Decryption Errors (ValueError) are caught.
             device_params = {
                 "device_type": self.get_netmiko_type(),
                 "host": self.ip_address,
@@ -272,6 +296,8 @@ class Device(models.Model):
             connection.cleanup()
             connection.disconnect()
             return True, ""
+        except ValidationError as e:
+            return False, "; ".join(e.messages)
         except Exception as e:
             return False, str(e)
 
