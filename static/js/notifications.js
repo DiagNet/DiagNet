@@ -27,10 +27,11 @@ document.body.addEventListener("showMessage", function (evt) {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  if (typeof bootstrap === "undefined") return;
   var toastElList = [].slice.call(document.querySelectorAll(".toast"));
-  var toastList = toastElList.map(function (toastEl) {
-    return new bootstrap.Toast(toastEl);
+  toastElList.forEach(function (toastEl) {
+    if (typeof bootstrap !== "undefined") {
+      var toast = new bootstrap.Toast(toastEl);
+      toast.show();
+    }
   });
-  toastList.forEach((toast) => toast.show());
 });
