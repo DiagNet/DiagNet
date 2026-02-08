@@ -145,10 +145,15 @@ class Device(models.Model):
     def get_decrypted_enable_password(self):
         return self._decrypt_value(self.enable_password)
 
-    def save(self, *args, **kwargs):
-        self.password = self._encrypt_value(self.password)
-        self.enable_password = self._encrypt_value(self.enable_password)
-        super().save(*args, **kwargs)
+    @property
+    def has_valid_encryption(self) -> bool:
+        """Check if both passwords can be decrypted with the current key."""
+        try:
+            self.get_decrypted_password()
+            self.get_decrypted_enable_password()
+            return True
+        except (ImproperlyConfigured, ValidationError):
+            return False
 
     def __str__(self) -> str:
         return f"{self.name} ({self.ip_address})"
