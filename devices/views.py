@@ -134,15 +134,11 @@ def device_check(request, pk):
 
     # We use test_connection to get the detailed error message,
     # allowing us to distinguish decryption failures from connectivity issues.
-    success, error_msg = device.test_connection()
-
-    is_decryption_error = (
-        "Security Error" in error_msg or "Decryption Error" in error_msg
-    )
+    success, error_msg, error_category = device.test_connection()
 
     if success:
         new_status = "reachable"
-    elif is_decryption_error:
+    elif error_category == "decryption_error":
         new_status = "decryption_error"
     else:
         new_status = "unreachable"
@@ -160,7 +156,7 @@ def device_check(request, pk):
     )
 
     # Only show popup for decryption errors
-    if is_decryption_error:
+    if error_category == "decryption_error":
         trigger_data = {
             "showMessage": {
                 "message": error_msg,
