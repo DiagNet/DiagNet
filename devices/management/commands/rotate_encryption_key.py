@@ -91,7 +91,7 @@ class Command(BaseCommand):
                     "Transaction rolled back. No data was changed in the database."
                 )
             )
-            return
+            raise CommandError("Key rotation failed.")
 
         self.stdout.write(
             self.style.SUCCESS(
