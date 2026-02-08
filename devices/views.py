@@ -70,7 +70,12 @@ class DeviceUpdate(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["encryption_error"] = not self.object.has_valid_encryption
+        if self.object.is_plaintext:
+            context["encryption_state"] = "unencrypted"
+        elif self.object.is_decryption_error:
+            context["encryption_state"] = "decryption_error"
+        else:
+            context["encryption_state"] = "valid"
         return context
 
     def get_success_url(self):
@@ -93,13 +98,19 @@ class DeviceUpdate(UpdateView):
 
     def form_invalid(self, form):
         if self.request.headers.get("HX-Request") == "true":
+            state = "valid"
+            if self.object.is_plaintext:
+                state = "unencrypted"
+            elif self.object.is_decryption_error:
+                state = "decryption_error"
+
             return render(
                 self.request,
                 "devices/partials/device_form.html",
                 {
                     "form": form,
                     "object": self.object,
-                    "encryption_error": not self.object.has_valid_encryption,
+                    "encryption_state": state,
                 },
             )
         return super().form_invalid(form)

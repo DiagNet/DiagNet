@@ -2,10 +2,16 @@
       hx-post="{% if object %}{% url 'device-update' object.pk %}{% else %}{% url 'device-create' %}{% endif %}">
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:", " }}</div>{% endif %}
-    {% if encryption_error %}
+    {% if encryption_state == "unencrypted" %}
+        <div class="alert alert-info">
+            <i class="bi bi-shield-lock-fill me-2"></i>
+            <strong>Security Upgrade:</strong> This device is currently using legacy plaintext storage.
+            Saving will automatically encrypt your credentials.
+        </div>
+    {% elif encryption_state == "decryption_error" %}
         <div class="alert alert-warning">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            <strong>Warning:</strong> The current credentials cannot be decrypted with the active encryption key.
+            <strong>Action Required:</strong> The current credentials cannot be decrypted (likely due to an encryption key change).
             You <strong>must</strong> provide new passwords to successfully update this device.
         </div>
     {% endif %}

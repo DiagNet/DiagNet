@@ -151,9 +151,33 @@ class Device(models.Model):
         super().save(*args, **kwargs)
 
     @property
+    def is_plaintext(self) -> bool:
+        """Check if any password field is stored as plaintext."""
+        for val in [self.password, self.enable_password]:
+            if val and not val.startswith(self.ENCRYPTION_PREFIX):
+                return True
+        return False
+
+    @property
+    def is_decryption_error(self) -> bool:
+        """Check if credentials are marked as encrypted but cannot be decrypted."""
+        for val in [self.password, self.enable_password]:
+            if val and val.startswith(self.ENCRYPTION_PREFIX):
+                # If it looks like a token but f.decrypt (inside _decrypt_value)
+                # would fail, then we have a decryption error.
+                try:
+                    self._decrypt_value(val)
+                except (ImproperlyConfigured, ValidationError):
+                    return True
+        return False
+
+    @property
     def has_valid_encryption(self) -> bool:
         """Check if both passwords can be decrypted with the current key."""
         try:
+            # Must be both prefixed AND decryptable
+            if self.is_plaintext:
+                return False
             self.get_decrypted_password()
             self.get_decrypted_enable_password()
             return True
