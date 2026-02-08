@@ -121,11 +121,13 @@ def device_check(request, pk):
     # which can_connect (restored to original) would crash on if not handled.
     success, error_msg = device.test_connection()
 
-    is_key_error = "Security Error" in error_msg
+    is_decryption_error = (
+        "Security Error" in error_msg or "Decryption Error" in error_msg
+    )
 
     if success:
         new_status = "reachable"
-    elif is_key_error:
+    elif is_decryption_error:
         new_status = "decryption_error"
     else:
         new_status = "unreachable"
@@ -142,8 +144,8 @@ def device_check(request, pk):
         {"status": STATE_MAP[new_status]},
     )
 
-    # Only show popup for key errors
-    if is_key_error:
+    # Only show popup for decryption errors
+    if is_decryption_error:
         trigger_data = {
             "showMessage": {
                 "message": error_msg,
