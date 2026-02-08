@@ -1,6 +1,8 @@
+import base64
 from typing import Any
 
 import netmiko
+import yaml
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, ValidationError
@@ -80,14 +82,12 @@ class Device(models.Model):
         - Valid URL-safe base64
         - Correct version byte (0x80)
         """
-        if len(value) < 90:
+        if len(value) < 100:
             return False
-
-        import base64
 
         try:
             decoded = base64.urlsafe_b64decode(value.encode())
-            return len(decoded) > 0 and decoded[0] == 0x80
+            return len(decoded) >= 73 and decoded[0] == 0x80
         except Exception:
             return False
 
@@ -338,7 +338,6 @@ class Device(models.Model):
             password: <password>
             device_type: <device_type>
         """
-        import yaml
 
         data = {
             self.name: {
