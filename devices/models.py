@@ -18,6 +18,7 @@ device_connections = {}
 
 class Device(models.Model):
     ENCRYPTION_PREFIX = "enc:"
+    MAX_PLAINTEXT_LENGTH = 256
 
     DEVICE_TYPES = [
         ("router_ios", "Router (IOS)"),
