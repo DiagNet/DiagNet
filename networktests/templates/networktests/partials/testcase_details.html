@@ -41,33 +41,29 @@
             <div class="row g-4">
                 <div class="col-md-6 border-end">
                     <label class="text-uppercase small fw-bold text-muted mb-3 d-block">Input Parameters</label>
-                    {% if testcase.parameters.exists %}
-                        <div class="d-flex flex-column gap-2">
-                            {% for param in testcase.parameters.all %}
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-secondary small">{{ param.name }}</span>
-                                    <span class="badge bg-white text-primary border fw-medium font-monospace">{{ param.value }}</span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <span class="text-muted small fst-italic">No parameters</span>
-                    {% endif %}
+                    <div class="d-flex flex-column gap-2">
+                        {% for param in testcase.parameters.all %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-secondary small">{{ param.name }}</span>
+                                <span class="badge bg-white text-primary border fw-medium font-monospace">{{ param.value }}</span>
+                            </div>
+                        {% empty %}
+                            <span class="text-muted small fst-italic">No parameters</span>
+                        {% endfor %}
+                    </div>
                 </div>
                 <div class="col-md-6 ps-md-4">
                     <label class="text-uppercase small fw-bold text-muted mb-3 d-block">Devices</label>
-                    {% if testcase.devices.exists %}
-                        <div class="d-flex flex-wrap gap-2">
-                            {% for device in testcase.devices.all %}
-                                <div class="bg-white border rounded-2 px-3 py-2 shadow-sm">
-                                    <div class="fw-bold small text-dark">{{ device.device }}</div>
-                                    <div class="text-muted small" style="font-size: 0.7rem;">({{ device.name }})</div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <span class="text-muted small fst-italic">None</span>
-                    {% endif %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for device in testcase.devices.all %}
+                            <div class="bg-white border rounded-2 px-3 py-2 shadow-sm">
+                                <div class="fw-bold small text-dark">{{ device.device }}</div>
+                                <div class="text-muted small" style="font-size: 0.7rem;">({{ device.name }})</div>
+                            </div>
+                        {% empty %}
+                            <span class="text-muted small fst-italic">None</span>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
