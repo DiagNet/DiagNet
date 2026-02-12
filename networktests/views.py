@@ -13,7 +13,7 @@ from django.views import generic
 from django.views.decorators.http import require_http_methods
 
 from devices.models import Device
-from networktests.models import TestCase, TestDevice, TestParameter
+from networktests.models import TestCase, TestDevice, TestParameter, TestResult
 from networktests.pdf_report import PDFReport
 
 
@@ -342,7 +342,7 @@ def testcase_detail_view(request, pk):
             ),
             Prefetch(
                 "results",
-                queryset=TestCase.results.rel.model.objects.order_by("-attempt_id"),
+                queryset=TestResult.objects.order_by("-attempt_id"),
             ),
         ),
         pk=pk,
