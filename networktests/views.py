@@ -331,6 +331,7 @@ def export_report_pdf(request):
     return response
 
 
+@require_http_methods(["GET"])
 def testcase_detail_view(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     results_list = testcase.results.all().order_by("-attempt_id")
