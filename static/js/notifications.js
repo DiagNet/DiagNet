@@ -27,7 +27,10 @@ document.body.addEventListener("showMessage", function (evt) {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  var toastElList = [].slice.call(document.querySelectorAll(".toast"));
+  const toastContainer = document.getElementById("toast-container");
+  if (!toastContainer) return;
+
+  var toastElList = [].slice.call(toastContainer.querySelectorAll(".toast"));
   toastElList.forEach(function (toastEl) {
     if (typeof bootstrap !== "undefined") {
       var toast = new bootstrap.Toast(toastEl);
