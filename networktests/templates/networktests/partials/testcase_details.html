@@ -45,7 +45,7 @@
                         {% for param in testcase.parameters.all %}
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="text-secondary small">{{ param.name }}</span>
-                                <span class="badge bg-white text-primary border fw-medium font-monospace">{{ param.value }}</span>
+                                <span class="badge bg-white text-primary border fw-medium font-monospace">{{ param.value|default:"-" }}</span>
                             </div>
                         {% empty %}
                             <span class="text-muted small fst-italic">No parameters</span>
