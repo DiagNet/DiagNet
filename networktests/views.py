@@ -333,8 +333,21 @@ def export_report_pdf(request):
 
 @require_http_methods(["GET"])
 def testcase_detail_view(request, pk):
-    testcase = get_object_or_404(TestCase, pk=pk)
-    results_list = testcase.results.all().order_by("-attempt_id")
+    testcase = get_object_or_404(
+        TestCase.objects.prefetch_related(
+            "parameters",
+            Prefetch(
+                "devices",
+                queryset=TestDevice.objects.select_related("device"),
+            ),
+            Prefetch(
+                "results",
+                queryset=TestCase.results.rel.model.objects.order_by("-attempt_id"),
+            ),
+        ),
+        pk=pk,
+    )
+    results_list = testcase.results.all()
 
     paginator = Paginator(results_list, 10)
     page_number = request.GET.get("page", 1)
