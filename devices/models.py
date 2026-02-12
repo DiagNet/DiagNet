@@ -348,7 +348,7 @@ class Device(models.Model):
             except Exception:
                 try:
                     device.disconnect()
-                except:
+                except Exception as _:
                     pass
 
         try:
