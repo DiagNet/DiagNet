@@ -96,8 +96,20 @@ class NAT(DiagNetTest):
                                 <td class="text-body-secondary">Fail if active translations are below this count</td>
                             </tr>
                             <tr>
-                                <td class="fw-bold font-monospace">pool_name</td>
-                                <td class="text-body-secondary">Required for Dynamic mode. The name of the address pool</td>
+                                <td class="fw-bold font-monospace">pool_name <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">Required when <span class="font-monospace">validation_mode</span> is Dynamic. The name of the address pool</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">expected_pool_start <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">Required when <span class="font-monospace">validation_mode</span> is Dynamic. Expected first IP address in the Dynamic pool</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">expected_pool_end <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">Required when <span class="font-monospace">validation_mode</span> is Dynamic. Expected last IP address in the Dynamic pool</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">expected_pool_netmask <span class="text-danger">*</span></td>
+                                <td class="text-body-secondary">Required when <span class="font-monospace">validation_mode</span> is Dynamic. Expected netmask for the Dynamic pool</td>
                             </tr>
                             <tr>
                                 <td class="fw-bold font-monospace">overload_interface</td>
