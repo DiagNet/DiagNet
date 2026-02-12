@@ -16,6 +16,7 @@ from devices.models import Device
 from networktests.models import TestCase, TestDevice, TestParameter
 from networktests.pdf_report import PDFReport
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -328,3 +329,22 @@ def export_report_pdf(request):
     filename = f"DiagNet-Report-{datestamp}.pdf"
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+
+
+def testcase_detail_view(request, pk):
+    testcase = get_object_or_404(TestCase, pk=pk)
+    results_list = testcase.results.all().order_by("-attempt_id")
+
+    paginator = Paginator(results_list, 10)
+    page_number = request.GET.get("page", 1)
+    results_page = paginator.get_page(page_number)
+
+    context = {
+        "testcase": testcase,
+        "results_page": results_page,
+    }
+
+    if request.headers.get("HX-Target") == f"history-card-{pk}":
+        return render(request, "networktests/partials/history_card.html", context)
+
+    return render(request, "networktests/partials/testcase_details.html", context)

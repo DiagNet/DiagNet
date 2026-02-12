@@ -1,71 +1,76 @@
-<p>
-    <strong>Base module:</strong> {{ testcase.test_module }}
-</p>
-<p>
-    <strong>Expected result:</strong>
-    {% if testcase.expected_result %}
-        <span class="badge rounded-pill bg-success">Pass</span>
-    {% else %}
-        <span class="badge rounded-pill bg-danger">Fail</span>
-    {% endif %}
-</p>
-<p>
-    <strong>Created:</strong> {{ testcase.created_at|date:"Y-m-d H:i" }}
-</p>
-<hr>
-<h4>Parameters</h4>
-{% if testcase.parameters.all %}
-    <ul class="list-group mb-3">
-        {% for param in testcase.parameters.all %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ param.name }}
-                <span class="badge bg-secondary">{{ param.value|default:"-" }}</span>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p class="text-muted">No parameters defined.</p>
-{% endif %}
-<hr>
-<h4>Devices</h4>
-{% if testcase.devices.all %}
-    <ul class="list-group mb-3">
-        {% for device in testcase.devices.all %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ device.name }}
-                <span class="badge bg-info">{{ device.device }}</span>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p class="text-muted">No devices assigned.</p>
-{% endif %}
-<hr>
-<h4>Latest Result</h4>
-{% if testcase.results.last %}
-    <p>
-        <strong>Attempt:</strong>
-        {{ testcase.results.last.attempt_id }}
-    </p>
-    <p>
-        <strong>Started:</strong>
-        {{ testcase.results.last.started_at|date:"Y-m-d H:i" }}
-    </p>
-    <p>
-        <strong>Finished:</strong>
-        {{ testcase.results.last.finished_at|date:"Y-m-d H:i" }}
-    </p>
-    <p>
-        <strong>Result:</strong>
-        {% if testcase.expected_result == testcase.results.last.result %}
-            <span class="badge rounded-pill bg-success">Pass</span>
-        {% else %}
-            <span class="badge rounded-pill bg-danger">Fail</span>
-        {% endif %}
-    </p>
-    {% if testcase.results.last.log %}
-        <pre class="bg-body-secondary p-2 rounded small">{{ testcase.results.last.log | pprint }}</pre>
-    {% endif %}
-{% else %}
-    <p class="text-muted">No test results yet.</p>
-{% endif %}
+{% load datetime_helpers %}
+<div class="container-fluid px-0">
+    {% with last_run=testcase.results.last %}
+        <div class="mb-4 pb-3 border-bottom">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="d-flex align-items-center gap-3 mb-1">
+                        <h3 class="fw-bold mb-0 text-body">{{ testcase.label }}</h3>
+                        <span class="badge bg-body-tertiary text-body border fw-normal font-monospace">
+                            <i class="bi bi-code-square me-1"></i>{{ testcase.test_module }}
+                        </span>
+                    </div>
+                    {% if testcase.description %}
+                        <p class="text-secondary mt-2 mb-0"
+                           style="max-width: 600px;
+                                  text-align: justify">{{ testcase.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="text-end">
+                    {% if last_run %}
+                        <span class="badge rounded-pill px-3 py-2 border {% if testcase.expected_result == last_run.result %}bg-success-subtle text-success-emphasis border-success-subtle{% else %}bg-danger-subtle text-danger-emphasis border-danger-subtle{% endif %}">
+                            <i class="bi {% if testcase.expected_result == last_run.result %}bi-check-circle-fill{% else %}bi-exclamation-octagon-fill{% endif %} me-1"></i>
+                            {% if testcase.expected_result == last_run.result %}
+                                PASS
+                            {% else %}
+                                FAIL
+                            {% endif %}
+                        </span>
+                        <div class="text-secondary small mt-1">Last run: {{ last_run.finished_at|date:"Y-m-d H:i" }}</div>
+                    {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle rounded-pill px-3 py-2">
+                            NEW
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endwith %}
+    <div class="card border-0 shadow-sm mb-5 bg-light-subtle">
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-md-6 border-end">
+                    <label class="text-uppercase small fw-bold text-muted mb-3 d-block">Input Parameters</label>
+                    {% if testcase.parameters.exists %}
+                        <div class="d-flex flex-column gap-2">
+                            {% for param in testcase.parameters.all %}
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-secondary small">{{ param.name }}</span>
+                                    <span class="badge bg-white text-primary border fw-medium font-monospace">{{ param.value }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="text-muted small fst-italic">No parameters</span>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 ps-md-4">
+                    <label class="text-uppercase small fw-bold text-muted mb-3 d-block">Devices</label>
+                    {% if testcase.devices.exists %}
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for device in testcase.devices.all %}
+                                <div class="bg-white border rounded-2 px-3 py-2 shadow-sm">
+                                    <div class="fw-bold small text-dark">{{ device.device }}</div>
+                                    <div class="text-muted small" style="font-size: 0.7rem;">({{ device.name }})</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="text-muted small fst-italic">None</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="history-container">{% include "networktests/partials/history_card.html" %}</div>
+</div>
