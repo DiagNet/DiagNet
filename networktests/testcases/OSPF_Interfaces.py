@@ -14,7 +14,7 @@ class OSPF_Interfaces(DiagNetTest):
                     <i class="bi bi-hdd-network fs-4"></i>
                 </div>
                 <div class="ms-3">
-                    <h3 class="mb-0 fw-bold">OSPF Interface</h3>
+                    <h3 class="mb-0 fw-bold">OSPF Interfaces</h3>
                     <div class="mt-1">
                         <span class="badge text-white" style="background-color: #00267F; border-color: #00267F;">Cisco</span>
                         <span class="badge text-white bg-opacity-75 border border-opacity-25" style="background-color: #0f766e; border-color: #0f766e;">Network Testcase</span>
