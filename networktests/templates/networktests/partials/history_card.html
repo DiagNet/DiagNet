@@ -1,0 +1,152 @@
+{% load datetime_helpers %}
+<div class="card border shadow-sm bg-body"
+     id="history-card-{{ testcase.id }}">
+    <div class="card-header bg-body border-bottom py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 fw-bold text-body">
+            <i class="bi bi-clock-history me-2"></i>Execution History
+        </h6>
+        <span class="badge bg-secondary rounded-pill">{{ testcase.results.count }} Runs</span>
+    </div>
+    {% if results_page %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="small text-uppercase fw-bold text-secondary bg-body-tertiary border-bottom py-3 text-center"
+                            style="width: 80px">#</th>
+                        <th class="small text-uppercase fw-bold text-secondary bg-body-tertiary border-bottom py-3 ps-4">Time</th>
+                        <th class="small text-uppercase fw-bold text-secondary bg-body-tertiary border-bottom py-3 text-center"
+                            style="width: 150px">Status</th>
+                        <th class="small text-uppercase fw-bold text-secondary bg-body-tertiary border-bottom py-3 text-center"
+                            style="width: 150px">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="accordion-{{ testcase.id }}">
+                    {% for result in results_page %}
+                        <tr style="cursor: pointer"
+                            onclick="document.getElementById('btn-log-{{ result.id }}').click()">
+                            <td class="text-center fw-bold text-secondary">{{ result.attempt_id }}</td>
+                            <td class="ps-4">
+                                <div class="d-flex flex-column">
+                                    <span class="fw-medium text-body">{{ result.started_at|date:"Y-m-d" }}</span>
+                                    <span class="text-secondary small">{{ result.started_at|date:"H:i:s" }}</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                {% if testcase.expected_result == result.result %}
+                                    <span class="badge rounded-pill px-3 bg-success-subtle text-success-emphasis border border-success-subtle">PASS</span>
+                                {% else %}
+                                    <span class="badge rounded-pill px-3 bg-danger-subtle text-danger-emphasis border border-danger-subtle">FAIL</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if result.log %}
+                                    <button id="btn-log-{{ result.id }}"
+                                            class="btn btn-sm btn-outline-secondary px-3"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#log-row-{{ result.id }}"
+                                            onclick="event.stopPropagation()">Details</button>
+                                {% else %}
+                                    <span class="text-secondary small">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% if result.log %}
+                            <tr>
+                                <td colspan="4" class="p-0 border-0">
+                                    <div class="collapse"
+                                         id="log-row-{{ result.id }}"
+                                         data-bs-parent="#accordion-{{ testcase.id }}">
+                                        <div class="p-4 bg-body-tertiary border-bottom">
+                                            <div class="card border shadow-sm">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped table-sm mb-0 align-middle">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="small text-uppercase fw-bold text-secondary bg-light ps-3 py-2"
+                                                                    style="width: 25%">Module</th>
+                                                                <th class="small text-uppercase fw-bold text-secondary bg-light text-center py-2"
+                                                                    style="width: 10%">Result</th>
+                                                                <th class="small text-uppercase fw-bold text-secondary bg-light py-2"
+                                                                    style="width: 50%">Message</th>
+                                                                <th class="small text-uppercase fw-bold text-secondary bg-light text-end pe-3 py-2"
+                                                                    style="width: 15%">Duration</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for module_name, data in result.log.tests.items %}
+                                                                <tr>
+                                                                    <td class="font-monospace text-body px-3 py-2">{{ module_name }}</td>
+                                                                    <td class="text-center py-2">
+                                                                        <span class="badge rounded-pill px-2 border {% if data.status == 'PASS' %}bg-success-subtle text-success-emphasis border-success-subtle {% elif data.status == 'FAIL' %}bg-danger-subtle text-danger-emphasis border-danger-subtle {% else %}bg-secondary-subtle text-secondary-emphasis border-secondary-subtle{% endif %}">
+                                                                            {{ data.status|upper }}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td class="text-break text-body-secondary py-2">{{ data.message|default:"-" }}</td>
+                                                                    <td class="text-end font-monospace text-secondary pe-3 py-2">{{ data.time|floatformat:4 }}s</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if results_page.paginator.num_pages > 1 %}
+            <div class="card-footer bg-light-subtle py-2">
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        {% if results_page.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   style="cursor: pointer"
+                                   hx-get="{% url 'testcase-details' testcase.id %}?page={{ results_page.previous_page_number }}"
+                                   hx-target="#history-card-{{ testcase.id }}"
+                                   hx-swap="outerHTML">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                            </li>
+                        {% endif %}
+                        <li class="page-item disabled">
+                            <span class="page-link text-dark fw-medium">
+                                Page {{ results_page.number }} of {{ results_page.paginator.num_pages }}
+                            </span>
+                        </li>
+                        {% if results_page.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   style="cursor: pointer"
+                                   hx-get="{% url 'testcase-details' testcase.id %}?page={{ results_page.next_page_number }}"
+                                   hx-target="#history-card-{{ testcase.id }}"
+                                   hx-swap="outerHTML">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox text-secondary opacity-25" style="font-size: 3rem"></i>
+            <p class="text-secondary mt-3">No results found.</p>
+        </div>
+    {% endif %}
+</div>
