@@ -1,7 +1,6 @@
 from django.core.validators import RegexValidator
 from django.db import models
 from devices.models import Device
-import importlib
 
 from django.utils import timezone
 
@@ -45,8 +44,13 @@ class TestCase(models.Model):
         return output
 
     def run(self):
-        module = importlib.import_module(f"networktests.testcases.{self.test_module}")
-        cls = getattr(module, self.test_module)
+        from networktests.utils import get_all_available_test_classes
+
+        available_classes = get_all_available_test_classes()
+        if self.test_module not in available_classes:
+            raise ImportError(f"Test class {self.test_module} not found")
+
+        cls = available_classes[self.test_module]["class"]
 
         params = {}
         for p in self.parameters.all():

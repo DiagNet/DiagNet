@@ -1,4 +1,3 @@
-import importlib.resources
 import json
 import logging
 from datetime import date
@@ -15,11 +14,9 @@ from django.views.decorators.http import require_http_methods
 from devices.models import Device
 from networktests.models import TestCase, TestDevice, TestParameter
 from networktests.pdf_report import PDFReport
+from networktests.utils import get_all_available_test_classes
 
 logger = logging.getLogger(__name__)
-
-
-package = "networktests.testcases"
 
 
 def index(request):
@@ -31,33 +28,30 @@ def get_all_testcases(request):
     Return available testcase classes and their parameter specs.
     """
     testcases = {}
-    for resource in importlib.resources.files(package).iterdir():
-        if (
-            resource.suffix == ".py"
-            and resource.is_file()
-            and resource.name not in ["__init__.py", "base.py"]
-        ):
-            class_name = resource.stem
-            module_name = f"{package}.{class_name}"
-            module = importlib.import_module(module_name)
+    available_classes = get_all_available_test_classes()
 
-            cls = getattr(module, class_name)
-            required_params = cls._required_params
-            optional_params = cls._optional_params
+    for class_name, info in available_classes.items():
+        cls = info["class"]
+        required_params = cls._required_params
+        optional_params = cls._optional_params
 
-            for i, param in enumerate(required_params):
-                if ":" not in param:
-                    required_params[i] = param + ":str"
+        # Copy to avoid modifying the class attribute directly if it's reused
+        required_params = list(required_params)
+        optional_params = list(optional_params)
 
-            for i, param in enumerate(optional_params):
-                if ":" not in param:
-                    optional_params[i] = param + ":str"
+        for i, param in enumerate(required_params):
+            if ":" not in param:
+                required_params[i] = param + ":str"
 
-            testcases[class_name] = {
-                "required": required_params,
-                "optional": optional_params,
-                "mut_exclusive": cls._mutually_exclusive_parameters,
-            }
+        for i, param in enumerate(optional_params):
+            if ":" not in param:
+                optional_params[i] = param + ":str"
+
+        testcases[class_name] = {
+            "required": required_params,
+            "optional": optional_params,
+            "mut_exclusive": cls._mutually_exclusive_parameters,
+        }
 
     return JsonResponse({"testcases": testcases})
 
@@ -66,10 +60,10 @@ def get_class_reference_for_test_class_string(test_class):
     """
     Import and return the test class by name.
     """
-    module_name = f"{package}.{test_class}"
-    module = importlib.import_module(module_name)
-    cls = getattr(module, test_class)
-    return cls
+    available_classes = get_all_available_test_classes()
+    if test_class in available_classes:
+        return available_classes[test_class]["class"]
+    raise ImportError(f"Test class {test_class} not found")
 
 
 def store_test_parameter(parent, parameter, value):
@@ -222,17 +216,8 @@ def get_all_available_testcases(request):
     """
     List available test case class names.
     """
-    testcases = []
-    for resource in importlib.resources.files(package).iterdir():
-        if (
-            resource.suffix == ".py"
-            and resource.is_file()
-            and resource.name not in ["__init__.py", "base.py"]
-        ):
-            class_name = resource.stem
-            testcases.append(class_name)
-
-    return JsonResponse({"results": testcases})
+    available_classes = get_all_available_test_classes()
+    return JsonResponse({"results": list(available_classes.keys())})
 
 
 def get_doc_of_testcase(request):

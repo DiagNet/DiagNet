@@ -224,6 +224,9 @@ LOGGING = {
     },
 }
 
+# Custom testcases directory
+CUSTOM_TESTCASES_DIR = "/var/lib/diagnet/custom_testcases"
+
 # Authentication
 LOGIN_URL = "/auth/login/"
 LOGIN_REDIRECT_URL = "/"
