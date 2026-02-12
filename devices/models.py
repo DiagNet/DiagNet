@@ -338,11 +338,18 @@ class Device(models.Model):
             return False, str(e), "connection_error"
 
     def get_genie_device_object(self):
-        if (
-            self.name in device_connections
-            and device_connections[self.name].is_connected()
-        ):
-            return device_connections[self.name]
+        device = device_connections.get(self.name)
+
+        if device:
+            try:
+                if device.is_connected():
+                    device.execute("show clock")
+                    return device
+            except Exception:
+                try:
+                    device.disconnect()
+                except:
+                    pass
 
         try:
             conn_info = self.get_genie_device_dict()
