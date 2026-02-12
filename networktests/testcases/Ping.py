@@ -126,7 +126,13 @@ class Ping(DiagNetTest):
         if source:
             cmd += f" source {source}"
 
-        raw_output = self.source_device.get_genie_device_object().execute(cmd)
+        try:
+            raw_output = self.source_device.get_genie_device_object().execute(cmd)
+        except Exception as exc:
+            raise ValueError(
+                f"Ping command execution failed on device {self.source_device.name!r} "
+                f"with command {cmd!r}: {exc}"
+            ) from exc
 
         match = re.search(r"Success rate is (?P<percent>\d+) percent", raw_output)
 
