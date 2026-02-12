@@ -72,13 +72,12 @@ class DMVPN(DiagNetTest):
                                 <td class="text-body-secondary">List of Spoke devices. Hub Mode only</td>
                             </tr>
                             <tr>
-                                <td class="fw-bold font-monospace">hub_connection</td>
-                                <td class="text-body-secondary">Hub connection details. Spoke Mode only</td>
-                            </tr>
-
-                            <tr>
                                 <td class="ps-4 font-monospace text-body-tertiary">↳ spoke_device</td>
                                 <td class="text-body-secondary fst-italic">The remote Spoke Device object</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold font-monospace">hub_connection</td>
+                                <td class="text-body-secondary">Hub connection details. Spoke Mode only</td>
                             </tr>
                             <tr>
                                 <td class="ps-4 font-monospace text-body-tertiary">↳ hub_device</td>
