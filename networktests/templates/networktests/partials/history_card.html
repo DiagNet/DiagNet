@@ -24,7 +24,7 @@
                 <tbody id="accordion-{{ testcase.id }}">
                     {% for result in results_page %}
                         <tr style="cursor: pointer"
-                            onclick="document.getElementById('btn-log-{{ result.id }}').click()">
+                            onclick="var btn = document.getElementById('btn-log-{{ result.id }}'); if (btn) { btn.click(); }">
                             <td class="text-center fw-bold text-secondary">{{ result.attempt_id }}</td>
                             <td class="ps-4">
                                 <div class="d-flex flex-column">
