@@ -36,7 +36,7 @@
                                         <div class="modal-body"
                                              id="modal-body-{{ testcase.id }}"
                                              hx-get="{% url 'testcase-details' testcase.id %}"
-                                             hx-trigger="load">
+                                             hx-trigger="shown.bs.modal from:closest .modal once">
                                             <div class="text-center py-5">
                                                 <div class="spinner-border text-primary" role="status"></div>
                                             </div>
