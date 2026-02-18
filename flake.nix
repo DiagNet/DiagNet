@@ -1,6 +1,17 @@
 {
   description = "Flake using uv2nix";
 
+  nixConfig = {
+    extra-substituters = [
+      "https://diagnet.cachix.org?priority=1"
+      "https://nix-community.cachix.org?priority=2"
+    ];
+    extra-trusted-public-keys = [
+      "diagnet.cachix.org-1:MzqIWMV1e/JZVvDJeX30i9FK9RqLvfsisHVUfa17OTg="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    ];
+  };
+
   inputs = {
     flake-parts = {
       url = "github:hercules-ci/flake-parts";

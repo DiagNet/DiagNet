@@ -8,12 +8,14 @@ jobs:
   check-code:
     name: Check code
     uses: ./.github/workflows/nix.yml
+    secrets: inherit
     with:
       command: nix flake check
 
   test-code:
     name: Test code
     uses: ./.github/workflows/nix.yml
+    secrets: inherit
     with:
       command: >-
         SECRET_KEY='ci-test-key-not-for-production'
