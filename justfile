@@ -20,6 +20,10 @@ serve:
     @just manage runserver
 
 [group("django")]
+test:
+    @just manage test
+
+[group("django")]
 shell:
     @just manage shell
 
