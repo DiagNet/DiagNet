@@ -26,9 +26,18 @@ dotenv.load_dotenv(BASE_DIR / ".env")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.environ.get("DIAGNET_DEBUG", "True").lower() == "true"
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
-DEVICE_ENCRYPTION_KEY = os.environ.get("DEVICE_ENCRYPTION_KEY")
+SECRET_KEY = os.environ.get("DIAGNET_SECRET_KEY")
+if not SECRET_KEY and DEBUG:
+    SECRET_KEY = "django-insecure-fallback-key-for-dev-only"
+
+DEVICE_ENCRYPTION_KEY = os.environ.get("DIAGNET_DEVICE_ENCRYPTION_KEY")
+if not DEVICE_ENCRYPTION_KEY and DEBUG:
+    DEVICE_ENCRYPTION_KEY = "8OGs8CTrNq8TltpMA3H-zybxADNlMt8FvdhEDo0QW98="
+
 if DEVICE_ENCRYPTION_KEY is not None:
     DEVICE_ENCRYPTION_KEY = DEVICE_ENCRYPTION_KEY.encode()
 
@@ -90,8 +99,6 @@ try:
 except Exception:
     raise ImproperlyConfigured(get_security_help_message(False, True))
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 ALLOWED_HOSTS = []
 
