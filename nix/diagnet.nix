@@ -111,18 +111,10 @@
           nativeBuildInputs = [ venv ];
 
           installPhase = ''
-            # 1. Nix requires us to create the output directory explicitly
             mkdir -p $out
-
-            # 2. Set necessary Django variables for the build
-            # We use a dummy SECRET_KEY because settings.py often crashes without one,
-            # even though we are just collecting static files.
-            export DJANGO_SECRET_KEY="build-only-dummy-key"
-            export DJANGO_SETTINGS_MODULE="diagnet.settings"
-
-            # 3. Run collectstatic
-            # --noinput: Don't ask for confirmation
-            # --clear: Clean up old files (good practice)
+            # Provide dummy keys to satisfy settings.py checks without enabling debug mode
+            export DIAGNET_SECRET_KEY="django-insecure-fallback-key-for-dev-only"
+            export DIAGNET_DEVICE_ENCRYPTION_KEY="8OGs8CTrNq8TltpMA3H-zybxADNlMt8FvdhEDo0QW98="
             env DJANGO_STATIC_ROOT="$out" python manage.py collectstatic --noinput --clear
           '';
         };
