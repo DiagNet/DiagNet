@@ -15,13 +15,9 @@
 
       workspace = inputs.uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ../.; };
 
-      overlay = workspace.mkPyprojectOverlay {
-        sourcePreference = "wheel";
-      };
+      overlay = workspace.mkPyprojectOverlay { sourcePreference = "wheel"; };
 
-      editableOverlay = workspace.mkEditablePyprojectOverlay {
-        root = "$REPO_ROOT";
-      };
+      editableOverlay = workspace.mkEditablePyprojectOverlay { root = "$REPO_ROOT"; };
 
       python = pkgs.python313;
 
@@ -37,9 +33,7 @@
       pythonSet =
         let
           # Base Python package set from pyproject.nix
-          baseSet = pkgs.callPackage inputs.pyproject-nix.build.packages {
-            inherit python;
-          };
+          baseSet = pkgs.callPackage inputs.pyproject-nix.build.packages { inherit python; };
         in
         baseSet.overrideScope (
           lib.composeManyExtensions [
@@ -114,9 +108,7 @@
           dontConfigure = true;
           dontBuild = true;
 
-          nativeBuildInputs = [
-            venv
-          ];
+          nativeBuildInputs = [ venv ];
 
           installPhase = ''
             # 1. Nix requires us to create the output directory explicitly
@@ -143,24 +135,32 @@
         docker =
           let
             venv = pythonSet.mkVirtualEnv "diagnet-env" deps;
+            entrypoint = pkgs.writeShellScriptBin "entrypoint" ''
+              # Ensure the data directory exists (if using volumes)
+              if [ -n "$DIAGNET_DB_PATH" ]; then
+                mkdir -p "$(dirname "$DIAGNET_DB_PATH")"
+              fi
+              # Run migrations
+              ${venv}/bin/python /manage.py migrate --noinput
+              # Start the application
+              exec ${venv}/bin/daphne -b 0.0.0.0 ${wsgiApp}
+            '';
           in
           pkgs.dockerTools.buildLayeredImage {
             name = "diagnet";
+            tag = "latest";
             contents = [
               pkgs.dockerTools.fakeNss
 
               pkgs.cacert
               pkgs.coreutils
               pkgs.bashInteractive
+              entrypoint
               ../.
             ];
             config = {
-              Cmd = [
-                "${venv}/bin/daphne"
-                "-b"
-                "0.0.0.0"
-                wsgiApp
-              ];
+              Cmd = [ "${entrypoint}/bin/entrypoint" ];
+              WorkingDir = "/";
               Env = [
                 "DJANGO_SETTINGS_MODULE=${settingsModules.prod}"
                 # staticRoot is per-system already
@@ -168,6 +168,7 @@
 
                 "DJANGO_SECRET_KEY=production-unsafe-key-change-me"
                 "DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0"
+                "DIAGNET_DB_PATH=/data/db.sqlite3"
               ];
               ExposedPorts = {
                 "8000/tcp" = { };
@@ -180,12 +181,7 @@
         let
           pythonSet' = pythonSet.overrideScope editableOverlay;
 
-          venv = pythonSet'.mkVirtualEnv "diagnet-dev-env" (
-            workspace.deps.all
-            // {
-              diagnet = [ "dev" ];
-            }
-          );
+          venv = pythonSet'.mkVirtualEnv "diagnet-dev-env" (workspace.deps.all // { diagnet = [ "dev" ]; });
         in
         {
           default = pkgs.mkShell {
