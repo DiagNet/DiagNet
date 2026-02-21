@@ -3,6 +3,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    # Setup URL
+    path("setup/", views.SetupView.as_view(), name="setup"),
     # Self-service URLs
     path("password/", views.MyPasswordChangeView.as_view(), name="my-password-change"),
     # User management URLs

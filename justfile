@@ -8,6 +8,7 @@ default:
 [group("django")]
 manage *args:
     #!/usr/bin/env bash
+    export DIAGNET_DEBUG="True"
     if [ -n "$IN_NIX_SHELL" ]; then
         python manage.py {{args}}
     else
@@ -17,6 +18,10 @@ manage *args:
 [group("django")]
 serve:
     @just manage runserver
+
+[group("django")]
+test:
+    @just manage test
 
 [group("django")]
 shell:
