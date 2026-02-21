@@ -1,13 +1,15 @@
 import logging
 
 from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import login, update_session_auth_hash
+from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import (
     CreateView,
@@ -24,11 +26,39 @@ from testgroups.models import TestGroup
 from .forms import (
     GroupForm,
     GroupMembershipForm,
+    SuperUserCreationForm,
     UserCreateForm,
     UserPasswordChangeForm,
     UserUpdateForm,
 )
 from .models import GroupProfile
+
+
+@method_decorator(login_not_required, name="dispatch")
+class SetupView(View):
+    """View for initial superuser creation when no users exist."""
+
+    def get(self, request):
+        if User.objects.filter(is_superuser=True).exists():
+            return redirect("login")
+
+        form = SuperUserCreationForm()
+        return render(request, "accounts/setup.html", {"form": form})
+
+    def post(self, request):
+        if User.objects.filter(is_superuser=True).exists():
+            return redirect("login")
+
+        form = SuperUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(
+                request,
+                f"Superuser '{user.username}' created successfully. You are now logged in.",
+            )
+            login(request, user)
+            return redirect("dashboard")
+        return render(request, "accounts/setup.html", {"form": form})
 
 
 class AdminRequiredMixin(UserPassesTestMixin):
