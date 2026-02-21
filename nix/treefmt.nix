@@ -1,13 +1,14 @@
 { inputs, ... }:
 {
-  imports = [
-    inputs.treefmt-nix.flakeModule
-  ];
+  imports = [ inputs.treefmt-nix.flakeModule ];
 
   perSystem = {
     treefmt = {
       settings = {
-        excludes = [ "**/migrations/*.py" ];
+        excludes = [
+          "**/migrations/*.py"
+          "static/vendor/**"
+        ];
       };
 
       programs = {
