@@ -115,7 +115,7 @@
             # Provide dummy keys to satisfy settings.py checks without enabling debug mode
             export DIAGNET_SECRET_KEY="django-insecure-fallback-key-for-dev-only"
             export DIAGNET_DEVICE_ENCRYPTION_KEY="8OGs8CTrNq8TltpMA3H-zybxADNlMt8FvdhEDo0QW98="
-            env DJANGO_STATIC_ROOT="$out" python manage.py collectstatic --noinput --clear
+            env DIAGNET_STATIC_ROOT="$out" python manage.py collectstatic --noinput --clear
           '';
         };
 
@@ -154,12 +154,12 @@
               Cmd = [ "${entrypoint}/bin/entrypoint" ];
               WorkingDir = "/";
               Env = [
-                "DJANGO_SETTINGS_MODULE=${settingsModules.prod}"
+                "DIAGNET_SETTINGS_MODULE=${settingsModules.prod}"
                 # staticRoot is per-system already
-                "DJANGO_STATIC_ROOT=${staticRoot}"
+                "DIAGNET_STATIC_ROOT=${staticRoot}"
 
-                "DJANGO_SECRET_KEY=production-unsafe-key-change-me"
-                "DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0"
+                "DIAGNET_SECRET_KEY=production-unsafe-key-change-me"
+                "DIAGNET_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0"
                 "DIAGNET_DB_PATH=/data/db.sqlite3"
               ];
               ExposedPorts = {
