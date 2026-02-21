@@ -5,17 +5,17 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
-        <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}"
+        <link href="{% static 'vendor/bootstrap-5.3.8/bootstrap.min.css' %}"
               rel="stylesheet">
         <link rel="stylesheet"
-              href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+              href="{% static 'vendor/bootstrap-icons-1.13.1/bootstrap-icons.min.css' %}">
         <link rel="stylesheet" href="{% static 'css/styles.css' %}">
         <style>
         .dropdown-item.active .d-none {
             display: block !important;
         }
         </style>
-        <script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
+        <script src="{% static 'vendor/htmx-2.0.7/htmx.min.js' %}"></script>
         <script src="{% static 'js/theme.js' %}"></script>
         <title>
             {% block title %}DiagNet{% endblock %}
@@ -134,7 +134,7 @@
                 </div>
             </div>
         </template>
-        <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+        <script src="{% static 'vendor/bootstrap-5.3.8/bootstrap.bundle.min.js' %}"></script>
         <script src="{% static 'js/notifications.js' %}"></script>
         {% block scripts %}{% endblock %}
     </body>
