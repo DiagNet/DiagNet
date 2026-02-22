@@ -1,5 +1,7 @@
 alias m := manage
+alias cs := collectstatic
 alias s := serve
+alias t := test
 alias sh := shell
 
 default:
@@ -16,6 +18,15 @@ manage *args:
     fi
 
 [group("django")]
+migrate:
+    @just manage makemigrations
+    @just manage migrate
+
+[group("django")]
+collectstatic:
+    @just manage collectstatic
+
+[group("django")]
 serve:
     @just manage runserver
 
@@ -26,11 +37,6 @@ test:
 [group("django")]
 shell:
     @just manage shell
-
-[group("django")]
-migrate:
-    @just manage makemigrations
-    @just manage migrate
 
 [group("nix")]
 update:
