@@ -49,7 +49,7 @@ def get_security_help_message(missing_secret, missing_device):
     if missing_secret:
         msg.extend(
             [
-                "- MISSING: SECRET_KEY",
+                "- MISSING: DIAGNET_SECRET_KEY",
                 "  This is required for Django's session security.",
             ]
         )
@@ -58,7 +58,7 @@ def get_security_help_message(missing_secret, missing_device):
     if missing_device:
         msg.extend(
             [
-                "- MISSING or INVALID: DEVICE_ENCRYPTION_KEY",
+                "- MISSING or INVALID: DIAGNET_DEVICE_ENCRYPTION_KEY",
                 "  This is required to securely store device passwords.",
                 "  It must be a 32-byte url-safe base64-encoded string.",
             ]
@@ -70,22 +70,12 @@ def get_security_help_message(missing_secret, missing_device):
     msg.extend(
         [
             "",
-            "Recommended .env content (Copy & Paste this block):",
+            "Generated environment variables:",
             "--------------------------------------------------",
         ]
     )
     msg.extend(env_suggestions)
     msg.append("--------------------------------------------------")
-
-    msg.extend(
-        [
-            "=" * 80,
-            "1. Open your .env file in the project root.",
-            "2. Paste the configuration block above.",
-            "3. Save the file and restart the application.",
-            "=" * 80 + "\n",
-        ]
-    )
     return "\n".join(msg)
 
 
