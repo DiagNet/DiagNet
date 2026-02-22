@@ -128,9 +128,41 @@
             venv = pythonSet.mkVirtualEnv "diagnet-env" deps;
             entrypoint = pkgs.writeShellScriptBin "entrypoint" ''
               set -euo pipefail
-              # Ensure the data directory exists (if using volumes)
-              if [ -n "$DIAGNET_DB_PATH" ]; then
+              # Default to /data if not set
+              export DIAGNET_DATA_PATH="''${DIAGNET_DATA_PATH:-/data}"
+              mkdir -p "$DIAGNET_DATA_PATH"
+
+              # Ensure the database directory exists (if using a custom DB path)
+              if [ -n "''${DIAGNET_DB_PATH:-}" ]; then
                 mkdir -p "$(dirname "$DIAGNET_DB_PATH")"
+              fi
+
+              # Generate secrets
+              SECRETS_FILE="$DIAGNET_DATA_PATH/secrets.env"
+
+              if [ -f "$SECRETS_FILE" ]; then
+                echo "Loading secrets from $SECRETS_FILE"
+                set -a
+                source "$SECRETS_FILE"
+                set +a
+              fi
+
+              if [ -z "''${DIAGNET_SECRET_KEY:-}" ]; then
+                echo "Generating new DIAGNET_SECRET_KEY..."
+                NEW_SECRET=$(${venv}/bin/python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
+                echo "DIAGNET_SECRET_KEY='$NEW_SECRET'" >> "$SECRETS_FILE"
+                export DIAGNET_SECRET_KEY="$NEW_SECRET"
+              fi
+
+              if [ -z "''${DIAGNET_DEVICE_ENCRYPTION_KEY:-}" ]; then
+                echo "Generating new DIAGNET_DEVICE_ENCRYPTION_KEY..."
+                NEW_KEY=$(${venv}/bin/python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')
+                echo "DIAGNET_DEVICE_ENCRYPTION_KEY='$NEW_KEY'" >> "$SECRETS_FILE"
+                export DIAGNET_DEVICE_ENCRYPTION_KEY="$NEW_KEY"
+              fi
+
+              if [ -f "$SECRETS_FILE" ]; then
+                chmod 600 "$SECRETS_FILE"
               fi
 
               # Run migrations (exit if they fail)
@@ -164,7 +196,7 @@
                 "DIAGNET_STATIC_ROOT=${staticRoot}"
 
                 "DIAGNET_ALLOWED_HOSTS=localhost,127.0.0.1"
-                "DIAGNET_DB_PATH=/data/db.sqlite3"
+                "DIAGNET_DATA_PATH=/data"
                 "DIAGNET_DEBUG=False"
               ];
               ExposedPorts = {
