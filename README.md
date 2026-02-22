@@ -45,7 +45,7 @@ The easiest and most maintainable way to run DiagNet is using Docker Compose. Yo
 
 Create a file named `docker-compose.yml` in your preferred directory and add the following configuration:
 
-```compose
+```yaml
 services:
   diagnet:
     container_name: diagnet
