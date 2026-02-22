@@ -17,5 +17,6 @@ jobs:
     uses: ./.github/workflows/nix.yml
     secrets: inherit
     with:
-      command: >-
+      command: |
+        nix develop --command just collectstatic
         nix develop --command just test
