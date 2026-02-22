@@ -29,6 +29,8 @@ Using the container is the **only officially supported way** to run DiagNet in
 production, as it guarantees a deterministic environment with all necessary
 networking and Python dependencies pre-installed via Nix.
 
+For detailed configuration options, see the [Configuration Guide](docs/configuration.md).
+
 ### Prerequisites
 
 First things first, make sure you have one of these installed on your system:
@@ -47,6 +49,7 @@ services:
   diagnet:
     container_name: diagnet
     image: ghcr.io/diagnet/diagnet:latest # always uses the latest version
+    restart: unless-stopped
     ports:
       - 8000:8000 # host:container
     volumes:
@@ -55,7 +58,6 @@ services:
       # secrets are auto-generated on first run and stored in /data/secrets.env
       - DIAGNET_DATA_PATH=/data
       - DIAGNET_ALLOWED_HOSTS="localhost,127.0.0.1"
-    restart: unless-stopped
 ```
 
 Once you have saved the file, you can start DiagNet:
