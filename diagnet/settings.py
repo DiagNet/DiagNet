@@ -90,10 +90,12 @@ except Exception:
     raise ImproperlyConfigured(get_security_help_message(False, True))
 
 
-ALLOWED_HOSTS = os.environ.get("DIAGNET_ALLOWED_HOSTS", "localhost,127.0.0.1").split(
-    ","
-)
-
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("DIAGNET_ALLOWED_HOSTS", "localhost,127.0.0.1").split(
+        ","
+    )
+]
 
 # Application definition
 
