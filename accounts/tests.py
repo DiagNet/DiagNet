@@ -1,9 +1,14 @@
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse
 
 
 class SetupWizardTest(TestCase):
+    def setUp(self):
+        """Runs before every single test method."""
+        cache.clear()
+
     def test_setup_redirects_if_no_superuser(self):
         """Test that any page redirects to setup if no superuser exists."""
         response = self.client.get(reverse("dashboard"), follow=True)
