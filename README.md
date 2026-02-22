@@ -6,9 +6,6 @@ Instead of spending hours on boring manual checks, DiagNet lets you automate the
 
 This was built with love as a diploma project at HTL Wien 3 Rennweg, in partnership with our friends at CANCOM Austria AG.
 
-> [!WARNING]
-> This project is still a work in progress. **Passwords are currently stored in plaintext.**
-
 ## 🚀 What It Does
 
 - **Your Control Center:** A slick web dashboard where you can handle all your devices and tests in one place.
