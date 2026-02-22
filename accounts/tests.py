@@ -1,7 +1,11 @@
-from django.contrib.auth.models import User
+from unittest.mock import patch
+
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse
+
+User = get_user_model()
 
 
 class SetupWizardTest(TestCase):
@@ -61,3 +65,28 @@ class SetupWizardTest(TestCase):
         response = self.client.get(reverse("dashboard"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateNotUsed(response, "accounts/setup.html")
+
+
+class SetupConcurrencyTest(TestCase):
+    def test_setup_blocks_concurrent_requests(self):
+        """Test that the setup view gracefully rejects requests if the lock is held."""
+
+        # adds a lock in cache to test race condition
+        with patch("django.core.cache.cache.add", return_value=False):
+            data = {
+                "username": "admin_race",
+                "email": "admin@example.com",
+                "password1": "StrongPass123!",
+                "password2": "StrongPass123!",
+            }
+            response = self.client.post(reverse("setup"), data, follow=True)
+
+            self.assertEqual(response.status_code, 200)
+
+            messages = list(response.context.get("messages", []))
+            self.assertTrue(
+                any("Setup is currently processing" in str(m) for m in messages),
+                "Expected concurrency error message not found.",
+            )
+
+            self.assertEqual(User.objects.count(), 0)
