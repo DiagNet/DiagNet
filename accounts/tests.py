@@ -72,7 +72,7 @@ class SetupConcurrencyTest(TestCase):
         """Test that the setup view gracefully rejects requests if the lock is held."""
 
         # adds a lock in cache to test race condition
-        with patch("django.core.cache.cache.add", return_value=False):
+        with patch("accounts.views.cache.add", return_value=False):
             data = {
                 "username": "admin_race",
                 "email": "admin@example.com",
