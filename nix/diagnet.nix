@@ -128,12 +128,18 @@
           let
             venv = pythonSet.mkVirtualEnv "diagnet-env" deps;
             entrypoint = pkgs.writeShellScriptBin "entrypoint" ''
+              set -euo pipefail
               # Ensure the data directory exists (if using volumes)
               if [ -n "$DIAGNET_DB_PATH" ]; then
                 mkdir -p "$(dirname "$DIAGNET_DB_PATH")"
               fi
-              # Run migrations
-              ${venv}/bin/python /manage.py migrate --noinput
+
+              # Run migrations (exit if they fail)
+              if ! ${venv}/bin/python /manage.py migrate --noinput; then
+                echo "Database migrations failed; aborting startup." >&2
+                exit 1
+              fi
+
               # Start the application
               exec ${venv}/bin/daphne -b 0.0.0.0 ${wsgiApp}
             '';
