@@ -32,3 +32,7 @@ jobs:
           name: diagnet
 
       - run: ${{ inputs.command }}
+        env:
+          DIAGNET_DEBUG: False
+          DIAGNET_SECRET_KEY: django-insecure-fallback-key-for-dev-only
+          DIAGNET_DEVICE_ENCRYPTION_KEY: 8OGs8CTrNq8TltpMA3H-zybxADNlMt8FvdhEDo0QW98=
