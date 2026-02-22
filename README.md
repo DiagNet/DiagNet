@@ -50,12 +50,10 @@ services:
     ports:
       - 8000:8000 # host:container
     volumes:
-      - ./data:/data # mounts /data from the container to ./data
+      - ./data:/data # stores database, secrets, and logs
     environment:
-      # these will be generated upon first startup and should be copied here
-      - DIAGNET_SECRET_KEY=
-      - DIAGNET_DEVICE_ENCRYPTION_KEY=
-      # defaults
+      # secrets are auto-generated on first run and stored in /data/secrets.env
+      - DIAGNET_DATA_PATH=/data
       - DIAGNET_ALLOWED_HOSTS="localhost,127.0.0.1"
     restart: unless-stopped
 ```
