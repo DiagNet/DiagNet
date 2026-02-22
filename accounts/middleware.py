@@ -11,12 +11,11 @@ class SuperuserRequiredMiddleware:
 
     def __init__(self, get_response):
         self.get_response = get_response
+        self.setup_url = reverse("setup")
 
     def __call__(self, request):
-        setup_url = reverse("setup")
-
         if (
-            request.path.startswith(setup_url)
+            request.path.startswith(self.setup_url)
             or request.path.startswith("/static/")
             or request.path.startswith("/media/")
         ):
@@ -32,6 +31,6 @@ class SuperuserRequiredMiddleware:
             cache.set("superuser_exists", superuser_exists, timeout=timeout)
 
         if not superuser_exists:
-            return redirect(setup_url)
+            return redirect(self.setup_url)
 
         return self.get_response(request)
