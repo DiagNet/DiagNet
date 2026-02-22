@@ -121,7 +121,6 @@
 
     in
     {
-      # TODO fix container
       packages = lib.optionalAttrs pkgs.stdenv.isLinux {
         # Expose container in packages
         container =
