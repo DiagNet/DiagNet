@@ -8,7 +8,7 @@ default:
 [group("django")]
 manage *args:
     #!/usr/bin/env bash
-    export DIAGNET_DEBUG="True"
+    export DIAGNET_DEBUG="${DIAGNET_DEBUG:-True}"
     if [ -n "$IN_NIX_SHELL" ]; then
         python manage.py {{args}}
     else
