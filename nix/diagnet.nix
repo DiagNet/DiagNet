@@ -123,8 +123,8 @@
     {
       # TODO fix container
       packages = lib.optionalAttrs pkgs.stdenv.isLinux {
-        # Expose Docker container in packages
-        docker =
+        # Expose container in packages
+        container =
           let
             venv = pythonSet.mkVirtualEnv "diagnet-env" deps;
             entrypoint = pkgs.writeShellScriptBin "entrypoint" ''
