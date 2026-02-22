@@ -53,7 +53,7 @@ def get_security_help_message(missing_secret, missing_device):
                 "  This is required for Django's session security.",
             ]
         )
-        env_suggestions.append(f'SECRET_KEY="{get_random_secret_key()}"')
+        env_suggestions.append(f'DIAGNET_SECRET_KEY="{get_random_secret_key()}"')
 
     if missing_device:
         msg.extend(
@@ -64,7 +64,7 @@ def get_security_help_message(missing_secret, missing_device):
             ]
         )
         env_suggestions.append(
-            f'DEVICE_ENCRYPTION_KEY="{Fernet.generate_key().decode()}"'
+            f'DIAGNET_DEVICE_ENCRYPTION_KEY="{Fernet.generate_key().decode()}"'
         )
 
     msg.extend(
