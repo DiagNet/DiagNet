@@ -1,8 +1,10 @@
 import logging
 
-from django.contrib.auth.models import Group, Permission, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.db.models.signals import post_migrate
+from django.core.cache import cache
+from django.db.models.signals import post_delete, post_migrate, post_save
 from django.dispatch import receiver
 
 from devices.models import Device
@@ -12,6 +14,7 @@ from testgroups.models import TestGroup
 from .models import GroupProfile
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
 
 @receiver(post_migrate)
@@ -94,3 +97,13 @@ def create_default_groups(sender, **kwargs):
             GroupProfile.objects.update_or_create(
                 group=group, defaults={"role_type": role_name}
             )
+
+
+@receiver([post_save, post_delete], sender=User)
+def invalidate_superuser_cache(sender, instance, **kwargs):
+    """
+    Clear the superuser cache whenever any user is created, updated, or deleted.
+    This ensures our SuperuserRequiredMiddleware always has fresh data
+    without querying the DB on every request.
+    """
+    cache.delete("superuser_exists")
