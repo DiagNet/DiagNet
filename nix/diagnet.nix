@@ -203,6 +203,7 @@
               UV_NO_SYNC = "1";
               UV_PYTHON = python.interpreter;
               UV_PYTHON_DOWNLOADS = "never";
+              VIRTUAL_ENV = "${venv}";
             };
             shellHook = ''
               ${config.pre-commit.settings.shellHook}
