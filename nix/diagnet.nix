@@ -164,7 +164,6 @@
                 # staticRoot is per-system already
                 "DIAGNET_STATIC_ROOT=${staticRoot}"
 
-                "DIAGNET_SECRET_KEY=production-unsafe-key-change-me"
                 "DIAGNET_ALLOWED_HOSTS=localhost,127.0.0.1"
                 "DIAGNET_DB_PATH=/data/db.sqlite3"
               ];
