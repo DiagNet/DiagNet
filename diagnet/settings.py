@@ -29,6 +29,13 @@ dotenv.load_dotenv(BASE_DIR / ".env")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DIAGNET_DEBUG", "False").lower() == "true"
 
+# Define the persistent data path
+DATA_PATH = os.environ.get("DIAGNET_DATA_PATH")
+if DATA_PATH:
+    DATA_PATH = Path(DATA_PATH)
+else:
+    DATA_PATH = BASE_DIR
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("DIAGNET_SECRET_KEY")
 if not SECRET_KEY and DEBUG:
@@ -156,7 +163,7 @@ WSGI_APPLICATION = "diagnet.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.environ.get("DIAGNET_DB_PATH", BASE_DIR / "db.sqlite3"),
+        "NAME": os.environ.get("DIAGNET_DB_PATH", DATA_PATH / "db.sqlite3"),
     }
 }
 
