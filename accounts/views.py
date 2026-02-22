@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
+from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -51,13 +53,31 @@ class SetupView(View):
 
         form = SuperUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            messages.success(
-                request,
-                f"Superuser '{user.username}' created successfully. You are now logged in.",
-            )
-            login(request, user)
-            return redirect("dashboard")
+            lock_acquired = cache.add("setup_superuser_lock", "locked", timeout=10)
+
+            if not lock_acquired:
+                messages.error(
+                    request,
+                    "Setup is currently processing. Please wait a moment.",
+                )
+                return redirect("setup")
+
+            try:
+                with transaction.atomic():
+                    if User.objects.filter(is_superuser=True).exists():
+                        return redirect("login")
+
+                    user = form.save()
+
+                    messages.success(
+                        request,
+                        f"Superuser '{user.username}' created successfully. You are now logged in.",
+                    )
+                    login(request, user)
+                    return redirect("dashboard")
+            finally:
+                cache.delete("setup_superuser_lock")
+
         return render(request, "accounts/setup.html", {"form": form})
 
 
