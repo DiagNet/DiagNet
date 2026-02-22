@@ -166,6 +166,7 @@
 
                 "DIAGNET_ALLOWED_HOSTS=localhost,127.0.0.1"
                 "DIAGNET_DB_PATH=/data/db.sqlite3"
+                "DIAGNET_DEBUG=False"
               ];
               ExposedPorts = {
                 "8000/tcp" = { };
