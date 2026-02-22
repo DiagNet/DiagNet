@@ -147,22 +147,29 @@
                 set +a
               fi
 
-              if [ -z "''${DIAGNET_SECRET_KEY:-}" ]; then
-                echo "Generating new DIAGNET_SECRET_KEY..."
-                NEW_SECRET=$(${venv}/bin/python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
-                echo "DIAGNET_SECRET_KEY='$NEW_SECRET'" >> "$SECRETS_FILE"
-                export DIAGNET_SECRET_KEY="$NEW_SECRET"
-              fi
+              # Generate missing secrets in a subshell with strict umask
+              (
+                umask 077
+                if [ -z "''${DIAGNET_SECRET_KEY:-}" ]; then
+                  echo "Generating new DIAGNET_SECRET_KEY..."
+                  NEW_SECRET=$(${venv}/bin/python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
+                  echo "DIAGNET_SECRET_KEY='$NEW_SECRET'" >> "$SECRETS_FILE"
+                  export DIAGNET_SECRET_KEY="$NEW_SECRET"
+                fi
 
-              if [ -z "''${DIAGNET_DEVICE_ENCRYPTION_KEY:-}" ]; then
-                echo "Generating new DIAGNET_DEVICE_ENCRYPTION_KEY..."
-                NEW_KEY=$(${venv}/bin/python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')
-                echo "DIAGNET_DEVICE_ENCRYPTION_KEY='$NEW_KEY'" >> "$SECRETS_FILE"
-                export DIAGNET_DEVICE_ENCRYPTION_KEY="$NEW_KEY"
-              fi
+                if [ -z "''${DIAGNET_DEVICE_ENCRYPTION_KEY:-}" ]; then
+                  echo "Generating new DIAGNET_DEVICE_ENCRYPTION_KEY..."
+                  NEW_KEY=$(${venv}/bin/python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')
+                  echo "DIAGNET_DEVICE_ENCRYPTION_KEY='$NEW_KEY'" >> "$SECRETS_FILE"
+                  export DIAGNET_DEVICE_ENCRYPTION_KEY="$NEW_KEY"
+                fi
+              )
 
+              # Re-source in case we generated new ones (to export them to current shell)
               if [ -f "$SECRETS_FILE" ]; then
-                chmod 600 "$SECRETS_FILE"
+                 set -a
+                 source "$SECRETS_FILE"
+                 set +a
               fi
 
               # Run migrations (exit if they fail)
