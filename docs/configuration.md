@@ -6,11 +6,11 @@ These variables can be set in your `compose.yaml` file or passed directly to the
 
 ## Core Configuration
 
-| Variable                | Description                                                                            | Default                                            |
-| :---------------------- | :------------------------------------------------------------------------------------- | :------------------------------------------------- |
-| `DIAGNET_DATA_PATH`     | **Recommended.** The base directory for all persistent data (database, secrets, logs). | `/data` (in container) <br> `BASE_DIR` (local dev) |
-| `DIAGNET_ALLOWED_HOSTS` | Comma-separated list of hostnames/IPs that can access the application.                 | `localhost,127.0.0.1`                              |
-| `DIAGNET_DEBUG`         | Enables Django debug mode. **Never set this to `True` in production.**                 | `False`                                            |
+| Variable                | Description                                                                      | Default                                            |
+| :---------------------- | :------------------------------------------------------------------------------- | :------------------------------------------------- |
+| `DIAGNET_DATA_PATH`     | **Recommended.** The base directory for all persistent data (database, secrets). | `/data` (in container) <br> `BASE_DIR` (local dev) |
+| `DIAGNET_ALLOWED_HOSTS` | Comma-separated list of hostnames/IPs that can access the application.           | `localhost,127.0.0.1`                              |
+| `DIAGNET_DEBUG`         | Enables Django debug mode. **Never set this to `True` in production.**           | `False`                                            |
 
 ## Data & Storage
 
