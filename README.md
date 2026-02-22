@@ -27,15 +27,61 @@ This was built with love as a diploma project at HTL Wien 3 Rennweg, in partners
 
 ## 📦 Getting Started
 
+DiagNet is distributed as an OCI-compliant container image (Docker/Podman).
+Using the container is the **only officially supported way** to run DiagNet in
+production, as it guarantees a deterministic environment with all necessary
+networking and Python dependencies pre-installed via Nix.
+
 ### Prerequisites
 
-First things first, make sure you have these tools installed:
+First things first, make sure you have one of these installed on your system:
+
+- [Docker](https://docs.docker.com/get-docker/) (with Docker Compose)
+- [Podman](https://podman.io/docs/installation) (with podman-compose)
+
+### Let's Run It!
+
+The easiest and most maintainable way to run DiagNet is using Docker Compose. You will pull and run the latest version of DiagNet directly from the GitHub Container Registry (GHCR).
+
+Create a file named `docker-compose.yml` in your preferred directory and add the following configuration:
+
+```compose
+services:
+  diagnet:
+    container_name: diagnet
+    image: ghcr.io/diagnet/diagnet:latest # always uses the latest version
+    ports:
+      - 8000:8000 # host:container
+    volumes:
+      - ./data:/data # mounts /data from the container to ./data
+    environment:
+      # these will be generated upon first startup and should be copied here
+      - DIAGNET_SECRET_KEY=
+      - DIAGNET_DEVICE_ENCRYPTION_KEY=
+      # defaults
+      - DIAGNET_ALLOWED_HOSTS="localhost,127.0.0.1"
+    restart: unless-stopped
+```
+
+Once you have saved the file, you can start DiagNet:
+
+```bash
+docker compose up
+```
+
+## 💻 Local Development
+
+If you are looking to contribute to DiagNet, tinker with the code, or run it locally without Docker, here is how you set up the development environment.
+
+### Prerequisites
+
+Make sure you have these tools installed:
 
 - `just`
 - `uv`
 - `nix` (Optional, if you like keeping your environment tidy.)
 
-### Let's Run It!
+### Development Commands
 
 We use a `justfile` to make the common tasks super easy.
 
