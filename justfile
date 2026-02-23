@@ -3,6 +3,7 @@ alias cs := collectstatic
 alias s := serve
 alias t := test
 alias sh := shell
+alias lc := load-container
 
 default:
     @just --list
@@ -37,6 +38,11 @@ test *args:
 [group("django")]
 shell *args:
     @just manage shell {{args}}
+
+[group("container")]
+load-container:
+    nix build .#container
+    podman load < result
 
 [group("nix")]
 update:
