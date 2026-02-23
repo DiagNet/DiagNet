@@ -57,7 +57,7 @@ services:
     environment:
       # secrets are auto-generated on first run and stored in /data/secrets.env
       - DIAGNET_DATA_PATH=/data
-      - DIAGNET_ALLOWED_HOSTS="localhost,127.0.0.1"
+      - DIAGNET_ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
 Once you have saved the file, you can start DiagNet:
