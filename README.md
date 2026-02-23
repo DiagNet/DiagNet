@@ -53,7 +53,7 @@ services:
     ports:
       - 8000:8000 # host:container
     volumes:
-      - ./data:/data # stores database and secrets
+      - ./data:/data:Z # stores database and secrets
     environment:
       # secrets are auto-generated on first run and stored in /data/secrets.env
       - DIAGNET_DATA_PATH=/data

@@ -38,7 +38,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./data:/data
+      - ./data:/data:Z
     environment:
       - DIAGNET_DATA_PATH=/data
       - DIAGNET_ALLOWED_HOSTS=diagnet.local,192.168.1.50
