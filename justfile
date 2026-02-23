@@ -23,20 +23,20 @@ migrate:
     @just manage migrate
 
 [group("django")]
-collectstatic:
-    @just manage collectstatic
+collectstatic *args:
+    @just manage collectstatic {{args}}
 
 [group("django")]
-serve:
-    @just manage runserver
+serve *args:
+    @just manage runserver {{args}}
 
 [group("django")]
-test:
-    @just manage test
+test *args:
+    @just manage test {{args}}
 
 [group("django")]
-shell:
-    @just manage shell
+shell *args:
+    @just manage shell {{args}}
 
 [group("nix")]
 update:
