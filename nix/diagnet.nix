@@ -132,6 +132,13 @@
               export DIAGNET_DATA_PATH="''${DIAGNET_DATA_PATH:-/data}"
               mkdir -p "$DIAGNET_DATA_PATH"
 
+              # Check if the data directory is writable
+              if [ ! -w "$DIAGNET_DATA_PATH" ]; then
+                echo "ERROR: Data directory '$DIAGNET_DATA_PATH' is not writable." >&2
+                echo "If you are running on Fedora/RHEL or another system with SELinux, ensure your volume mount has the :Z flag (e.g., -v ./data:/data:Z)." >&2
+                exit 1
+              fi
+
               # Ensure the database directory exists (if using a custom DB path)
               if [ -n "''${DIAGNET_DB_PATH:-}" ]; then
                 mkdir -p "$(dirname "$DIAGNET_DB_PATH")"
