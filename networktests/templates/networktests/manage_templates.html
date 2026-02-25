@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Manage Custom Test Templates - DiagNet{% endblock %}
+{% block content %}
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Custom Test Templates</h1>
+            <div class="d-flex gap-2">
+                <form method="post" action="{% url 'sync-custom-templates' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-repeat me-1"></i> Sync from Disk
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% if not feature_enabled %}
+            <div class="alert alert-warning mb-4 shadow-sm border-warning">
+                <div class="d-flex">
+                    <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                    <div>
+                        <h4 class="alert-heading">Feature Disabled</h4>
+                        <p class="mb-0">
+                            The custom testcase feature is currently disabled in the server configuration (<code>DIAGNET_ENABLE_CUSTOM_TESTCASES</code>). Even if templates are enabled below, they will not be loaded into the application.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        <div class="alert alert-danger mb-4 shadow-sm border-danger">
+            <div class="d-flex">
+                <i class="bi bi-shield-lock-fill fs-4 me-3"></i>
+                <div>
+                    <h4 class="alert-heading">Security Warning</h4>
+                    <p class="mb-0">
+                        Custom test templates are Python scripts that execute with the same permissions as the application server. <strong>Only enable templates from trusted sources.</strong> Malicious templates can lead to Remote Code Execution (RCE) and full system compromise.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Discovered Templates</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Class Name</th>
+                            <th>File Name</th>
+                            <th>Last Seen</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for template in templates %}
+                            <tr>
+                                <td class="fw-bold">{{ template.class_name }}</td>
+                                <td>
+                                    <code>{{ template.file_name }}</code>
+                                </td>
+                                <td>{{ template.last_seen_at|date:"Y-m-d H:i" }}</td>
+                                <td class="text-center">
+                                    {% if template.is_enabled %}
+                                        <span class="badge bg-success">Enabled</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Disabled</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <form method="post"
+                                              action="{% url 'toggle-custom-template' template.pk %}"
+                                              class="d-inline">
+                                            {% csrf_token %}
+                                            {% if template.is_enabled %}
+                                                <button type="submit" class="btn btn-sm btn-outline-warning">
+                                                    <i class="bi bi-pause-fill me-1"></i> Disable
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-play-fill me-1"></i> Enable
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    <i class="bi bi-folder2-open fs-2 d-block mb-2"></i>
+                                    No custom templates found. Use "Sync from Disk" to discover templates in your custom directory.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -33,4 +33,19 @@ urlpatterns = [
     path(
         "tests/<int:pk>/details/", views.testcase_detail_view, name="testcase-details"
     ),
+    path(
+        "templates/manage/",
+        views.manage_custom_templates,
+        name="manage-custom-templates",
+    ),
+    path(
+        "templates/toggle/<int:pk>/",
+        views.toggle_custom_template,
+        name="toggle-custom-template",
+    ),
+    path(
+        "templates/sync/",
+        views.sync_custom_templates_view,
+        name="sync-custom-templates",
+    ),
 ]

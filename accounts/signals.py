@@ -8,7 +8,7 @@ from django.db.models.signals import post_delete, post_migrate, post_save
 from django.dispatch import receiver
 
 from devices.models import Device
-from networktests.models import TestCase, TestResult
+from networktests.models import CustomTestTemplate, TestCase, TestResult
 from testgroups.models import TestGroup
 
 from .models import GroupProfile
@@ -53,10 +53,11 @@ def create_default_groups(sender, **kwargs):
     for model_class in [Device, TestCase, TestGroup, TestResult]:
         manager_permissions.extend(get_perms(model_class, ["delete"]))
 
-    # 4. Admins (Managers + User Management)
+    # 4. Admins (Managers + User Management + Custom Templates)
     admin_permissions = list(manager_permissions)
     admin_permissions.extend(get_perms(User, ["add", "change", "delete", "view"]))
     admin_permissions.extend(get_perms(Group, ["add", "change", "delete", "view"]))
+    admin_permissions.extend(get_perms(CustomTestTemplate, ["change", "view"]))
 
     role_permissions = {
         "Viewers": viewer_permissions,

@@ -1,10 +1,11 @@
-import importlib.resources
 import json
 import logging
 from datetime import date
 from io import BytesIO
 
-from django.contrib.auth.decorators import permission_required
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, QuerySet
 from django.http import HttpResponse, JsonResponse
@@ -13,14 +14,20 @@ from django.views import generic
 from django.views.decorators.http import require_http_methods
 
 from devices.models import Device
-from networktests.models import TestCase, TestDevice, TestParameter, TestResult
+from networktests.models import (
+    CustomTestTemplate,
+    TestCase,
+    TestDevice,
+    TestParameter,
+    TestResult,
+)
 from networktests.pdf_report import PDFReport
-
+from networktests.utils import (
+    get_all_available_test_classes,
+    sync_custom_testcases,
+)
 
 logger = logging.getLogger(__name__)
-
-
-package = "networktests.testcases"
 
 
 def index(request):
@@ -32,33 +39,30 @@ def get_all_testcases(request):
     Return available testcase classes and their parameter specs.
     """
     testcases = {}
-    for resource in importlib.resources.files(package).iterdir():
-        if (
-            resource.suffix == ".py"
-            and resource.is_file()
-            and resource.name not in ["__init__.py", "base.py"]
-        ):
-            class_name = resource.stem
-            module_name = f"{package}.{class_name}"
-            module = importlib.import_module(module_name)
+    available_classes = get_all_available_test_classes()
 
-            cls = getattr(module, class_name)
-            required_params = cls._required_params
-            optional_params = cls._optional_params
+    for class_name, info in available_classes.items():
+        cls = info["class"]
+        required_params = cls._required_params
+        optional_params = cls._optional_params
 
-            for i, param in enumerate(required_params):
-                if ":" not in param:
-                    required_params[i] = param + ":str"
+        # Copy to avoid modifying the class attribute directly if it's reused
+        required_params = list(required_params)
+        optional_params = list(optional_params)
 
-            for i, param in enumerate(optional_params):
-                if ":" not in param:
-                    optional_params[i] = param + ":str"
+        for i, param in enumerate(required_params):
+            if ":" not in param:
+                required_params[i] = param + ":str"
 
-            testcases[class_name] = {
-                "required": required_params,
-                "optional": optional_params,
-                "mut_exclusive": cls._mutually_exclusive_parameters,
-            }
+        for i, param in enumerate(optional_params):
+            if ":" not in param:
+                optional_params[i] = param + ":str"
+
+        testcases[class_name] = {
+            "required": required_params,
+            "optional": optional_params,
+            "mut_exclusive": cls._mutually_exclusive_parameters,
+        }
 
     return JsonResponse({"testcases": testcases})
 
@@ -67,10 +71,10 @@ def get_class_reference_for_test_class_string(test_class):
     """
     Import and return the test class by name.
     """
-    module_name = f"{package}.{test_class}"
-    module = importlib.import_module(module_name)
-    cls = getattr(module, test_class)
-    return cls
+    available_classes = get_all_available_test_classes()
+    if test_class in available_classes:
+        return available_classes[test_class]["class"]
+    raise ImportError(f"Test class {test_class} not found")
 
 
 def store_test_parameter(parent, parameter, value):
@@ -223,17 +227,8 @@ def get_all_available_testcases(request):
     """
     List available test case class names.
     """
-    testcases = []
-    for resource in importlib.resources.files(package).iterdir():
-        if (
-            resource.suffix == ".py"
-            and resource.is_file()
-            and resource.name not in ["__init__.py", "base.py"]
-        ):
-            class_name = resource.stem
-            testcases.append(class_name)
-
-    return JsonResponse({"results": testcases})
+    available_classes = get_all_available_test_classes()
+    return JsonResponse({"results": list(available_classes.keys())})
 
 
 def get_doc_of_testcase(request):
@@ -300,7 +295,12 @@ class TestCaseListView(generic.ListView):
 @require_http_methods(["GET"])
 def run_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
-    _ = testcase.run()
+    try:
+        testcase.run()
+        messages.success(request, f"Successfully executed test: {testcase.label}")
+    except Exception as e:
+        logger.error(f"Error running testcase {testcase.label}: {e}")
+        messages.error(request, f"Failed to run test {testcase.label}: {e}")
     return redirect("networktests-page")
 
 
@@ -362,3 +362,51 @@ def testcase_detail_view(request, pk):
         return render(request, "networktests/partials/history_card.html", context)
 
     return render(request, "networktests/partials/testcase_details.html", context)
+
+
+@login_required
+@permission_required("networktests.change_customtesttemplate", raise_exception=True)
+def manage_custom_templates(request):
+    """
+    View to list and manage custom test templates.
+    """
+    templates = CustomTestTemplate.objects.all().order_by("class_name")
+    return render(
+        request,
+        "networktests/manage_templates.html",
+        {
+            "templates": templates,
+            "feature_enabled": getattr(settings, "ENABLE_CUSTOM_TESTCASES", False),
+        },
+    )
+
+
+@require_http_methods(["POST"])
+@login_required
+@permission_required("networktests.change_customtesttemplate", raise_exception=True)
+def toggle_custom_template(request, pk):
+    """
+    Toggle the is_enabled status of a custom test template.
+    """
+    template = get_object_or_404(CustomTestTemplate, pk=pk)
+    template.is_enabled = not template.is_enabled
+    template.save()
+
+    status = "enabled" if template.is_enabled else "disabled"
+    messages.success(request, f"Template '{template.class_name}' has been {status}.")
+
+    return redirect("manage-custom-templates")
+
+
+@require_http_methods(["POST"])
+@login_required
+@permission_required("networktests.change_customtesttemplate", raise_exception=True)
+def sync_custom_templates_view(request):
+    """
+    Trigger a sync of custom test templates from the file system.
+    """
+    count, error = sync_custom_testcases()
+    if error:
+        messages.warning(request, f"Sync completed with warnings: {error}")
+    messages.success(request, f"Sync complete. Discovered {count} new template(s).")
+    return redirect("manage-custom-templates")
