@@ -12,6 +12,7 @@ default:
 manage *args:
     #!/usr/bin/env bash
     export DIAGNET_DEBUG="${DIAGNET_DEBUG:-True}"
+    export DIAGNET_DATA_PATH="${DIAGNET_DATA_PATH:-./data}"
     if [ -n "$IN_NIX_SHELL" ]; then
         python manage.py {{args}}
     else
