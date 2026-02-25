@@ -65,6 +65,12 @@
                                             <a class="dropdown-item {% if request.resolver_match.url_name == 'group-list' %}active{% endif %}"
                                                href="{% url 'group-list' %}">Groups</a>
                                         </li>
+                                        {% if perms.networktests.change_customtesttemplate %}
+                                            <li>
+                                                <a class="dropdown-item {% if request.resolver_match.url_name == 'manage-custom-templates' %}active{% endif %}"
+                                                   href="{% url 'manage-custom-templates' %}">Custom Templates</a>
+                                            </li>
+                                        {% endif %}
                                         <li>
                                             <hr class="dropdown-divider">
                                         </li>

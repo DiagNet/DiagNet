@@ -49,6 +49,17 @@ if DEVICE_ENCRYPTION_KEY is not None:
     DEVICE_ENCRYPTION_KEY = DEVICE_ENCRYPTION_KEY.encode()
 
 
+# Custom testcases directory
+CUSTOM_TESTCASES_PATH = os.environ.get(
+    "DIAGNET_CUSTOM_TESTCASES_PATH", DATA_PATH / "testcases"
+)
+
+# Enable/Disable the custom testcases feature entirely
+ENABLE_CUSTOM_TESTCASES = (
+    os.environ.get("DIAGNET_ENABLE_CUSTOM_TESTCASES", "False").lower() == "true"
+)
+
+
 def get_security_help_message(missing_secret, missing_device):
     msg = ["\n" + "=" * 80, "DIAGNET SECURITY CONFIGURATION ERROR", "=" * 80]
     env_suggestions = []

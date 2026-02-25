@@ -22,7 +22,7 @@ from django.views.generic import (
 )
 
 from devices.models import Device
-from networktests.models import TestCase, TestResult
+from networktests.models import CustomTestTemplate, TestCase, TestResult
 from testgroups.models import TestGroup
 
 from .forms import (
@@ -376,7 +376,7 @@ class GroupCreateView(AdminRequiredMixin, View):
             permissions.extend(get_perms(TestResult, ["view", "add", "delete"]))
 
         elif role_type == "Admins":
-            # Full access + User Management
+            # Full access + User Management + Custom Templates
             permissions.extend(get_perms(Device, ["view", "add", "change", "delete"]))
             permissions.extend(get_perms(TestCase, ["view", "add", "change", "delete"]))
             permissions.extend(
@@ -385,6 +385,7 @@ class GroupCreateView(AdminRequiredMixin, View):
             permissions.extend(get_perms(TestResult, ["view", "add", "delete"]))
             permissions.extend(get_perms(User, ["view", "add", "change", "delete"]))
             permissions.extend(get_perms(Group, ["view", "add", "change", "delete"]))
+            permissions.extend(get_perms(CustomTestTemplate, ["view", "change"]))
 
         group.permissions.add(*permissions)
 
