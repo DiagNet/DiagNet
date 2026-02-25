@@ -28,6 +28,13 @@ These keys are **automatically generated and persisted** to `DIAGNET_DATA_PATH/s
 | `DIAGNET_SECRET_KEY`            | The secret key used for cryptographic signing (session cookies, CSRF tokens). | Random string                 |
 | `DIAGNET_DEVICE_ENCRYPTION_KEY` | The key used to encrypt/decrypt sensitive device passwords in the database.   | 32-byte base64-encoded string |
 
+## Custom Test Templates
+
+| Variable                          | Description                                                       | Default                        |
+| :-------------------------------- | :---------------------------------------------------------------- | :----------------------------- |
+| `DIAGNET_ENABLE_CUSTOM_TESTCASES` | Set to `True` to enable the dynamic loading of custom test cases. | `False`                        |
+| `DIAGNET_CUSTOM_TESTCASES_PATH`   | The directory where the system scans for `.py` custom test files. | `$DIAGNET_DATA_PATH/testcases` |
+
 ## Example `compose.yaml`
 
 ```yaml
