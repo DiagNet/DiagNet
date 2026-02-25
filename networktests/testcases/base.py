@@ -257,16 +257,18 @@ class DiagNetTest:
         """
         pass
 
-    def _get_required_params(self):
+    @classmethod
+    def _get_required_params(cls):
         """Returns the parameters that are associated with being required."""
         return [
-            param for param in self._params if (param.get("requirement") != "optional")
+            param for param in cls._params if (param.get("requirement") != "optional")
         ]
 
-    def _get_optional_params(self):
+    @classmethod
+    def _get_optional_params(cls):
         """Returns the parameters that are associated with being optional."""
         return [
-            param for param in self._params if (param.get("requirement") == "optional")
+            param for param in cls._params if (param.get("requirement") == "optional")
         ]
 
     def run(self, test_method_prefix="test_", verbose=False, **kwargs) -> Dict:
