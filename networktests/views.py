@@ -228,10 +228,14 @@ def get_parameters_of_specific_testcase(request):
 
 def get_all_available_testcases(request):
     """
-    List available test case class names.
+    List available test case class names with their source information.
     """
     available_classes = get_all_available_test_classes()
-    return JsonResponse({"results": list(available_classes.keys())})
+    results = [
+        {"name": name, "source": info["source"]}
+        for name, info in available_classes.items()
+    ]
+    return JsonResponse({"results": results})
 
 
 def get_doc_of_testcase(request):

@@ -109,71 +109,69 @@ function hideInfoForTestClass() {
  * that contain the given query (case-insensitive).
  * Returns all classes if the query is empty.
  * @param query The string to search for.
- * @returns Array of matching test class names.
+ * @returns Array of matching test class objects.
  */
 function searchForTestClass(query) {
   query = query.trim().toLowerCase();
   if (!query) return allTestClasses.slice();
 
-  return allTestClasses.filter((tc) => tc.toLowerCase().includes(query));
+  return allTestClasses.filter((tc) => tc.name.toLowerCase().includes(query));
 }
 
 /**
  * Renders the given results as DOM elements and shows them in the Web-GUI.
+ * Groups results by source (Built-in vs. Custom).
  * @param results Array of elements that have been searched and are supposed to show on the Web-GUI.
  */
 function renderResults(results) {
   const currentScroll = resultsList.scrollTop;
+  resultsList.innerHTML = "";
 
   // Show "empty label" message to user when no matches are found
   if (results.length === 0) {
-    if (!resultsList.contains(emptyItem)) {
-      resultsList.innerHTML = "";
-      resultsList.appendChild(emptyItem);
-    }
+    resultsList.appendChild(emptyItem);
     resultsList.scrollTop = currentScroll;
     return;
   }
 
-  if (resultsList.contains(emptyItem)) emptyItem.remove();
+  const builtIn = results.filter((r) => r.source === "built-in");
+  const custom = results.filter((r) => r.source === "custom");
 
-  // Map already created DOM elements to testcases
-  const existingItems = new Map();
-  Array.from(resultsList.children).forEach((li) => {
-    existingItems.set(li.dataset.name, li);
-  });
+  const createHeader = (text) => {
+    const li = document.createElement("li");
+    li.classList.add(
+      "fw-bold",
+      "small",
+      "text-uppercase",
+      "text-secondary",
+      "mt-3",
+      "mb-2",
+      "px-1",
+    );
+    li.style.pointerEvents = "none";
+    li.style.listStyle = "none";
+    li.textContent = text;
+    return li;
+  };
 
-  const newSet = new Set(results);
+  if (builtIn.length > 0) {
+    resultsList.appendChild(createHeader("Standard Tests"));
+    builtIn.forEach((tc) => {
+      resultsList.appendChild(createResultItem(tc));
+    });
+  }
 
-  // Remove items that are no longer in results
-  existingItems.forEach((li, name) => {
-    if (!newSet.has(name)) {
-      li.remove();
-    }
-  });
-
-  // Batch DOM updates (insert results that are shown at the end at the same time)
-  const fragment = document.createDocumentFragment();
-
-  // Keeps the results order the same in the Web-GUI
-  results.forEach((name, index) => {
-    let li = existingItems.get(name);
-    if (!li) li = createResultItem(name);
-
-    const nextSibling = resultsList.children[index];
-    if (!nextSibling) {
-      fragment.appendChild(li);
-    } else if (nextSibling !== li) {
-      resultsList.insertBefore(li, nextSibling);
-    }
-  });
-
-  if (fragment.childNodes.length) resultsList.appendChild(fragment);
+  if (custom.length > 0) {
+    resultsList.appendChild(createHeader("Custom Tests"));
+    custom.forEach((tc) => {
+      resultsList.appendChild(createResultItem(tc));
+    });
+  }
 
   resultsList.scrollTop = currentScroll;
 
   if (results.length === 1) {
-    fetchTestClassInfoDebounced(results[0]);
+    fetchTestClassInfoDebounced(results[0].name);
   } else {
     hideInfoForTestClass();
   }
@@ -181,10 +179,11 @@ function renderResults(results) {
 
 /**
  * Creates a single <li> DOM element representing a test class.
- * @param name test class info.
+ * @param testCase test class object {name, source}.
  * @returns <li> element representing the test class.
  */
-function createResultItem(name) {
+function createResultItem(testCase) {
+  const name = testCase.name;
   const li = inlineTestTemplate.content.cloneNode(true).querySelector("li");
   li.dataset.name = name;
 
@@ -192,9 +191,7 @@ function createResultItem(name) {
   text.textContent = name;
 
   li.addEventListener("click", () => {
-    const items = Array.from(
-      resultsList.querySelectorAll("li:not([data-empty])"),
-    );
+    const items = Array.from(resultsList.querySelectorAll("li[data-name]"));
     currentIndex = items.indexOf(li);
     updateActive(items);
     fetchTestClassInfoDebounced(items[currentIndex].dataset.name);
@@ -238,9 +235,7 @@ let currentIndex = -1;
  * @returns {void}
  */
 async function handleKeyboardNavigation(e) {
-  const items = Array.from(
-    resultsList.querySelectorAll("li:not([data-empty])"),
-  );
+  const items = Array.from(resultsList.querySelectorAll("li[data-name]"));
   if (!items.length) return;
   switch (e.key) {
     case "ArrowDown":
