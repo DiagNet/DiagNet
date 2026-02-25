@@ -22,6 +22,7 @@ from networktests.models import (
     TestResult,
 )
 from networktests.pdf_report import PDFReport
+from networktests.testcases.base import get_parameter_names
 from networktests.utils import (
     get_all_available_test_classes,
     sync_custom_testcases,
@@ -43,12 +44,14 @@ def get_all_testcases(request):
 
     for class_name, info in available_classes.items():
         cls = info["class"]
-        required_params = cls._required_params
-        optional_params = cls._optional_params
 
-        # Copy to avoid modifying the class attribute directly if it's reused
-        required_params = list(required_params)
-        optional_params = list(optional_params)
+        # Extract parameter names from the class definition
+        required_params_raw = cls._get_required_params()
+        optional_params_raw = cls._get_optional_params()
+
+        required_params, optional_params = get_parameter_names(
+            required_params_raw, optional_params_raw
+        )
 
         for i, param in enumerate(required_params):
             if ":" not in param:
