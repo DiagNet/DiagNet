@@ -68,7 +68,7 @@ class Device(models.Model):
                 violation_error_message="Hostname already exists (case insensitive match)",
             ),
             models.CheckConstraint(
-                check=~(Q(protocol="telnet") & Q(device_type__endswith="iosxe")),
+                condition=~(Q(protocol="telnet") & Q(device_type__endswith="iosxe")),
                 name="no_telnet_on_iosxe",
                 violation_error_message="Telnet is not allowed for IOSXE devices.",
             ),
