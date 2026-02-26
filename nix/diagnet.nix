@@ -191,7 +191,7 @@
           in
           pkgs.dockerTools.buildLayeredImage {
             name = "diagnet";
-            tag = "latest";
+            tag = "dev";
             contents = [
               pkgs.dockerTools.fakeNss
 
