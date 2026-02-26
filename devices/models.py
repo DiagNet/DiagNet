@@ -1,7 +1,6 @@
 import base64
 from typing import Any
 
-import netmiko
 import yaml
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
@@ -277,39 +276,9 @@ class Device(models.Model):
             }
         }
 
-    def get_netmiko_type(self) -> str:
-        type_map = {
-            "ios": "cisco_ios",
-            "iosxe": "cisco_xe",
-            "iosxr": "cisco_xr",
-        }
-
-        try:
-            device_type = self.device_type.split("_")[1]
-            ios_type = type_map[device_type]
-        except (IndexError, KeyError):
-            raise ValidationError(f"Unsupported device type: {self.device_type}")
-
-        connection_type = "" if self.protocol == "ssh" else "_telnet"
-        return f"{ios_type}{connection_type}"
-
     def can_connect(self) -> bool:
-        try:
-            device = {
-                "device_type": self.get_netmiko_type(),
-                "host": self.ip_address,
-                "username": self.username,
-                "password": self.get_decrypted_password(),
-                "secret": self.get_decrypted_enable_password(),
-                "port": self.port,
-            }
-            connection = netmiko.ConnectHandler(**device)
-            connection.enable()
-            connection.cleanup()
-            connection.disconnect()
-            return True
-        except Exception:
-            return False
+        success, _, _ = self.test_connection()
+        return success
 
     def test_connection(self) -> tuple[bool, str, str]:
         """
@@ -318,22 +287,24 @@ class Device(models.Model):
         Returns (False, error_message, error_category) on failure.
         """
         try:
-            device_params = {
-                "device_type": self.get_netmiko_type(),
-                "host": self.ip_address,
-                "username": self.username,
-                "password": self.get_decrypted_password(),
-                "secret": self.get_decrypted_enable_password(),
-                "port": self.port,
-            }
-            connection = netmiko.ConnectHandler(**device_params)
-            connection.enable()
-            connection.cleanup()
-            connection.disconnect()
-            return True, "", ""
+            self.get_decrypted_password()
+            self.get_decrypted_enable_password()
         except (ValidationError, ImproperlyConfigured) as e:
             msg = e.messages[0] if hasattr(e, "messages") else str(e)
             return False, msg, "decryption_error"
+
+        try:
+            if self.get_genie_device_object():
+                return True, "", ""
+
+            # If get_genie_device_object returned None, we try once more
+            # to capture and return the actual exception.
+            conn_info = self.get_genie_device_dict()
+            testbed = load({"devices": conn_info})
+            device = testbed.devices[list(conn_info)[0]]
+            device.connect(log_stdout=False)
+            device_connections[self.name] = device
+            return True, "", ""
         except Exception as e:
             return False, str(e), "connection_error"
 
