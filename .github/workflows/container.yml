@@ -95,7 +95,7 @@ jobs:
           # 2. Loop through the generated tags, apply them, and push
           while IFS= read -r tag; do
             if [ -n "$tag" ]; then
-              docker tag diagnet:latest "$tag"
+              docker tag diagnet:dev "$tag"
               docker push "$tag"
             fi
           done <<< "${{ steps.meta.outputs.tags }}"
