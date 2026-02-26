@@ -11,7 +11,7 @@ from django.db.models import Count, Prefetch, QuerySet
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import generic
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 
 from devices.models import Device
 from networktests.models import (
@@ -299,14 +299,14 @@ class TestCaseListView(generic.ListView):
         return super().get_queryset()
 
 
-@require_http_methods(["GET"])
+@require_POST
 def run_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     try:
         testcase.run()
         messages.success(request, f"Successfully executed test: {testcase.label}")
     except Exception as e:
-        logger.error(f"Error running testcase {testcase.label}: {e}")
+        logger.exception("Error running testcase %s", testcase.label)
         messages.error(request, f"Failed to run test {testcase.label}: {e}")
     return redirect("networktests-page")
 
