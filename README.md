@@ -19,7 +19,7 @@ This was built with love as a diploma project at HTL Wien 3 Rennweg, in partners
 ## 🛠️ Under the Hood
 
 - **The Brains:** [Python](https://www.python.org/), [Django](https://www.djangoproject.com/)
-- **Networking Magic:** [Netmiko](https://github.com/ktbyers/netmiko), [PyATS](https://developer.cisco.com/pyats/)
+- **Networking Magic:** [PyATS](https://developer.cisco.com/pyats/)
 - **The Toolbox:** [`nix`](https://nixos.org/), [`uv`](https://github.com/astral-sh/uv), [`just`](https://github.com/casey/just)
 
 ## 📦 Getting Started
