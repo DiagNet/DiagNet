@@ -4,6 +4,7 @@ alias s := serve
 alias t := test
 alias sh := shell
 alias lc := load-container
+alias rc := load-container
 
 default:
     @just --list
@@ -45,6 +46,10 @@ shell *args:
 load-container:
     nix build .#container
     podman load < result
+
+[group("container")]
+run-container: load-container
+    podman compose up --force-recreate
 
 [group("nix")]
 update:
