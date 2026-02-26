@@ -6,6 +6,7 @@ on:
     tags: ["v*.*.*"]
   pull_request:
     branches: ["main"]
+  merge_group:
 
 env:
   REGISTRY: ghcr.io
