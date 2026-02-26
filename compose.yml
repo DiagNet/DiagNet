@@ -1,0 +1,14 @@
+### for devs only ###
+services:
+  diagnet:
+    container_name: diagnet
+    image: localhost/diagnet:dev # uses the last locally built container
+    restart: unless-stopped
+    ports:
+      - 8000:8000 # host:container
+    volumes:
+      - ./data:/data # stores database and secrets
+    environment:
+      # secrets are auto-generated on first run and stored in /data/secrets.env
+      - DIAGNET_DATA_PATH=/data
+      - DIAGNET_ALLOWED_HOSTS=localhost,127.0.0.1
