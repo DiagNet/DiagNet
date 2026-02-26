@@ -1,4 +1,5 @@
 import base64
+import logging
 from typing import Any
 
 import yaml
@@ -11,6 +12,8 @@ from django.db.models import Q
 from django.db.models.functions import Lower
 from django.urls import reverse  # To generate URLS by reversing URL patterns
 from genie.testbed import load
+
+logger = logging.getLogger(__name__)
 
 device_connections = {}
 
@@ -287,17 +290,21 @@ class Device(models.Model):
         Returns (True, "", "") on success.
         Returns (False, error_message, error_category) on failure.
         """
+        logger.debug("Testing connection for %s", self.name)
         try:
             self.get_decrypted_password()
             self.get_decrypted_enable_password()
         except (ValidationError, ImproperlyConfigured) as e:
             msg = e.messages[0] if hasattr(e, "messages") else str(e)
+            logger.debug("Decryption error for %s: %s", self.name, msg)
             return False, msg, "decryption_error"
 
         try:
             self.get_genie_device_object(log_stdout=False)
+            logger.debug("Connection test successful for %s", self.name)
             return True, "", ""
         except Exception as e:
+            logger.debug("Connection test failed for %s: %s", self.name, e)
             return False, str(e), "connection_error"
 
     def get_genie_device_object(self, log_stdout: bool = True):
@@ -306,32 +313,62 @@ class Device(models.Model):
         Caches the connection for reuse.
         Raises Exception on failure.
         """
+        logger.debug(
+            "Retrieving Genie device object for %s (PK: %s)", self.name, self.pk
+        )
         device = device_connections.get(self.pk)
 
         if device:
             try:
                 if device.is_connected():
-                    # Minimal check to see if the session is still responsive
-                    device.execute("show clock", log_stdout=log_stdout)
+                    logger.debug(
+                        "Cache hit: %s is already connected. Performing health check.",
+                        self.name,
+                    )
+                    # Minimal check to see if the session is still responsive.
+                    # Use a short timeout to avoid hanging if the session is dead.
+                    device.execute("show clock", log_stdout=log_stdout, timeout=5)
+                    logger.debug("Health check successful for %s", self.name)
                     return device
-                else:
-                    # Stale device object; ensure it is cleaned up before creating a new connection
-                    try:
-                        device.disconnect()
-                    except Exception:
-                        pass
-            except Exception:
-                try:
-                    device.disconnect()
-                except Exception:
-                    pass
+            except Exception as e:
+                logger.debug(
+                    "Health check or connection state check failed for %s: %s",
+                    self.name,
+                    e,
+                )
+
+            logger.debug(
+                "Cache entry for %s found, but session is unusable.",
+                self.name,
+            )
+            # Stale device object; ensure it is cleaned up before creating a new connection
+            try:
+                device.disconnect()
+            except Exception as e:
+                logger.debug(
+                    "Error during stale session disconnect for %s: %s",
+                    self.name,
+                    e,
+                )
+
             # Remove any stale or failed device from the cache before establishing a new connection
+            logger.debug(
+                "Removing stale/broken connection for %s from cache.", self.name
+            )
             device_connections.pop(self.pk, None)
 
+        logger.debug("Establishing new Genie connection to %s", self.name)
         conn_info = self.get_genie_device_dict()
         testbed = load({"devices": conn_info})
         device = testbed.devices[list(conn_info)[0]]
-        device.connect(log_stdout=log_stdout)
+
+        try:
+            device.connect(log_stdout=log_stdout, timeout=15)
+            logger.debug("Successfully connected to %s", self.name)
+        except Exception as e:
+            logger.error("Failed to connect to %s: %s", self.name, e)
+            raise
+
         device_connections[self.pk] = device
         return device
 
