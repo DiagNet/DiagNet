@@ -30,7 +30,7 @@
                                     class="btn btn-sm btn-outline-warning"
                                     hx-post="{% url 'toggle-custom-template' template.pk %}"
                                     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                    hx-target="#templates-table-container">
+                                    hx-target="#templates-table-content">
                                 <i class="bi bi-pause-fill me-1"></i> Disable
                             </button>
                         {% else %}
@@ -38,7 +38,7 @@
                                     class="btn btn-sm btn-outline-success"
                                     hx-post="{% url 'toggle-custom-template' template.pk %}"
                                     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                    hx-target="#templates-table-container">
+                                    hx-target="#templates-table-content">
                                 <i class="bi bi-play-fill me-1"></i> Enable
                             </button>
                         {% endif %}
