@@ -306,7 +306,7 @@ class Device(models.Model):
         Caches the connection for reuse.
         Raises Exception on failure.
         """
-        device = device_connections.get(self.name)
+        device = device_connections.get(self.pk)
 
         if device:
             try:
@@ -326,13 +326,13 @@ class Device(models.Model):
                 except Exception:
                     pass
             # Remove any stale or failed device from the cache before establishing a new connection
-            device_connections.pop(self.name, None)
+            device_connections.pop(self.pk, None)
 
         conn_info = self.get_genie_device_dict()
         testbed = load({"devices": conn_info})
         device = testbed.devices[list(conn_info)[0]]
         device.connect(log_stdout=log_stdout)
-        device_connections[self.name] = device
+        device_connections[self.pk] = device
         return device
 
     def export_to_yaml(self):
