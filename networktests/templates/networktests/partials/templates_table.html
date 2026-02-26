@@ -1,0 +1,57 @@
+<table class="table table-hover align-middle mb-0">
+    <thead>
+        <tr>
+            <th>Class Name</th>
+            <th>File Name</th>
+            <th>Last Seen</th>
+            <th class="text-center">Status</th>
+            <th class="text-end">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for template in templates %}
+            <tr>
+                <td class="fw-bold">{{ template.class_name }}</td>
+                <td>
+                    <code>{{ template.file_name }}</code>
+                </td>
+                <td>{{ template.last_seen_at|date:"Y-m-d H:i" }}</td>
+                <td class="text-center">
+                    {% if template.is_enabled %}
+                        <span class="badge bg-success">Enabled</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Disabled</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <div class="d-flex justify-content-end gap-2">
+                        {% if template.is_enabled %}
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-warning"
+                                    hx-post="{% url 'toggle-custom-template' template.pk %}"
+                                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                    hx-target="#templates-table-container">
+                                <i class="bi bi-pause-fill me-1"></i> Disable
+                            </button>
+                        {% else %}
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-success"
+                                    hx-post="{% url 'toggle-custom-template' template.pk %}"
+                                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                    hx-target="#templates-table-container">
+                                <i class="bi bi-play-fill me-1"></i> Enable
+                            </button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5" class="text-center py-4 text-muted">
+                    <i class="bi bi-folder2-open fs-2 d-block mb-2"></i>
+                    No custom templates found. Use "Sync from Disk" to discover templates in your custom directory.
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
