@@ -415,5 +415,6 @@ def sync_custom_templates_view(request):
     count, error = sync_custom_testcases()
     if error:
         messages.warning(request, f"Sync completed with warnings: {error}")
-    messages.success(request, f"Sync complete. Discovered {count} new template(s).")
+    else:
+        messages.success(request, f"Sync complete. Discovered {count} new template(s).")
     return redirect("manage-custom-templates")
