@@ -400,8 +400,21 @@ def toggle_custom_template(request, pk):
     template.save()
 
     status = "enabled" if template.is_enabled else "disabled"
-    messages.success(request, f"Template '{template.class_name}' has been {status}.")
+    message = f"Template '{template.class_name}' has been {status}."
 
+    if request.headers.get("HX-Request"):
+        templates = CustomTestTemplate.objects.all().order_by("class_name")
+        response = render(
+            request,
+            "networktests/partials/templates_table.html",
+            {"templates": templates},
+        )
+        response["HX-Trigger"] = json.dumps(
+            {"showMessage": {"message": message, "level": "success"}}
+        )
+        return response
+
+    messages.success(request, message)
     return redirect("manage-custom-templates")
 
 
@@ -413,6 +426,26 @@ def sync_custom_templates_view(request):
     Trigger a sync of custom test templates from the file system.
     """
     count, error = sync_custom_testcases()
+
+    if request.headers.get("HX-Request"):
+        templates = CustomTestTemplate.objects.all().order_by("class_name")
+        response = render(
+            request,
+            "networktests/partials/templates_table.html",
+            {"templates": templates},
+        )
+        if error:
+            message = f"Sync completed with warnings: {error}"
+            level = "warning"
+        else:
+            message = f"Sync complete. Discovered {count} new template(s)."
+            level = "success"
+
+        response["HX-Trigger"] = json.dumps(
+            {"showMessage": {"message": message, "level": level}}
+        )
+        return response
+
     if error:
         messages.warning(request, f"Sync completed with warnings: {error}")
     else:
