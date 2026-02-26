@@ -196,8 +196,9 @@ class Device(models.Model):
         Return all IP addresses (IPv4 + IPv6) from this device using pyATS/Genie.
         Returns [] if unable to connect, no interfaces exist, or all IPs are unassigned.
         """
-        genie_dev = self.get_genie_device_object()
-        if not genie_dev:
+        try:
+            genie_dev = self.get_genie_device_object(log_stdout=False)
+        except Exception:
             return []
 
         ips = set()
@@ -294,27 +295,24 @@ class Device(models.Model):
             return False, msg, "decryption_error"
 
         try:
-            if self.get_genie_device_object():
-                return True, "", ""
-
-            # If get_genie_device_object returned None, we try once more
-            # to capture and return the actual exception.
-            conn_info = self.get_genie_device_dict()
-            testbed = load({"devices": conn_info})
-            device = testbed.devices[list(conn_info)[0]]
-            device.connect(log_stdout=False)
-            device_connections[self.name] = device
+            self.get_genie_device_object(log_stdout=False)
             return True, "", ""
         except Exception as e:
             return False, str(e), "connection_error"
 
-    def get_genie_device_object(self):
+    def get_genie_device_object(self, log_stdout: bool = True):
+        """
+        Returns a connected Genie device object.
+        Caches the connection for reuse.
+        Raises Exception on failure.
+        """
         device = device_connections.get(self.name)
 
         if device:
             try:
                 if device.is_connected():
-                    device.execute("show clock")
+                    # Minimal check to see if the session is still responsive
+                    device.execute("show clock", log_stdout=log_stdout)
                     return device
                 else:
                     # Stale device object; ensure it is cleaned up before creating a new connection
@@ -330,15 +328,12 @@ class Device(models.Model):
             # Remove any stale or failed device from the cache before establishing a new connection
             device_connections.pop(self.name, None)
 
-        try:
-            conn_info = self.get_genie_device_dict()
-            testbed = load({"devices": conn_info})
-            device = testbed.devices[list(conn_info)[0]]
-            device.connect()
-            device_connections[self.name] = device
-            return device
-        except Exception:
-            return None
+        conn_info = self.get_genie_device_dict()
+        testbed = load({"devices": conn_info})
+        device = testbed.devices[list(conn_info)[0]]
+        device.connect(log_stdout=log_stdout)
+        device_connections[self.name] = device
+        return device
 
     def export_to_yaml(self):
         """
