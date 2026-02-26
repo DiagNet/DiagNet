@@ -345,11 +345,19 @@ class Device(models.Model):
                 if device.is_connected():
                     device.execute("show clock")
                     return device
+                else:
+                    # Stale device object; ensure it is cleaned up before creating a new connection
+                    try:
+                        device.disconnect()
+                    except Exception:
+                        pass
             except Exception:
                 try:
                     device.disconnect()
-                except Exception as _:
+                except Exception:
                     pass
+            # Remove any stale or failed device from the cache before establishing a new connection
+            device_connections.pop(self.name, None)
 
         try:
             conn_info = self.get_genie_device_dict()
