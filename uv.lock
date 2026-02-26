@@ -482,7 +482,6 @@ dependencies = [
     { name = "daphne" },
     { name = "django" },
     { name = "django-stubs" },
-    { name = "netmiko" },
     { name = "pyats", extra = ["full"] },
     { name = "python-dotenv" },
     { name = "reportlab" },
@@ -502,7 +501,6 @@ requires-dist = [
     { name = "daphne", specifier = ">=4.2.1" },
     { name = "django", specifier = ">=5.2.4" },
     { name = "django-stubs", specifier = ">=5.2.1" },
-    { name = "netmiko", specifier = ">=4.6.0" },
     { name = "pyats", extras = ["full"], specifier = ">=25.6" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
     { name = "reportlab", specifier = ">=4.4.9" },
@@ -1161,37 +1159,6 @@ wheels = [
 ]
 
 [[package]]
-name = "netmiko"
-version = "4.6.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "ntc-templates" },
-    { name = "paramiko" },
-    { name = "pyserial" },
-    { name = "pyyaml" },
-    { name = "rich" },
-    { name = "ruamel-yaml" },
-    { name = "scp" },
-    { name = "textfsm" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/df/0a/4d557ffd4070a47f87c3e07abd28f9fcbdbf799f2a62940168236b4a8d31/netmiko-4.6.0.tar.gz", hash = "sha256:9701bb2c1a15eb2e8074cb2e28ca007c69b9fa52961b83b98c757ead6b80deef", size = 169274, upload-time = "2025-06-26T19:13:17.303Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/32/5b/9db3cf51785ef0a50f0976704e0776e7136a83cbdf9ed84065184f1fe3e2/netmiko-4.6.0-py3-none-any.whl", hash = "sha256:0c9b7309005d2c8a010b275f3494628cadb1658a8841632131c848074b7cdadb", size = 262873, upload-time = "2025-06-26T19:13:15.764Z" },
-]
-
-[[package]]
-name = "ntc-templates"
-version = "8.1.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "textfsm" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/d6/0c/decd784b5969ddfed7e41d95baaa309f31c896bd7ed22d3a6d29ec1117a1/ntc_templates-8.1.0.tar.gz", hash = "sha256:e570a5bb4ee829d62bfdce3fb46045a40aaa176b134aa0db21542d6518ca4be7", size = 313051, upload-time = "2025-09-22T21:02:55.83Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/10/6d/925c3cd513b13569f32f8a9330b061f594dcde6ca946fb26dce886868b74/ntc_templates-8.1.0-py3-none-any.whl", hash = "sha256:6cea8fdb17e8c72bd7a89bf21a94c184f241ce33c34b074570059d710318acaf", size = 623343, upload-time = "2025-09-22T21:02:53.959Z" },
-]
-
-[[package]]
 name = "packaging"
 version = "25.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1776,15 +1743,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pyserial"
-version = "3.5"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/1e/7d/ae3f0a63f41e4d2f6cb66a5b57197850f919f59e558159a4dd3a818f5082/pyserial-3.5.tar.gz", hash = "sha256:3c77e014170dfffbd816e6ffc205e9842efb10be9f58ec16d3e8675b4925cddb", size = 159125, upload-time = "2020-11-23T03:59:15.045Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/07/bc/587a445451b253b285629263eb51c2d8e9bcea4fc97826266d186f96f558/pyserial-3.5-py2.py3-none-any.whl", hash = "sha256:c4451db6ba391ca6ca299fb3ec7bae67a5c55dde170964c7a14ceefec02f2cf0", size = 90585, upload-time = "2020-11-23T03:59:13.41Z" },
-]
-
-[[package]]
 name = "pysmi"
 version = "1.6.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2071,18 +2029,6 @@ wheels = [
 ]
 
 [[package]]
-name = "scp"
-version = "0.15.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "paramiko" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/d6/1c/d213e1c6651d0bd37636b21b1ba9b895f276e8057f882c9f944931e4f002/scp-0.15.0.tar.gz", hash = "sha256:f1b22e9932123ccf17eebf19e0953c6e9148f589f93d91b872941a696305c83f", size = 13905, upload-time = "2024-05-23T21:37:41.835Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/79/b3/561cd6afa959e9dd522af12acc4f803e8bab1bd0e383bffc5211721c5fcb/scp-0.15.0-py2.py3-none-any.whl", hash = "sha256:9e7f721e5ac563c33eb0831d0f949c6342f1c28c3bdc3b02f39d77b5ea20df7e", size = 8753, upload-time = "2024-05-23T21:37:46.226Z" },
-]
-
-[[package]]
 name = "service-identity"
 version = "24.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2164,15 +2110,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ab/e2/e9a00f0ccb71718418230718b3d900e71a5d16e701a3dae079a21e9cd8f8/text-unidecode-1.3.tar.gz", hash = "sha256:bad6603bb14d279193107714b288be206cac565dfa49aa5b105294dd5c4aab93", size = 76885, upload-time = "2019-08-30T21:36:45.405Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a6/a5/c0b6468d3824fe3fde30dbb5e1f687b291608f9473681bbf7dabbf5a87d7/text_unidecode-1.3-py2.py3-none-any.whl", hash = "sha256:1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8", size = 78154, upload-time = "2019-08-30T21:37:03.543Z" },
-]
-
-[[package]]
-name = "textfsm"
-version = "2.1.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9e/87/2a93c2ced2a11fb26cfec3623894a9127b9b67ae3cfdd1778afa5cff576f/textfsm-2.1.0.tar.gz", hash = "sha256:45c18ff2b7c90163dfdff7e20d3f482514cc7aac26bc2547744e79dfa761e458", size = 55486, upload-time = "2025-04-17T04:55:46.392Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/82/1a/ab772f8479adedad1bdd12dd5c2bf6facf3fad8d04f35b4f4053201d202d/textfsm-2.1.0-py2.py3-none-any.whl", hash = "sha256:55886490474890fa09ade0e8c9555a913fd325724842293364dc44ea705b3616", size = 44345, upload-time = "2025-04-17T04:55:44.542Z" },
 ]
 
 [[package]]
