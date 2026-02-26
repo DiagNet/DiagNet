@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Manage Custom Test Templates - DiagNet{% endblock %}
+{% block scripts %}
+    <style>
+    /* Use minimal inline style to handle the skeleton transition */
+    #templates-table-container.htmx-request #templates-table-content {
+        display: none;
+    }
+    </style>
+{% endblock %}
 {% block content %}
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -9,12 +17,9 @@
                         class="btn btn-outline-primary"
                         hx-post="{% url 'sync-custom-templates' %}"
                         hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                        hx-target="#templates-table-container"
-                        hx-indicator="#sync-indicator">
+                        hx-target="#templates-table-content"
+                        hx-indicator="#templates-table-container">
                     <i class="bi bi-arrow-repeat me-1"></i> Sync from Disk
-                    <span id="sync-indicator"
-                          class="htmx-indicator spinner-border spinner-border-sm ms-1"
-                          role="status"></span>
                 </button>
             </div>
         </div>
@@ -45,7 +50,53 @@
         <div class="card shadow-sm">
             <div class="card-header">Discovered Templates</div>
             <div id="templates-table-container" class="card-body table-responsive">
-                {% include "networktests/partials/templates_table.html" %}
+                <!-- Skeleton table shown during HTMX request -->
+                <div class="htmx-indicator placeholder-glow">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <span class="placeholder col-6"></span>
+                                </th>
+                                <th>
+                                    <span class="placeholder col-6"></span>
+                                </th>
+                                <th>
+                                    <span class="placeholder col-6"></span>
+                                </th>
+                                <th class="text-center">
+                                    <span class="placeholder col-6"></span>
+                                </th>
+                                <th class="text-end">
+                                    <span class="placeholder col-6"></span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in "12345"|make_list %}
+                                <tr>
+                                    <td>
+                                        <span class="placeholder col-8"></span>
+                                    </td>
+                                    <td>
+                                        <span class="placeholder col-10"></span>
+                                    </td>
+                                    <td>
+                                        <span class="placeholder col-6"></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="placeholder col-4"></span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="placeholder col-4"></span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Actual table content -->
+                <div id="templates-table-content">{% include "networktests/partials/templates_table.html" %}</div>
             </div>
         </div>
     </div>
