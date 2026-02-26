@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 PACKAGE = "networktests.testcases"
 
-# Global cache for loaded test classes
-_test_class_cache = None
+# Cache for loaded test classes to avoid redundant execution
+_test_class_load_cache = {}
 
 
 def is_valid_test_class(cls):
@@ -121,11 +121,22 @@ def get_test_class_from_file(file_path, class_name):
         return None
 
     try:
+        # Check cache first
+        mtime = os.path.getmtime(file_path)
+        cache_key = f"file:{file_path}:{class_name}"
+        if cache_key in _test_class_load_cache:
+            cached_mtime, cached_cls = _test_class_load_cache[cache_key]
+            if cached_mtime == mtime:
+                return cached_cls
+
         spec = importlib.util.spec_from_file_location(class_name, file_path)
         if spec and spec.loader:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            return getattr(module, class_name)
+            cls = getattr(module, class_name)
+            # Store in cache
+            _test_class_load_cache[cache_key] = (mtime, cls)
+            return cls
     except Exception as e:
         logger.error(f"Failed to load class {class_name} from {file_path}: {e}")
     return None
@@ -151,10 +162,6 @@ def get_all_available_test_classes():
     Returns:
         dict: { class_name: {"class": cls, "source": "built-in"|"custom", "path": path} }
     """
-    global _test_class_cache
-    if _test_class_cache is not None:
-        return _test_class_cache
-
     test_classes = {}
     builtin_names = set()
 
@@ -179,7 +186,6 @@ def get_all_available_test_classes():
 
     # 2. Load custom testcases (if enabled)
     if not getattr(settings, "ENABLE_CUSTOM_TESTCASES", False):
-        _test_class_cache = test_classes
         return test_classes
 
     from networktests.models import CustomTestTemplate
@@ -218,7 +224,6 @@ def get_all_available_test_classes():
                             "class does not implement required test interface"
                         )
 
-    _test_class_cache = test_classes
     return test_classes
 
 
@@ -230,8 +235,8 @@ def sync_custom_testcases():
     Returns:
         tuple: (count_synced, error_message)
     """
-    global _test_class_cache
-    _test_class_cache = None  # Clear cache during sync
+    global _test_class_load_cache
+    _test_class_load_cache = {}  # Clear cache during sync
 
     from networktests.models import CustomTestTemplate
 
