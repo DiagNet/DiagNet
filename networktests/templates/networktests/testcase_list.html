@@ -73,11 +73,14 @@
                             {% endif %}
                         </td>
                         <td class="align-middle">
-                            <a href="{% url 'tests-run' testcase.id %}"
-                               class="btn btn-sm btn-primary"
-                               title="Run test case">
-                                <i class="bi bi-play-fill"></i>
-                            </a>
+                            <form action="{% url 'tests-run' testcase.id %}"
+                                  method="post"
+                                  class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-primary" title="Run test case">
+                                    <i class="bi bi-play-fill"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 {% endfor %}

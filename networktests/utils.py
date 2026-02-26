@@ -1,3 +1,4 @@
+import importlib
 import importlib.resources
 import importlib.util
 import logging
@@ -5,10 +6,14 @@ import os
 from pathlib import Path
 
 from django.conf import settings
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
 PACKAGE = "networktests.testcases"
+
+# Global cache for loaded test classes
+_test_class_cache = None
 
 
 def is_valid_test_class(cls):
@@ -146,6 +151,10 @@ def get_all_available_test_classes():
     Returns:
         dict: { class_name: {"class": cls, "source": "built-in"|"custom", "path": path} }
     """
+    global _test_class_cache
+    if _test_class_cache is not None:
+        return _test_class_cache
+
     test_classes = {}
     builtin_names = set()
 
@@ -170,6 +179,7 @@ def get_all_available_test_classes():
 
     # 2. Load custom testcases (if enabled)
     if not getattr(settings, "ENABLE_CUSTOM_TESTCASES", False):
+        _test_class_cache = test_classes
         return test_classes
 
     from networktests.models import CustomTestTemplate
@@ -208,6 +218,7 @@ def get_all_available_test_classes():
                             "class does not implement required test interface"
                         )
 
+    _test_class_cache = test_classes
     return test_classes
 
 
@@ -219,6 +230,9 @@ def sync_custom_testcases():
     Returns:
         tuple: (count_synced, error_message)
     """
+    global _test_class_cache
+    _test_class_cache = None  # Clear cache during sync
+
     from networktests.models import CustomTestTemplate
 
     custom_dir = getattr(settings, "CUSTOM_TESTCASES_PATH", None)
@@ -267,7 +281,11 @@ def sync_custom_testcases():
 
                 found_classes.add(class_name)
                 _, created = CustomTestTemplate.objects.update_or_create(
-                    class_name=class_name, defaults={"file_name": safe_filename}
+                    class_name=class_name,
+                    defaults={
+                        "file_name": safe_filename,
+                        "last_seen_at": timezone.now(),
+                    },
                 )
                 if created:
                     count += 1

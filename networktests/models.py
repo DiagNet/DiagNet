@@ -85,7 +85,8 @@ class CustomTestTemplate(models.Model):
     class_name = models.CharField(max_length=255, unique=True)
     file_name = models.CharField(max_length=255, unique=True)
     is_enabled = models.BooleanField(default=False)
-    last_seen_at = models.DateTimeField(auto_now=True)
+    last_seen_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.class_name
