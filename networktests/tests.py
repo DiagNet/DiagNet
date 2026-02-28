@@ -334,9 +334,9 @@ class NetworkTestsPermissionTests(TestCase):
         self.assertRedirects(response, f"/auth/login/?next={reverse('test-page')}")
 
     def test_run_testcase_permission_required(self):
-        """Test that run testcase redirects if user lacks add_testresult permission."""
+        """Test that run testcase returns 403 if user lacks add_testresult permission."""
         self.client.login(username="testuser", password="password123")
         # Using a dummy PK 999
         url = reverse("tests-run", kwargs={"pk": 999})
         response = self.client.post(url)
-        self.assertRedirects(response, f"/auth/login/?next={url}")
+        self.assertEqual(response.status_code, 403)
