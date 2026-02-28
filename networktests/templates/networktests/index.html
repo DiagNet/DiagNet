@@ -7,7 +7,7 @@
             <i class="bi bi-database-add"></i> Add Test Case
         </a>
     {% endif %}
-    {% if perms.networktests.view_testcase %}
+    {% if perms.networktests.view_testcase and perms.networktests.view_testresult and perms.testgroups.view_testgroup %}
         <a href="{% url 'networktests-export-pdf' %}"
            class="btn btn-outline-danger mb-3">
             <i class="bi bi-file-earmark-pdf"></i> Export PDF Report

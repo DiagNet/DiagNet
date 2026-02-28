@@ -78,7 +78,7 @@
                     </tr>
                     <!-- Collapsible row -->
                     <tr class="collapse" id="collapse-{{ testgroup.name }}">
-                        <td colspan="100%" class="bg-light" id="td-coll-{{ testgroup.name }}">
+                        <td colspan="100" class="bg-light" id="td-coll-{{ testgroup.name }}">
                             <div hx-get="list-testcases/{{ testgroup.name }}"
                                  hx-trigger="load"
                                  hx-swap="outerHTML">
@@ -89,7 +89,7 @@
                 {% endfor %}
             {% else %}
                 <tr>
-                    <td colspan="100%">No Test Groups yet.</td>
+                    <td colspan="100">No Test Groups yet.</td>
                 </tr>
             {% endif %}
         </tbody>

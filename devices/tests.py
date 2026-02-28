@@ -26,11 +26,11 @@ class DevicePermissionTests(TestCase):
         )
 
     def test_index_permission_required(self):
-        """Test that devices index redirects if user lacks view_device permission."""
+        """Test that devices index returns 403 if user lacks view_device permission."""
         self.client.login(username="testuser", password="password123")
         response = self.client.get(reverse("devices-page"))
-        # FBVs using @permission_required redirect by default
-        self.assertRedirects(response, f"/auth/login/?next={reverse('devices-page')}")
+        # FBVs using @permission_required(..., raise_exception=True) return 403
+        self.assertEqual(response.status_code, 403)
 
     def test_index_with_permission(self):
         """Test that devices index is accessible if user has view_device permission."""

@@ -32,12 +32,12 @@ from networktests.utils import (
 logger = logging.getLogger(__name__)
 
 
-@permission_required("networktests.view_testcase")
+@permission_required("networktests.view_testcase", raise_exception=True)
 def index(request):
     return render(request, "networktests/index.html")
 
 
-@permission_required("networktests.view_testcase")
+@permission_required("networktests.view_testcase", raise_exception=True)
 def get_all_testcases(request):
     """
     Return available testcase classes and their parameter specs.
@@ -130,7 +130,7 @@ def store_test_parameter(parent, parameter, value):
         return JsonResponse({"status": "fail", "message": str(e)}, status=500)
 
 
-@permission_required("networktests.add_testcase")
+@permission_required("networktests.add_testcase", raise_exception=True)
 def create_test(request):
     """
     Handle POST requests to create a new test case with its parameters.
@@ -195,7 +195,7 @@ def create_test(request):
     return JsonResponse({"status": "success"}, status=201)
 
 
-@permission_required("networktests.view_testcase")
+@permission_required("networktests.view_testcase", raise_exception=True)
 def get_parameters_of_specific_testcase(request):
     """
     Retrieve the parameter specifications for a given test case class.
@@ -231,7 +231,7 @@ def get_parameters_of_specific_testcase(request):
         )
 
 
-@permission_required("networktests.view_testcase")
+@permission_required("networktests.view_testcase", raise_exception=True)
 def get_all_available_testcases(request):
     """
     List available test case class names with their source information.
@@ -244,7 +244,7 @@ def get_all_available_testcases(request):
     return JsonResponse({"results": results})
 
 
-@permission_required("networktests.view_testcase")
+@permission_required("networktests.view_testcase", raise_exception=True)
 def get_doc_of_testcase(request):
     """
     Return doc info for a test case (WIP).
@@ -259,12 +259,12 @@ def get_doc_of_testcase(request):
     return JsonResponse({"status": "success", "results": cls.__doc__ or ""})
 
 
-@permission_required("networktests.view_testcase")
+@permission_required("networktests.view_testcase", raise_exception=True)
 def test_list(request):
     return render(request, "networktests/testcases_list.html")
 
 
-@permission_required("networktests.view_testcase")
+@permission_required("networktests.view_testcase", raise_exception=True)
 def testcases_list(request):
     qs = (
         TestCase.objects.prefetch_related(
@@ -294,7 +294,7 @@ def testcases_list(request):
     )
 
 
-@permission_required("networktests.add_testcase")
+@permission_required("networktests.add_testcase", raise_exception=True)
 def create_test_page(request):
     return render(request, "networktests/partials/create_popup/create_test_popup.html")
 
@@ -336,7 +336,8 @@ def delete_testcase(request, pk):
         "networktests.view_testcase",
         "networktests.view_testresult",
         "testgroups.view_testgroup",
-    ]
+    ],
+    raise_exception=True,
 )
 @require_http_methods(["GET"])
 def export_report_pdf(request):
@@ -352,7 +353,7 @@ def export_report_pdf(request):
 
 
 @require_http_methods(["GET"])
-@permission_required("networktests.view_testcase")
+@permission_required("networktests.view_testcase", raise_exception=True)
 def testcase_detail_view(request, pk):
     testcase = get_object_or_404(
         TestCase.objects.prefetch_related(
@@ -386,7 +387,7 @@ def testcase_detail_view(request, pk):
 
 
 @login_required
-@permission_required("networktests.change_customtesttemplate")
+@permission_required("networktests.change_customtesttemplate", raise_exception=True)
 def manage_custom_templates(request):
     """
     View to list and manage custom test templates.
