@@ -13,14 +13,19 @@
     <table class="table table-striped">
         <thead>
             <tr>
+                <th style="width: 2rem;"></th>
+                {% if perms.networktests.add_testresult %}<th style="width: 2rem;"></th>{% endif %}
                 <th>Name</th>
+                {% if perms.testgroups.change_testgroup or perms.testgroups.delete_testgroup %}
+                    <th class="text-end">Actions</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% if testgroup_list %}
                 {% for testgroup in testgroup_list %}
                     <tr id="testgroups-{{ testgroup.name }}">
-                        <td style="width: 2rem;">
+                        <td>
                             <button class="btn btn-sm btn-outline-secondary"
                                     type="button"
                                     data-bs-toggle="collapse"
@@ -30,8 +35,8 @@
                                 <i class="bi bi-chevron-down"></i>
                             </button>
                         </td>
-                        <td>
-                            {% if perms.networktests.add_testresult %}
+                        {% if perms.networktests.add_testresult %}
+                            <td>
                                 <button id="{{ testgroup.name }}-runall"
                                         class="btn btn-sm btn-primary"
                                         title="Run testcases in this group">
@@ -46,34 +51,34 @@
                   });
                 });
                                 </script>
-                            {% endif %}
-                        </td>
+                            </td>
+                        {% endif %}
                         <td>{{ testgroup.name }}</td>
-                        <td class="text-end">
-                            {% if perms.testgroups.change_testgroup %}
-                                <button hx-get="popup/{{ testgroup.name }}"
-                                        hx-target="#modal-container"
-                                        hx-swap="innerHTML"
-                                        class="btn btn-sm btn-outline-success">
-                                    <i class="bi bi-plus"></i> Add Testcase
-                                </button>
-                            {% endif %}
-                        </td>
-                        <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
-                            {% if perms.testgroups.delete_testgroup %}
-                                <a hx-vals='{"name": "{{ testgroup.name }}"}'
-                                   hx-post="delete-testgroup/"
-                                   hx-target="#testgroup-table"
-                                   class="btn btn-sm btn-danger"
-                                   title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            {% endif %}
-                        </td>
+                        {% if perms.testgroups.change_testgroup or perms.testgroups.delete_testgroup %}
+                            <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
+                                {% if perms.testgroups.change_testgroup %}
+                                    <button hx-get="popup/{{ testgroup.name }}"
+                                            hx-target="#modal-container"
+                                            hx-swap="innerHTML"
+                                            class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-plus"></i> Add Testcase
+                                    </button>
+                                {% endif %}
+                                {% if perms.testgroups.delete_testgroup %}
+                                    <a hx-vals='{"name": "{{ testgroup.name }}"}'
+                                       hx-post="delete-testgroup/"
+                                       hx-target="#testgroup-table"
+                                       class="btn btn-sm btn-danger"
+                                       title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                {% endif %}
+                            </td>
+                        {% endif %}
                     </tr>
                     <!-- Collapsible row -->
                     <tr class="collapse" id="collapse-{{ testgroup.name }}">
-                        <td colspan="3" class="bg-light" id="td-coll-{{ testgroup.name }}">
+                        <td colspan="100%" class="bg-light" id="td-coll-{{ testgroup.name }}">
                             <div hx-get="list-testcases/{{ testgroup.name }}"
                                  hx-trigger="load"
                                  hx-swap="outerHTML">
