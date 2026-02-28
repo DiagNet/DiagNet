@@ -4,31 +4,35 @@
     <div id="title-div"
          class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="mb-0">Test Group: {{ testgroup.name }}</h1>
-        <button id="edit-btn" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-pencil"></i> Rename
-        </button>
+        {% if perms.testgroups.change_testgroup %}
+            <button id="edit-btn" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-pencil"></i> Rename
+            </button>
+        {% endif %}
     </div>
-    <div id="rename-form-div" hidden>
-        <form hx-post="/testgroups/rename/{{ testgroup.name }}/"
-              hx-target="#title-div"
-              hx-swap="outerHTML"
-              class="d-flex align-items-center">
-            {% csrf_token %}
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <input type="text"
-                       name="name"
-                       value="{{ testgroup.name }}"
-                       class="form-control me-2"
-                       style="max-width: 300px">
-                <button id="rename-submit" type="submit" class="btn btn-success btn-sm me-2">
-                    <i class="bi bi-check"></i>
-                </button>
-                <button type="button" id ="aboart" class="btn btn-secondary btn-sm">
-                    <i class="bi bi-x"></i>
-                </button>
-            </div>
-        </form>
-    </div>
+    {% if perms.testgroups.change_testgroup %}
+        <div id="rename-form-div" hidden>
+            <form hx-post="/testgroups/rename/{{ testgroup.name }}/"
+                  hx-target="#title-div"
+                  hx-swap="outerHTML"
+                  class="d-flex align-items-center">
+                {% csrf_token %}
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <input type="text"
+                           name="name"
+                           value="{{ testgroup.name }}"
+                           class="form-control me-2"
+                           style="max-width: 300px">
+                    <button id="rename-submit" type="submit" class="btn btn-success btn-sm me-2">
+                        <i class="bi bi-check"></i>
+                    </button>
+                    <button type="button" id ="aboart" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    {% endif %}
     <a href="/testgroups/" class="btn btn-outline-secondary mt-3">
         <i class="bi bi-arrow-left"></i> Back
     </a>

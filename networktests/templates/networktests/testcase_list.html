@@ -41,16 +41,18 @@
                                             </div>
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="button"
-                                                    class="btn btn-danger"
-                                                    hx-delete="{% url 'testcase_delete' testcase.id %}"
-                                                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                                    hx-confirm="Are you sure you want to delete this test case?"
-                                                    hx-trigger="click"
-                                                    hx-on:click="htmx.trigger('#networktests-table', 'refresh')"
-                                                    data-bs-dismiss="modal">
-                                                <i class="bi bi-trash"></i> Delete
-                                            </button>
+                                            {% if perms.networktests.delete_testcase %}
+                                                <button type="button"
+                                                        class="btn btn-danger"
+                                                        hx-delete="{% url 'testcase_delete' testcase.id %}"
+                                                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                                        hx-confirm="Are you sure you want to delete this test case?"
+                                                        hx-trigger="click"
+                                                        hx-on:click="htmx.trigger('#networktests-table', 'refresh')"
+                                                        data-bs-dismiss="modal">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </button>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -73,14 +75,16 @@
                             {% endif %}
                         </td>
                         <td class="align-middle">
-                            <form action="{% url 'tests-run' testcase.id %}"
-                                  method="post"
-                                  class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-primary" title="Run test case">
-                                    <i class="bi bi-play-fill"></i>
-                                </button>
-                            </form>
+                            {% if perms.networktests.add_testresult %}
+                                <form action="{% url 'tests-run' testcase.id %}"
+                                      method="post"
+                                      class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-primary" title="Run test case">
+                                        <i class="bi bi-play-fill"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}

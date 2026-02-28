@@ -15,13 +15,15 @@
                 {% for testcase in testcase_list %}
                     <tr class="testcase-tr" id="testcase-{{ testcase.id }}">
                         <td>
-                            <button hx-get="{% url 'testgroup-testcase-run' testgroup_name testcase.id %}"
-                                    hx-target="#status-{{ testcase.id }}"
-                                    hx-swap="outerHTML"
-                                    class="btn btn-sm btn-primary {{ testgroup_name }}-runner"
-                                    title="Run test case">
-                                <i class="bi bi-play-fill"></i>
-                            </button>
+                            {% if perms.networktests.add_testresult %}
+                                <button hx-get="{% url 'testgroup-testcase-run' testgroup_name testcase.id %}"
+                                        hx-target="#status-{{ testcase.id }}"
+                                        hx-swap="outerHTML"
+                                        class="btn btn-sm btn-primary {{ testgroup_name }}-runner"
+                                        title="Run test case">
+                                    <i class="bi bi-play-fill"></i>
+                                </button>
+                            {% endif %}
                         </td>
                         <td>{{ testcase.label }}</td>
                         <td>{{ testcase.test_module }}</td>
@@ -43,14 +45,16 @@
                             </td>
                         </div>
                         <td class="text-end">
-                            <button hx-vals='{"testgroup": "{{ testgroup_name }}", "testcase": "{{ testcase.label }}"}'
-                                    hx-post="{% url 'testcase-remove' %}"
-                                    hx-target="#td-coll-{{ testgroup_name }}"
-                                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                    class="btn btn-sm btn-danger"
-                                    title="Remove from group">
-                                <i class="bi bi-x"></i>
-                            </button>
+                            {% if perms.testgroups.change_testgroup %}
+                                <button hx-vals='{"testgroup": "{{ testgroup_name }}", "testcase": "{{ testcase.label }}"}'
+                                        hx-post="{% url 'testcase-remove' %}"
+                                        hx-target="#td-coll-{{ testgroup_name }}"
+                                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                        class="btn btn-sm btn-danger"
+                                        title="Remove from group">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}
