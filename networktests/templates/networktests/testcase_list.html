@@ -7,7 +7,7 @@
                 <th>Test Case</th>
                 <th>Last Run</th>
                 <th>Status</th>
-                <th>Actions</th>
+                {% if perms.networktests.add_testresult %}<th>Actions</th>{% endif %}
             </tr>
         </thead>
         <tbody>
@@ -74,8 +74,8 @@
                                 <span class="badge rounded-pill bg-secondary">Unknown</span>
                             {% endif %}
                         </td>
-                        <td class="align-middle">
-                            {% if perms.networktests.add_testresult %}
+                        {% if perms.networktests.add_testresult %}
+                            <td class="align-middle">
                                 <form action="{% url 'tests-run' testcase.id %}"
                                       method="post"
                                       class="d-inline">
@@ -84,8 +84,8 @@
                                         <i class="bi bi-play-fill"></i>
                                     </button>
                                 </form>
-                            {% endif %}
-                        </td>
+                            </td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
             {% else %}

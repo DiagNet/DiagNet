@@ -8,7 +8,7 @@
                 <th>Type</th>
                 <th>Username</th>
                 <th>Status</th>
-                <th>Actions</th>
+                {% if perms.devices.delete_device or perms.networktests.add_testresult %}<th>Actions</th>{% endif %}
             </tr>
         </thead>
         <tbody>
@@ -61,25 +61,29 @@
                                 <span class="spinner-grow spinner-grow-sm" role="status"></span>
                             </span>
                         </td>
-                        <td class="align-middle">
-                            <button title="Check status"
-                                    hx-get="{% url 'device-check' device.pk %}"
-                                    hx-target="#device-{{ device.pk }} .connection-status"
-                                    hx-swap="innerHTML"
-                                    hx-indicator="#device-{{ device.pk }}-spinner"
-                                    class="btn btn-sm btn-info device-check">
-                                <i class="bi bi-check2"></i>
-                            </button>
-                            {% if perms.devices.delete_device %}
-                                <button title="Delete"
-                                        class="btn btn-sm btn-danger"
-                                        hx-delete="{% url 'device-delete' device.pk %}"
-                                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                        hx-confirm="Are you sure you want to delete this device?">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            {% endif %}
-                        </td>
+                        {% if perms.devices.delete_device or perms.networktests.add_testresult %}
+                            <td class="align-middle">
+                                {% if perms.networktests.add_testresult %}
+                                    <button title="Check status"
+                                            hx-get="{% url 'device-check' device.pk %}"
+                                            hx-target="#device-{{ device.pk }} .connection-status"
+                                            hx-swap="innerHTML"
+                                            hx-indicator="#device-{{ device.pk }}-spinner"
+                                            class="btn btn-sm btn-info device-check">
+                                        <i class="bi bi-check2"></i>
+                                    </button>
+                                {% endif %}
+                                {% if perms.devices.delete_device %}
+                                    <button title="Delete"
+                                            class="btn btn-sm btn-danger"
+                                            hx-delete="{% url 'device-delete' device.pk %}"
+                                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                            hx-confirm="Are you sure you want to delete this device?">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                {% endif %}
+                            </td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
             {% else %}
