@@ -3,6 +3,8 @@ import shutil
 import tempfile
 
 from django.test import TestCase, override_settings
+from django.urls import reverse
+from django.contrib.auth import get_user_model
 
 from .models import CustomTestTemplate
 from .testcases.base import DiagNetTest
@@ -14,6 +16,8 @@ from .utils import (
     sanitize_filename,
     sync_custom_testcases,
 )
+
+User = get_user_model()
 
 
 class CustomTemplateTests(TestCase):
@@ -303,3 +307,36 @@ class TestClassValidationTests(TestCase):
                 self.assertNotIn("InvalidTest", classes)
         finally:
             shutil.rmtree(test_dir)
+
+
+class NetworkTestsPermissionTests(TestCase):
+    def setUp(self):
+        # Create a superuser to satisfy SuperuserRequiredMiddleware
+        User.objects.create_superuser(
+            username="admin", password="password123", email="admin@diagnet.dev"
+        )
+        self.user = User.objects.create_user(
+            username="testuser", password="password123"
+        )
+
+    def test_index_permission_required(self):
+        """Test that networktests index redirects if user lacks view_testcase permission."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(reverse("networktests-page"))
+        self.assertRedirects(
+            response, f"/auth/login/?next={reverse('networktests-page')}"
+        )
+
+    def test_create_test_page_permission_required(self):
+        """Test that create test page redirects if user lacks add_testcase permission."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(reverse("test-page"))
+        self.assertRedirects(response, f"/auth/login/?next={reverse('test-page')}")
+
+    def test_run_testcase_permission_required(self):
+        """Test that run testcase redirects if user lacks add_testresult permission."""
+        self.client.login(username="testuser", password="password123")
+        # Using a dummy PK 999
+        url = reverse("tests-run", kwargs={"pk": 999})
+        response = self.client.post(url)
+        self.assertRedirects(response, f"/auth/login/?next={url}")
