@@ -8,7 +8,7 @@ from networktests.models import TestCase
 from django.views.decorators.http import require_http_methods
 
 
-@permission_required("testgroups.view_testgroup", raise_exception=True)
+@permission_required("testgroups.view_testgroup")
 def testgroups_page(request):
     context = {}
     if len(TestGroup.objects.all()) > 0:
@@ -17,7 +17,7 @@ def testgroups_page(request):
     return render(request, "testgroup_page.html", context=context)
 
 
-@permission_required("testgroups.view_testgroup", raise_exception=True)
+@permission_required("testgroups.view_testgroup")
 def list_testgroups(request, error=None):
     context = {}
     if error:
@@ -32,7 +32,7 @@ def list_testgroups(request, error=None):
 testgroup_name_pattern = r"[A-Za-z0-9_]+"
 
 
-@permission_required("testgroups.add_testgroup", raise_exception=True)
+@permission_required("testgroups.add_testgroup")
 def create_testgroup(request):
     if request.method != "POST":
         return HttpResponse("bad request method.")
@@ -54,7 +54,7 @@ def create_testgroup(request):
     return list_testgroups(request, error=error)
 
 
-@permission_required("testgroups.delete_testgroup", raise_exception=True)
+@permission_required("testgroups.delete_testgroup")
 def delete_testgroup(request):
     if request.method != "POST":
         return HttpResponse("wrong request method.")
@@ -69,7 +69,7 @@ def delete_testgroup(request):
     return list_testgroups(request)
 
 
-@permission_required("testgroups.view_testgroup", raise_exception=True)
+@permission_required("testgroups.view_testgroup")
 def get_testgroup_detail(request, name: str):
     testgroup: TestGroup
     try:
@@ -81,7 +81,7 @@ def get_testgroup_detail(request, name: str):
     return render(request, "testgroup_detail.html", context)
 
 
-@permission_required("testgroups.change_testgroup", raise_exception=True)
+@permission_required("testgroups.change_testgroup")
 def rename_testgroup(request, name: str):
     if request.method != "POST":
         return HttpResponse("bad request method")
@@ -115,7 +115,7 @@ def rename_testgroup(request, name: str):
     return render(request, "testcases_detail_title.html", context)
 
 
-@permission_required("testgroups.change_testgroup", raise_exception=True)
+@permission_required("testgroups.change_testgroup")
 def add_testcase_to_testgroup(request: HttpRequest):
     if request.method != "POST":
         return HttpResponseBadRequest()
@@ -135,7 +135,7 @@ def add_testcase_to_testgroup(request: HttpRequest):
     return list_testcases(request, testgroup_name)
 
 
-@permission_required("testgroups.change_testgroup", raise_exception=True)
+@permission_required("testgroups.change_testgroup")
 def add_testcases_to_testgroup(request: HttpRequest):
     if request.method != "POST":
         return HttpResponseBadRequest()
@@ -161,7 +161,7 @@ def add_testcases_to_testgroup(request: HttpRequest):
     return list_testcases(request, testgroup.name)
 
 
-@permission_required("testgroups.change_testgroup", raise_exception=True)
+@permission_required("testgroups.change_testgroup")
 def remove_testcase_from_testgroup(request: HttpRequest):
     if request.method != "POST":
         return HttpResponseBadRequest()
@@ -181,7 +181,7 @@ def remove_testcase_from_testgroup(request: HttpRequest):
     return list_testcases(request, testgroup_name)
 
 
-@permission_required("testgroups.view_testgroup", raise_exception=True)
+@permission_required("testgroups.view_testgroup")
 def list_testcases(request, testgroup_name: str):
     testgroup: TestGroup
     try:
@@ -199,7 +199,7 @@ def list_testcases(request, testgroup_name: str):
 
 
 @require_http_methods(["GET"])
-@permission_required("networktests.add_testresult", raise_exception=True)
+@permission_required("networktests.add_testresult")
 def run_testcase(request, group, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     _ = testcase.run()
@@ -216,7 +216,7 @@ def get_aval_testcases_for_testgroup(testgroup: TestGroup) -> set:
 
 
 @require_http_methods(["GET"])
-@permission_required("testgroups.view_testgroup", raise_exception=True)
+@permission_required("testgroups.view_testgroup")
 def get_testcase_search_popup(request, testgroup_name):
     testgroup = get_object_or_404(TestGroup, name=testgroup_name)
     testcases = get_aval_testcases_for_testgroup(testgroup)
@@ -227,7 +227,7 @@ def get_testcase_search_popup(request, testgroup_name):
 
 
 @require_http_methods(["POST"])
-@permission_required("testgroups.view_testgroup", raise_exception=True)
+@permission_required("testgroups.view_testgroup")
 def get_filtered_testcases(request):
     testgroup_pk = request.POST.get("testgroup")
     search = request.POST.get("search").strip()
