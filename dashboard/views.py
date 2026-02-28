@@ -127,7 +127,8 @@ def get_dashboard_data(range_code: str, group_name: Optional[str]):
         "networktests.view_testcase",
         "networktests.view_testresult",
         "testgroups.view_testgroup",
-    ]
+    ],
+    raise_exception=True,
 )
 def dashboard_data(request):
     range_code = request.GET.get("range", "24h")
@@ -142,7 +143,8 @@ def dashboard_data(request):
         "networktests.view_testcase",
         "networktests.view_testresult",
         "testgroups.view_testgroup",
-    ]
+    ],
+    raise_exception=True,
 )
 def index(request):
     """

@@ -17,17 +17,18 @@ class DashboardPermissionTests(TestCase):
         )
 
     def test_dashboard_index_permission_required(self):
-        """Test that dashboard index redirects if user lacks required permissions."""
+        """Test that dashboard index returns 403 if user lacks required permissions."""
         self.client.login(username="testuser", password="password123")
         response = self.client.get(reverse("dashboard"))
         # Dashboard index requires: networktests.view_testcase, networktests.view_testresult, testgroups.view_testgroup
-        self.assertRedirects(response, f"/auth/login/?next={reverse('dashboard')}")
+        # We now use raise_exception=True for all FBVs
+        self.assertEqual(response.status_code, 403)
 
     def test_dashboard_data_permission_required(self):
-        """Test that dashboard data redirects if user lacks required permissions."""
+        """Test that dashboard data returns 403 if user lacks required permissions."""
         self.client.login(username="testuser", password="password123")
         response = self.client.get(reverse("dashboard-data"))
-        self.assertRedirects(response, f"/auth/login/?next={reverse('dashboard-data')}")
+        self.assertEqual(response.status_code, 403)
 
     def test_dashboard_index_with_permissions(self):
         """Test that dashboard index is accessible if user has all required permissions."""

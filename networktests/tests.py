@@ -320,18 +320,16 @@ class NetworkTestsPermissionTests(TestCase):
         )
 
     def test_index_permission_required(self):
-        """Test that networktests index redirects if user lacks view_testcase permission."""
+        """Test that networktests index returns 403 if user lacks view_testcase permission."""
         self.client.login(username="testuser", password="password123")
         response = self.client.get(reverse("networktests-page"))
-        self.assertRedirects(
-            response, f"/auth/login/?next={reverse('networktests-page')}"
-        )
+        self.assertEqual(response.status_code, 403)
 
     def test_create_test_page_permission_required(self):
-        """Test that create test page redirects if user lacks add_testcase permission."""
+        """Test that create test page returns 403 if user lacks add_testcase permission."""
         self.client.login(username="testuser", password="password123")
         response = self.client.get(reverse("test-page"))
-        self.assertRedirects(response, f"/auth/login/?next={reverse('test-page')}")
+        self.assertEqual(response.status_code, 403)
 
     def test_run_testcase_permission_required(self):
         """Test that run testcase returns 403 if user lacks add_testresult permission."""
