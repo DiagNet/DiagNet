@@ -4,7 +4,7 @@ alias s := serve
 alias t := test
 alias sh := shell
 alias lc := load-container
-alias rc := load-container
+alias rc := run-container
 
 default:
     @just --list
