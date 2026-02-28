@@ -136,7 +136,7 @@ class DeviceDelete(PermissionRequiredMixin, DeleteView):
         return HttpResponseRedirect(self.success_url)
 
 
-@permission_required("networktests.add_testresult")
+@permission_required("networktests.add_testresult", raise_exception=True)
 def device_check(request, pk):
     device = get_object_or_404(Device, pk=pk)
 

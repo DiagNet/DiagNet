@@ -311,7 +311,7 @@ class TestCaseListView(PermissionRequiredMixin, generic.ListView):
 
 
 @require_POST
-@permission_required("networktests.add_testresult")
+@permission_required("networktests.add_testresult", raise_exception=True)
 def run_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     try:
@@ -324,7 +324,7 @@ def run_testcase(request, pk):
 
 
 @require_http_methods(["DELETE"])
-@permission_required("networktests.delete_testcase")
+@permission_required("networktests.delete_testcase", raise_exception=True)
 def delete_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     testcase.delete()
@@ -404,7 +404,7 @@ def manage_custom_templates(request):
 
 @require_http_methods(["POST"])
 @login_required
-@permission_required("networktests.change_customtesttemplate")
+@permission_required("networktests.change_customtesttemplate", raise_exception=True)
 def toggle_custom_template(request, pk):
     """
     Toggle the is_enabled status of a custom test template.
@@ -434,7 +434,7 @@ def toggle_custom_template(request, pk):
 
 @require_http_methods(["POST"])
 @login_required
-@permission_required("networktests.change_customtesttemplate")
+@permission_required("networktests.change_customtesttemplate", raise_exception=True)
 def sync_custom_templates_view(request):
     """
     Trigger a sync of custom test templates from the file system.
