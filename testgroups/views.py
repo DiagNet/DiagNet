@@ -32,7 +32,7 @@ def list_testgroups(request, error=None):
 testgroup_name_pattern = r"[A-Za-z0-9_]+"
 
 
-@permission_required("testgroups.add_testgroup")
+@permission_required("testgroups.add_testgroup", raise_exception=True)
 def create_testgroup(request):
     if request.method != "POST":
         return HttpResponse("bad request method.")
@@ -54,7 +54,7 @@ def create_testgroup(request):
     return list_testgroups(request, error=error)
 
 
-@permission_required("testgroups.delete_testgroup")
+@permission_required("testgroups.delete_testgroup", raise_exception=True)
 def delete_testgroup(request):
     if request.method != "POST":
         return HttpResponse("wrong request method.")
@@ -230,11 +230,10 @@ def get_testcase_search_popup(request, testgroup_name):
 @permission_required("testgroups.view_testgroup", raise_exception=True)
 def get_filtered_testcases(request):
     testgroup_pk = request.POST.get("testgroup")
-    search = request.POST.get("search").strip()
+    search = (request.POST.get("search") or "").strip()
+
     if not testgroup_pk:
         return HttpResponseBadRequest()
-    if not search:
-        search = ""
 
     try:
         testgroup = TestGroup.objects.get(pk=testgroup_pk)

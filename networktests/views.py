@@ -386,7 +386,7 @@ def testcase_detail_view(request, pk):
 
 
 @login_required
-@permission_required("networktests.change_customtesttemplate")
+@permission_required("networktests.change_customtesttemplate", raise_exception=True)
 def manage_custom_templates(request):
     """
     View to list and manage custom test templates.
