@@ -31,38 +31,44 @@
                             </button>
                         </td>
                         <td>
-                            <button id="{{ testgroup.name }}-runall"
-                                    class="btn btn-sm btn-primary"
-                                    title="Run testcases in this group">
-                                <i class="bi bi-play-fill"></i>
-                            </button>
-                            <script>
-            document.getElementById("{{ testgroup.name }}-runall").addEventListener("click", () => {
-              console.log("heheheha")
-              document.querySelectorAll(".{{ testgroup.name }}-runner").forEach(btn => {
-                btn.click(); // löst den htmx-Request des Buttons aus
-                console.log(btn)
-              });
-            });
-                            </script>
+                            {% if perms.networktests.add_testresult %}
+                                <button id="{{ testgroup.name }}-runall"
+                                        class="btn btn-sm btn-primary"
+                                        title="Run testcases in this group">
+                                    <i class="bi bi-play-fill"></i>
+                                </button>
+                                <script>
+                document.getElementById("{{ testgroup.name }}-runall").addEventListener("click", () => {
+                  console.log("heheheha")
+                  document.querySelectorAll(".{{ testgroup.name }}-runner").forEach(btn => {
+                    btn.click(); // löst den htmx-Request des Buttons aus
+                    console.log(btn)
+                  });
+                });
+                                </script>
+                            {% endif %}
                         </td>
                         <td>{{ testgroup.name }}</td>
                         <td class="text-end">
-                            <button hx-get="popup/{{ testgroup.name }}"
-                                    hx-target="#modal-container"
-                                    hx-swap="innerHTML"
-                                    class="btn btn-sm btn-outline-success">
-                                <i class="bi bi-plus"></i> Add Testcase
-                            </button>
+                            {% if perms.testgroups.change_testgroup %}
+                                <button hx-get="popup/{{ testgroup.name }}"
+                                        hx-target="#modal-container"
+                                        hx-swap="innerHTML"
+                                        class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-plus"></i> Add Testcase
+                                </button>
+                            {% endif %}
                         </td>
                         <td class="text-end" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
-                            <a hx-vals='{"name": "{{ testgroup.name }}"}'
-                               hx-post="delete-testgroup/"
-                               hx-target="#testgroup-table"
-                               class="btn btn-sm btn-danger"
-                               title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </a>
+                            {% if perms.testgroups.delete_testgroup %}
+                                <a hx-vals='{"name": "{{ testgroup.name }}"}'
+                                   hx-post="delete-testgroup/"
+                                   hx-target="#testgroup-table"
+                                   class="btn btn-sm btn-danger"
+                                   title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            {% endif %}
                         </td>
                     </tr>
                     <!-- Collapsible row -->

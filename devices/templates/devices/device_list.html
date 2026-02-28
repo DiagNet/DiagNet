@@ -36,14 +36,16 @@
                                             {% include "devices/partials/device_details.html" with device=device %}
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="button"
-                                                    class="btn btn-danger"
-                                                    hx-delete="{% url 'device-delete' device.pk %}"
-                                                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                                    hx-confirm="Are you sure you want to delete this device?"
-                                                    data-bs-dismiss="modal">
-                                                <i class="bi bi-trash"></i> Delete
-                                            </button>
+                                            {% if perms.devices.delete_device %}
+                                                <button type="button"
+                                                        class="btn btn-danger"
+                                                        hx-delete="{% url 'device-delete' device.pk %}"
+                                                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                                        hx-confirm="Are you sure you want to delete this device?"
+                                                        data-bs-dismiss="modal">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </button>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -68,13 +70,15 @@
                                     class="btn btn-sm btn-info device-check">
                                 <i class="bi bi-check2"></i>
                             </button>
-                            <button title="Delete"
-                                    class="btn btn-sm btn-danger"
-                                    hx-delete="{% url 'device-delete' device.pk %}"
-                                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                    hx-confirm="Are you sure you want to delete this device?">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                            {% if perms.devices.delete_device %}
+                                <button title="Delete"
+                                        class="btn btn-sm btn-danger"
+                                        hx-delete="{% url 'device-delete' device.pk %}"
+                                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                        hx-confirm="Are you sure you want to delete this device?">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}

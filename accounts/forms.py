@@ -19,8 +19,9 @@ class UserCreateForm(UserCreationForm):
 
     groups = forms.ModelMultipleChoiceField(
         queryset=Group.objects.all(),
-        required=False,
+        required=True,
         widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check-input"}),
+        help_text="User must belong to at least one group.",
     )
 
     is_active = forms.BooleanField(
@@ -93,8 +94,9 @@ class UserUpdateForm(forms.ModelForm):
 
     groups = forms.ModelMultipleChoiceField(
         queryset=Group.objects.all(),
-        required=False,
+        required=True,
         widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check-input"}),
+        help_text="User must belong to at least one group.",
     )
 
     is_active = forms.BooleanField(

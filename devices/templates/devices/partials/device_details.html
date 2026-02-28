@@ -11,7 +11,9 @@
             </div>
         {% endif %}
     {% endfor %}
-    <button hx-get="{% url 'device-update' device.pk %}" class="btn btn-primary">Edit</button>
+    {% if perms.devices.change_device %}
+        <button hx-get="{% url 'device-update' device.pk %}" class="btn btn-primary">Edit</button>
+    {% endif %}
 </div>
 <hr>
 <h2 class="fs-5">Associated tests</h2>
