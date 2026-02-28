@@ -2,17 +2,25 @@
 {% block title %}Devices - DiagNet{% endblock %}
 {% block content %}
     <h1>Devices</h1>
-    {% include "devices/partials/device_create_modal_button.html" %}
-    {% include "devices/partials/device_create_modal.html" %}
-    <a class="btn btn-success mb-3" id="check-all-devices">
-        <i class="bi bi-check2-all"></i> Check All Devices
-    </a>
-    <a class="btn btn-primary mb-3" href="{% url 'device-import' %}">
-        <i class="bi bi-box-arrow-in-down"></i> Import Devices
-    </a>
-    <a class="btn btn-primary mb-3" href="{% url 'devices-export' %}">
-        <i class="bi bi-box-arrow-up"></i> Export Devices
-    </a>
+    {% if perms.devices.add_device %}
+        {% include "devices/partials/device_create_modal_button.html" %}
+        {% include "devices/partials/device_create_modal.html" %}
+    {% endif %}
+    {% if perms.networktests.add_testresult %}
+        <a class="btn btn-success mb-3" id="check-all-devices">
+            <i class="bi bi-check2-all"></i> Check All Devices
+        </a>
+    {% endif %}
+    {% if perms.devices.add_device %}
+        <a class="btn btn-primary mb-3" href="{% url 'device-import' %}">
+            <i class="bi bi-box-arrow-in-down"></i> Import Devices
+        </a>
+    {% endif %}
+    {% if perms.devices.view_device %}
+        <a class="btn btn-primary mb-3" href="{% url 'devices-export' %}">
+            <i class="bi bi-box-arrow-up"></i> Export Devices
+        </a>
+    {% endif %}
     <div hx-get="{% url 'devices-table' %}"
          hx-trigger="load, refresh from:body"
          hx-swap="innerHTML"

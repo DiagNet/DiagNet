@@ -90,3 +90,21 @@ class SetupConcurrencyTest(TestCase):
             )
 
             self.assertEqual(User.objects.count(), 0)
+
+
+class AdminPermissionTests(TestCase):
+    def setUp(self):
+        # Create a superuser to satisfy SuperuserRequiredMiddleware
+        User.objects.create_superuser(
+            username="admin", password="password123", email="admin@diagnet.dev"
+        )
+        self.user = User.objects.create_user(
+            username="testuser", password="password123"
+        )
+
+    def test_user_list_permission_required(self):
+        """Test that user list returns 403 if user lacks admin permissions."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(reverse("user-list"))
+        # CBVs using UserPassesTestMixin return 403 for authenticated users by default
+        self.assertEqual(response.status_code, 403)

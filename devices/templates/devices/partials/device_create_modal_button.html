@@ -1,5 +1,7 @@
-<button class="btn btn-primary mb-3"
-        data-bs-toggle="modal"
-        data-bs-target="#deviceCreationModal">
-    <i class="bi bi-database-add"></i> Add Device
-</button>
+{% if perms.devices.add_device %}
+    <button class="btn btn-primary mb-3"
+            data-bs-toggle="modal"
+            data-bs-target="#deviceCreationModal">
+        <i class="bi bi-database-add"></i> Add Device
+    </button>
+{% endif %}

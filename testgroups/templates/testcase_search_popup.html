@@ -48,7 +48,7 @@
                                     {% endfor %}
                                 {% else %}
                                     <tr>
-                                        <td colspan="100%">No Testcases to add.</td>
+                                        <td colspan="100">No Testcases to add.</td>
                                     </tr>
                                 {% endif %}
                             </tbody>
@@ -57,7 +57,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Add</button>
+                    {% if perms.testgroups.change_testgroup %}
+                        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Add</button>
+                    {% endif %}
                 </div>
             </form>
         </div>

@@ -3,60 +3,63 @@
     <table class="table table-hover">
         <thead>
             <tr>
-                <th></th>
+                {% if perms.networktests.add_testresult %}<th></th>{% endif %}
                 <th>Name</th>
                 <th>Test Case</th>
                 <th>Last Run</th>
                 <th>Status</th>
+                {% if perms.testgroups.change_testgroup %}<th class="text-end">Actions</th>{% endif %}
             </tr>
         </thead>
         <tbody>
             {% if testcase_list %}
                 {% for testcase in testcase_list %}
                     <tr class="testcase-tr" id="testcase-{{ testcase.id }}">
-                        <td>
-                            <button hx-get="{% url 'testgroup-testcase-run' testgroup_name testcase.id %}"
-                                    hx-target="#status-{{ testcase.id }}"
-                                    hx-swap="outerHTML"
-                                    class="btn btn-sm btn-primary {{ testgroup_name }}-runner"
-                                    title="Run test case">
-                                <i class="bi bi-play-fill"></i>
-                            </button>
-                        </td>
+                        {% if perms.networktests.add_testresult %}
+                            <td>
+                                <button hx-get="{% url 'testgroup-testcase-run' testgroup_name testcase.id %}"
+                                        hx-target="#status-{{ testcase.id }}"
+                                        hx-swap="outerHTML"
+                                        class="btn btn-sm btn-primary {{ testgroup_name }}-runner"
+                                        title="Run test case">
+                                    <i class="bi bi-play-fill"></i>
+                                </button>
+                            </td>
+                        {% endif %}
                         <td>{{ testcase.label }}</td>
                         <td>{{ testcase.test_module }}</td>
-                        <div id="run-status-{{ testcase.id }}">
-                            <td id="last-run-{{ testcase.id }}"
-                                title="{{ testcase.results.last.finished_at|date:'Y-m-d H:i' }}">
-                                {{ testcase.results.last.finished_at|relative_or_absolute }}
-                            </td>
-                            <td id="status-{{ testcase.id }}">
-                                {% if testcase.results.last %}
-                                    {% if testcase.expected_result == testcase.results.last.result %}
-                                        <span class="badge rounded-pill bg-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                                    {% else %}
-                                        <span class="badge rounded-pill bg-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="badge rounded-pill bg-secondary">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                                {% endif %}
-                            </td>
-                        </div>
-                        <td class="text-end">
-                            <button hx-vals='{"testgroup": "{{ testgroup_name }}", "testcase": "{{ testcase.label }}"}'
-                                    hx-post="{% url 'testcase-remove' %}"
-                                    hx-target="#td-coll-{{ testgroup_name }}"
-                                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                    class="btn btn-sm btn-danger"
-                                    title="Remove from group">
-                                <i class="bi bi-x"></i>
-                            </button>
+                        <td id="last-run-{{ testcase.id }}"
+                            title="{{ testcase.results.last.finished_at|date:'Y-m-d H:i' }}">
+                            {{ testcase.results.last.finished_at|relative_or_absolute }}
                         </td>
+                        <td id="status-{{ testcase.id }}">
+                            {% if testcase.results.last %}
+                                {% if testcase.expected_result == testcase.results.last.result %}
+                                    <span class="badge rounded-pill bg-success">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                {% else %}
+                                    <span class="badge rounded-pill bg-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge rounded-pill bg-secondary">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            {% endif %}
+                        </td>
+                        {% if perms.testgroups.change_testgroup %}
+                            <td class="text-end">
+                                <button hx-vals='{"testgroup": "{{ testgroup_name }}", "testcase": "{{ testcase.label }}"}'
+                                        hx-post="{% url 'testcase-remove' %}"
+                                        hx-target="#td-coll-{{ testgroup_name }}"
+                                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                        class="btn btn-sm btn-danger"
+                                        title="Remove from group">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
             {% else %}
                 <tr>
-                    <td colspan="5">No Test Cases yet.</td>
+                    <td colspan="100">No Test Cases yet.</td>
                 </tr>
             {% endif %}
         </tbody>

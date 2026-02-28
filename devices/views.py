@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 
 from django.core.exceptions import ImproperlyConfigured
 from devices.forms import DeviceForm, UploadFileForm
@@ -19,13 +21,15 @@ STATE_MAP = {
 }
 
 
+@permission_required("devices.view_device")
 def index(request):
     return render(request, "devices/index.html")
 
 
-class DeviceListView(generic.ListView):
+class DeviceListView(PermissionRequiredMixin, generic.ListView):
     """Generic class-based view for a list of devices."""
 
+    permission_required = "devices.view_device"
     devices = Device.objects.all()
     model = Device
 
@@ -41,7 +45,8 @@ class DeviceListView(generic.ListView):
         return context
 
 
-class DeviceCreate(CreateView):
+class DeviceCreate(PermissionRequiredMixin, CreateView):
+    permission_required = "devices.add_device"
     model = Device
     form_class = DeviceForm
     template_name = "devices/partials/device_form.html"
@@ -63,7 +68,8 @@ class DeviceCreate(CreateView):
         return reverse_lazy("devices-page")
 
 
-class DeviceUpdate(UpdateView):
+class DeviceUpdate(PermissionRequiredMixin, UpdateView):
+    permission_required = "devices.change_device"
     model = Device
     form_class = DeviceForm
     template_name = "devices/partials/device_form.html"
@@ -116,7 +122,8 @@ class DeviceUpdate(UpdateView):
         return super().form_invalid(form)
 
 
-class DeviceDelete(DeleteView):
+class DeviceDelete(PermissionRequiredMixin, DeleteView):
+    permission_required = "devices.delete_device"
     model = Device
     success_url = reverse_lazy("devices-page")
 
@@ -129,6 +136,7 @@ class DeviceDelete(DeleteView):
         return HttpResponseRedirect(self.success_url)
 
 
+@permission_required("networktests.add_testresult", raise_exception=True)
 def device_check(request, pk):
     device = get_object_or_404(Device, pk=pk)
 
@@ -168,6 +176,7 @@ def device_check(request, pk):
     return response
 
 
+@permission_required("devices.view_device")
 def export_devices_from_yaml(request):
     """
     Exports all devices that are stored in the database into a yaml file.
@@ -187,6 +196,7 @@ def export_devices_from_yaml(request):
     return response
 
 
+@permission_required("devices.view_device")
 def get_all_devices(request):
     devices = Device.objects.all()
     names = [(obj.name, obj.id) for obj in devices]
@@ -231,6 +241,7 @@ def handle_uploaded_file(f, overwrite_existing_devices: bool):
     return True
 
 
+@permission_required("devices.add_device")
 def import_devices_from_yaml(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)

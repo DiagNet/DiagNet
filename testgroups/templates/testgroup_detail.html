@@ -23,7 +23,7 @@
                 <button id="rename-submit" type="submit" class="btn btn-success btn-sm me-2">
                     <i class="bi bi-check"></i>
                 </button>
-                <button type="button" id ="aboart" class="btn btn-secondary btn-sm">
+                <button type="button" id ="abort" class="btn btn-secondary btn-sm">
                     <i class="bi bi-x"></i>
                 </button>
             </div>
@@ -44,7 +44,7 @@
     const editBtn = document.getElementById("edit-btn");
     const title = document.getElementById("title-div");
     const renameForm = document.getElementById("rename-form-div");
-    const aboart = document.getElementById("aboart");
+    const abort = document.getElementById("abort");
     const submit = document.getElementById("rename-submit");
 
     editBtn.addEventListener("click", function () {
@@ -52,7 +52,7 @@
       renameForm.hidden = false;
     });
 
-    aboart.addEventListener("click", function () {
+    abort.addEventListener("click", function () {
       title.classList.remove("d-none");
       renameForm.hidden = true;
     });
