@@ -21,7 +21,7 @@ STATE_MAP = {
 }
 
 
-@permission_required("devices.view_device", raise_exception=True)
+@permission_required("devices.view_device")
 def index(request):
     return render(request, "devices/index.html")
 
@@ -136,7 +136,7 @@ class DeviceDelete(PermissionRequiredMixin, DeleteView):
         return HttpResponseRedirect(self.success_url)
 
 
-@permission_required("networktests.add_testresult", raise_exception=True)
+@permission_required("networktests.add_testresult")
 def device_check(request, pk):
     device = get_object_or_404(Device, pk=pk)
 
@@ -176,7 +176,7 @@ def device_check(request, pk):
     return response
 
 
-@permission_required("devices.view_device", raise_exception=True)
+@permission_required("devices.view_device")
 def export_devices_from_yaml(request):
     """
     Exports all devices that are stored in the database into a yaml file.
@@ -196,7 +196,7 @@ def export_devices_from_yaml(request):
     return response
 
 
-@permission_required("devices.view_device", raise_exception=True)
+@permission_required("devices.view_device")
 def get_all_devices(request):
     devices = Device.objects.all()
     names = [(obj.name, obj.id) for obj in devices]
@@ -241,7 +241,7 @@ def handle_uploaded_file(f, overwrite_existing_devices: bool):
     return True
 
 
-@permission_required("devices.add_device", raise_exception=True)
+@permission_required("devices.add_device")
 def import_devices_from_yaml(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
