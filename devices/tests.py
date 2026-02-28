@@ -62,9 +62,9 @@ class DevicePermissionTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_device_check_permission_required(self):
-        """Test that device check redirects if user lacks add_testresult permission."""
+        """Test that device check returns 403 if user lacks add_testresult permission."""
         self.client.login(username="testuser", password="password123")
         url = reverse("device-check", kwargs={"pk": self.device.pk})
         response = self.client.get(url)
-        # FBVs redirect
-        self.assertRedirects(response, f"/auth/login/?next={url}")
+        # FBV returns 403 because raise_exception=True
+        self.assertEqual(response.status_code, 403)

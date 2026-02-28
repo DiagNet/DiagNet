@@ -52,8 +52,8 @@ class TestGroupPermissionTests(TestCase):
         )
 
     def test_rename_testgroup_permission_required(self):
-        """Test that rename_testgroup redirects if user lacks change_testgroup permission."""
+        """Test that rename_testgroup returns 403 if user lacks change_testgroup permission."""
         self.client.login(username="testuser", password="password123")
         url = reverse("rename-testgroup", kwargs={"name": "testgroup1"})
         response = self.client.post(url, {"name": "newname"})
-        self.assertRedirects(response, f"/auth/login/?next={url}")
+        self.assertEqual(response.status_code, 403)
