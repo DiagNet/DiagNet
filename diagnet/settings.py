@@ -119,7 +119,6 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",  # WARN don't move it down
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
