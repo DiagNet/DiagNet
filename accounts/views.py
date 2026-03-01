@@ -3,7 +3,7 @@ import logging
 from django.contrib import messages
 from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.decorators import login_not_required
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
@@ -81,39 +81,23 @@ class SetupView(View):
         return render(request, "accounts/setup.html", {"form": form})
 
 
-class AdminRequiredMixin(UserPassesTestMixin):
-    """Mixin to require admin/superuser access."""
-
-    def test_func(self):
-        user = self.request.user
-        return (
-            user.is_superuser
-            or user.has_perm("auth.view_user")
-            or user.has_perm("auth.view_group")
-            or user.has_perm("auth.add_user")
-            or user.has_perm("auth.add_group")
-            or user.has_perm("auth.change_user")
-            or user.has_perm("auth.change_group")
-            or user.has_perm("auth.delete_user")
-            or user.has_perm("auth.delete_group")
-        )
-
-
 # ============== User Views ==============
 
 
-class UserListView(AdminRequiredMixin, ListView):
+class UserListView(PermissionRequiredMixin, ListView):
     """List all users."""
 
+    permission_required = "auth.view_user"
     model = User
     template_name = "accounts/user_list.html"
     context_object_name = "users"
     ordering = ["username"]
 
 
-class UserCreateView(AdminRequiredMixin, CreateView):
+class UserCreateView(PermissionRequiredMixin, CreateView):
     """Create a new user."""
 
+    permission_required = "auth.add_user"
     model = User
     form_class = UserCreateForm
     template_name = "accounts/partials/user_form.html"
@@ -131,9 +115,10 @@ class UserCreateView(AdminRequiredMixin, CreateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class UserUpdateView(AdminRequiredMixin, UpdateView):
+class UserUpdateView(PermissionRequiredMixin, UpdateView):
     """Update an existing user."""
 
+    permission_required = "auth.change_user"
     model = User
     form_class = UserUpdateForm
     template_name = "accounts/partials/user_form.html"
@@ -159,7 +144,8 @@ class UserUpdateView(AdminRequiredMixin, UpdateView):
         return HttpResponseRedirect(reverse_lazy("user-list"))
 
 
-class UserDeleteView(AdminRequiredMixin, DeleteView):
+class UserDeleteView(PermissionRequiredMixin, DeleteView):
+    permission_required = "auth.delete_user"
     """Delete a user."""
 
     model = User
@@ -202,16 +188,19 @@ class UserDeleteView(AdminRequiredMixin, DeleteView):
         return HttpResponseRedirect(self.success_url)
 
 
-class UserDetailView(AdminRequiredMixin, DetailView):
+class UserDetailView(PermissionRequiredMixin, DetailView):
     """View user details."""
 
+    permission_required = "auth.view_user"
     model = User
     template_name = "accounts/partials/user_details.html"
     context_object_name = "account"
 
 
-class UserPasswordChangeView(AdminRequiredMixin, View):
+class UserPasswordChangeView(PermissionRequiredMixin, View):
     """Change a user's password (admin action)."""
+
+    permission_required = "auth.change_user"
 
     def get(self, request, pk):
         user = get_object_or_404(User, pk=pk)
@@ -278,9 +267,10 @@ class MyPasswordChangeView(LoginRequiredMixin, View):
 # ============== Group Views ==============
 
 
-class GroupListView(AdminRequiredMixin, ListView):
+class GroupListView(PermissionRequiredMixin, ListView):
     """List all groups."""
 
+    permission_required = "auth.view_group"
     model = Group
     template_name = "accounts/group_list.html"
     context_object_name = "groups"
@@ -302,8 +292,10 @@ class GroupListView(AdminRequiredMixin, ListView):
         return "Custom"
 
 
-class GroupCreateView(AdminRequiredMixin, View):
+class GroupCreateView(PermissionRequiredMixin, View):
     """Create a new group."""
+
+    permission_required = "auth.add_group"
 
     def get(self, request):
         form = GroupForm()
@@ -390,9 +382,10 @@ class GroupCreateView(AdminRequiredMixin, View):
         group.permissions.add(*permissions)
 
 
-class GroupDetailView(AdminRequiredMixin, DetailView):
+class GroupDetailView(PermissionRequiredMixin, DetailView):
     """View group details and members."""
 
+    permission_required = "auth.view_group"
     model = Group
     template_name = "accounts/partials/group_details.html"
     context_object_name = "group"
@@ -412,9 +405,10 @@ class GroupDetailView(AdminRequiredMixin, DetailView):
         return "Custom"
 
 
-class GroupDeleteView(AdminRequiredMixin, DeleteView):
+class GroupDeleteView(PermissionRequiredMixin, DeleteView):
     """Delete a group."""
 
+    permission_required = "auth.delete_group"
     model = Group
     template_name = "accounts/group_confirm_delete.html"
     success_url = reverse_lazy("group-list")
@@ -433,8 +427,10 @@ class GroupDeleteView(AdminRequiredMixin, DeleteView):
         return HttpResponseRedirect(self.success_url)
 
 
-class GroupMembershipView(AdminRequiredMixin, View):
+class GroupMembershipView(PermissionRequiredMixin, View):
     """Manage group membership."""
+
+    permission_required = "auth.change_group"
 
     def get(self, request, pk):
         group = get_object_or_404(Group, pk=pk)
