@@ -1,0 +1,88 @@
+{% load datetime_helpers %}
+<div class="accordion" id="dashboardAccordion">
+    {% for group in testgroups %}
+        <div class="accordion-item" id="accordion-item-group-{{ group.pk }}">
+            <h2 class="accordion-header" id="heading-group-{{ group.pk }}">
+                <button class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapse-group-{{ group.pk }}"
+                        aria-expanded="false"
+                        aria-controls="collapse-group-{{ group.pk }}">
+                    <i class="bi bi-folder me-2"></i>
+                    {{ group.name }}
+                    <span class="badge bg-secondary ms-2">{{ group.testcases.count }} tests</span>
+                </button>
+            </h2>
+            <div id="collapse-group-{{ group.pk }}"
+                 class="accordion-collapse collapse"
+                 aria-labelledby="heading-group-{{ group.pk }}"
+                 data-bs-parent="#dashboardAccordion">
+                <div class="accordion-body">
+                    <div class="d-flex gap-2 mb-3">
+                        <button class="btn btn-sm btn-primary"
+                                hx-post="{% url 'testgroup-run-all' group.pk %}"
+                                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                hx-target="#group-table-{{ group.pk }}"
+                                hx-swap="innerHTML"
+                                hx-indicator="#spinner-run-{{ group.pk }}">
+                            <i class="bi bi-play-fill"></i> Run all tests
+                            <span class="spinner-border spinner-border-sm htmx-indicator ms-1"
+                                  id="spinner-run-{{ group.pk }}"
+                                  role="status"></span>
+                        </button>
+                        <a href="{% url 'testgroup-export-pdf' group.pk %}"
+                           class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-file-earmark-pdf"></i> Export PDF
+                        </a>
+                        <button class="btn btn-sm btn-outline-secondary"
+                                hx-get="{% url 'testgroup-edit-modal' group.pk %}"
+                                hx-target="#testgroup-modal-container"
+                                hx-swap="innerHTML">
+                            <i class="bi bi-pencil"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger"
+                                hx-post="{% url 'testgroup-delete' group.pk %}"
+                                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                hx-swap="none"
+                                hx-confirm="Are you sure you want to delete the group '{{ group.name }}'?">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </div>
+                    <div id="group-table-{{ group.pk }}">
+                        {% include "networktests/partials/group_testcases_table.html" with testcases=group.testcases.all %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="text-muted mb-3">No test groups yet. Create one to get started.</div>
+    {% endfor %}
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="heading-all-tests">
+            <button class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapse-all-tests"
+                    aria-expanded="false"
+                    aria-controls="collapse-all-tests">
+                <i class="bi bi-list-check me-2"></i>
+                All Tests
+                <span class="badge bg-secondary ms-2">{{ all_testcases|length }} tests</span>
+            </button>
+        </h2>
+        <div id="collapse-all-tests"
+             class="accordion-collapse collapse"
+             aria-labelledby="heading-all-tests"
+             data-bs-parent="#dashboardAccordion">
+            <div class="accordion-body">
+                <div id="all-tests-table"
+                     hx-get="{% url 'all-tests-table-partial' %}"
+                     hx-trigger="refreshAllTests from:body"
+                     hx-swap="innerHTML">
+                    {% include "networktests/partials/group_testcases_table.html" with testcases=all_testcases %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

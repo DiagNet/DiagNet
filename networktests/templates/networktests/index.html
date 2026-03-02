@@ -2,28 +2,50 @@
 {% block title %}Network Tests - DiagNet{% endblock %}
 {% block content %}
     <h1>Network Tests</h1>
-    {% if perms.networktests.add_testcase %}
-        <a class="btn btn-primary mb-3" onclick="openModel()">
-            <i class="bi bi-database-add"></i> Add Test Case
-        </a>
-    {% endif %}
-    {% if perms.networktests.view_testcase and perms.networktests.view_testresult and perms.testgroups.view_testgroup %}
-        <a href="{% url 'networktests-export-pdf' %}"
-           class="btn btn-outline-danger mb-3">
-            <i class="bi bi-file-earmark-pdf"></i> Export PDF Report
-        </a>
-    {% endif %}
-    <div hx-get="{% url 'networktests-table' %}"
-         hx-trigger="load, refresh from:body delay:1s"
+    <div class="d-flex gap-2 mb-3">
+        {% if perms.networktests.add_testcase %}
+            <a class="btn btn-primary" onclick="openModel()">
+                <i class="bi bi-database-add"></i> Add Test Case
+            </a>
+        {% endif %}
+        {% if perms.testgroups.add_testgroup %}
+            <button class="btn btn-outline-primary"
+                    hx-get="{% url 'testgroup-create-modal' %}"
+                    hx-target="#testgroup-modal-container"
+                    hx-swap="innerHTML">
+                <i class="bi bi-folder-plus"></i> Create Test Group
+            </button>
+        {% endif %}
+        {% if perms.networktests.view_testcase and perms.networktests.view_testresult and perms.testgroups.view_testgroup %}
+            <a href="{% url 'networktests-export-pdf' %}"
+               class="btn btn-outline-danger ms-auto">
+                <i class="bi bi-file-earmark-pdf"></i> Export PDF Report
+            </a>
+        {% endif %}
+    </div>
+    <div hx-get="{% url 'dashboard-content' %}"
+         hx-trigger="load, refreshDashboard from:body"
          hx-swap="innerHTML"
-         id="networktests-table">
-        <div class="text-center">
+         id="dashboard-content">
+        <div class="text-center py-5">
             <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading test cases...</span>
+                <span class="visually-hidden">Loading...</span>
             </div>
         </div>
     </div>
+    <div id="testgroup-modal-container"></div>
     {% if perms.networktests.add_testcase %}
         {% include "networktests/partials/create_popup/create_test_popup.html" %}
     {% endif %}
+{% endblock %}
+{% block scripts %}
+    <script>
+        document.body.addEventListener("closeModal", function () {
+            const modalEl = document.getElementById("testgroupModal");
+            if (modalEl) {
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+            }
+        });
+    </script>
 {% endblock %}
