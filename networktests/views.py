@@ -570,7 +570,7 @@ def save_testgroup(request, pk=None):
 
     return render(
         request,
-        "networktests/partials/testgroup_modal.html",
+        "networktests/partials/testgroup_form.html",
         {"form": form, "group": group if pk else None},
     )
 

@@ -1,0 +1,57 @@
+<form hx-post="{% if group %}{% url 'testgroup-save-pk' group.pk %}{% else %}{% url 'testgroup-save' %}{% endif %}"
+      hx-target="#testgroup-modal-content"
+      hx-swap="innerHTML"
+      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    {% csrf_token %}
+    <div class="modal-header">
+        <h5 class="modal-title">
+            {% if group %}
+                Edit Test Group
+            {% else %}
+                Create Test Group
+            {% endif %}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body">
+        <div class="mb-3">
+            <label for="id_name" class="form-label">Name</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.name.errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Assign Test Cases</label>
+            <div style="max-height: 300px;
+                        overflow-y: auto"
+                 class="border rounded p-2">
+                {% for checkbox in form.testcases %}
+                    <div class="form-check">
+                        {{ checkbox.tag }}
+                        <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                    </div>
+                {% empty %}
+                    <span class="text-muted">No test cases available.</span>
+                {% endfor %}
+            </div>
+            {% if form.testcases.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.testcases.errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+            {% if group %}
+                Save Changes
+            {% else %}
+                Create
+            {% endif %}
+        </button>
+    </div>
+</form>
