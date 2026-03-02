@@ -36,12 +36,7 @@ logger = logging.getLogger(__name__)
 
 @permission_required("networktests.view_testcase", raise_exception=True)
 def index(request):
-    testgroups = TestGroup.objects.prefetch_related("testcases").order_by("name")
-    return render(
-        request,
-        "networktests/index.html",
-        {"testgroups": testgroups},
-    )
+    return render(request, "networktests/index.html")
 
 
 @permission_required("networktests.view_testcase", raise_exception=True)
