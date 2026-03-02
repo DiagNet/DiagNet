@@ -8,7 +8,7 @@
                 aria-controls="collapse-group-{{ group.pk }}">
             <i class="bi bi-folder me-2"></i>
             {{ group.name }}
-            <span class="badge bg-secondary ms-2">{{ group.testcases.count }} tests</span>
+            <span class="badge bg-secondary ms-2">{{ group.testcases.all|length }} tests</span>
         </button>
     </h2>
     <div id="collapse-group-{{ group.pk }}"
