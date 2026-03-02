@@ -23,10 +23,11 @@ class PDFReport:
     MARGIN_RIGHT = PAGE_WIDTH - MARGIN_LEFT
     CONTENT_WIDTH = MARGIN_RIGHT - MARGIN_LEFT
 
-    def __init__(self, buffer):
+    def __init__(self, buffer, group=None):
         self.buffer = buffer
         self.pdf = canvas.Canvas(self.buffer, pagesize=A4)
         self.now = timezone.now()
+        self.group = group
 
     def generate(self):
         self.fetch_data()
@@ -39,12 +40,22 @@ class PDFReport:
         return self.buffer
 
     def fetch_data(self):
-        self.results = TestResult.objects.select_related("test_case").order_by(
+        results_qs = TestResult.objects.select_related("test_case").order_by(
             "-started_at"
-        )[:50]
+        )
+
+        if self.group:
+            testcase_ids = self.group.testcases.values_list("pk", flat=True)
+            results_qs = results_qs.filter(test_case_id__in=testcase_ids)
+
+        self.results = results_qs[:50]
+
+        groups_qs = TestGroup.objects.all()
+        if self.group:
+            groups_qs = groups_qs.filter(pk=self.group.pk)
 
         groups_with_stats = (
-            TestGroup.objects.annotate(
+            groups_qs.annotate(
                 total_count=Count("testcases__results"),
                 pass_count=Count(
                     "testcases__results", filter=Q(testcases__results__result=True)
@@ -77,12 +88,18 @@ class PDFReport:
     def draw_header(self):
         y_pos = self.PAGE_HEIGHT - 90
         self.pdf.setFont("Helvetica-Bold", 30)
-        self.pdf.drawString(self.MARGIN_LEFT, y_pos, "DiagNet Test Report")
+        title = "DiagNet Test Report"
+        if self.group:
+            title += f" – {self.group.name}"
+        self.pdf.drawString(self.MARGIN_LEFT, y_pos, title)
 
         y_pos -= 35
         self.pdf.setFont("Helvetica", 16)
         self.pdf.setFillColor(colors.grey)
-        self.pdf.drawString(self.MARGIN_LEFT, y_pos, "Automated Network Test Summary")
+        subtitle = "Automated Network Test Summary"
+        if self.group:
+            subtitle = f"Report for group: {self.group.name}"
+        self.pdf.drawString(self.MARGIN_LEFT, y_pos, subtitle)
 
         y_pos -= 35
         self.pdf.setFillColor(colors.black)
