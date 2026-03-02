@@ -48,4 +48,55 @@ urlpatterns = [
         views.sync_custom_templates_view,
         name="sync-custom-templates",
     ),
+    # Testgroup management (consolidated)
+    path(
+        "groups/dashboard/",
+        views.dashboard_content,
+        name="dashboard-content",
+    ),
+    path(
+        "groups/create/",
+        views.testgroup_form_modal,
+        name="testgroup-create-modal",
+    ),
+    path(
+        "groups/<int:pk>/edit/",
+        views.testgroup_form_modal,
+        name="testgroup-edit-modal",
+    ),
+    path(
+        "groups/save/",
+        views.save_testgroup,
+        name="testgroup-save",
+    ),
+    path(
+        "groups/<int:pk>/save/",
+        views.save_testgroup,
+        name="testgroup-save-pk",
+    ),
+    path(
+        "groups/<int:pk>/delete/",
+        views.delete_testgroup,
+        name="testgroup-delete",
+    ),
+    path(
+        "groups/<int:pk>/run/",
+        views.run_group_tests,
+        name="testgroup-run-all",
+    ),
+    path(
+        "groups/<int:pk>/export-pdf/",
+        views.export_group_pdf,
+        name="testgroup-export-pdf",
+    ),
+    path(
+        "groups/<int:pk>/table/",
+        views.group_table_partial,
+        name="group-table-partial",
+    ),
+    path(
+        "groups/all-tests-table/",
+        views.all_tests_table_partial,
+        name="all-tests-table-partial",
+    ),
 ]
