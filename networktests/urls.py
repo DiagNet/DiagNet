@@ -99,4 +99,9 @@ urlpatterns = [
         views.all_tests_table_partial,
         name="all-tests-table-partial",
     ),
+    path(
+        "groups/<int:pk>/accordion-item/",
+        views.group_accordion_item_partial,
+        name="group-accordion-item-partial",
+    ),
 ]
