@@ -47,5 +47,19 @@
                 if (modal) modal.hide();
             }
         });
+
+        // "Run all tests" button: swap play icon for spinner during request
+        document.body.addEventListener("htmx:beforeRequest", function (evt) {
+            const btn = evt.detail.elt;
+            if (!btn.classList.contains("run-all-btn")) return;
+            btn.querySelector(".run-all-icon").classList.add("d-none");
+            btn.querySelector(".run-all-spinner").classList.remove("d-none");
+        });
+        document.body.addEventListener("htmx:afterRequest", function (evt) {
+            const btn = evt.detail.elt;
+            if (!btn.classList.contains("run-all-btn")) return;
+            btn.querySelector(".run-all-icon").classList.remove("d-none");
+            btn.querySelector(".run-all-spinner").classList.add("d-none");
+        });
     </script>
 {% endblock %}

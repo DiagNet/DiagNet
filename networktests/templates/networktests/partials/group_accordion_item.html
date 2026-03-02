@@ -17,16 +17,16 @@
          data-bs-parent="#dashboardAccordion">
         <div class="accordion-body">
             <div class="d-flex gap-2 mb-3">
-                <button class="btn btn-sm btn-primary"
+                <button class="btn btn-sm btn-primary run-all-btn"
                         hx-post="{% url 'testgroup-run-all' group.pk %}"
                         hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                         hx-target="#group-table-{{ group.pk }}"
                         hx-swap="innerHTML"
-                        hx-indicator="#spinner-run-{{ group.pk }}">
-                    <i class="bi bi-play-fill"></i> Run all tests
-                    <span class="spinner-border spinner-border-sm htmx-indicator ms-1"
-                          id="spinner-run-{{ group.pk }}"
+                        hx-disabled-elt="this">
+                    <i class="bi bi-play-fill run-all-icon"></i>
+                    <span class="spinner-border spinner-border-sm run-all-spinner d-none"
                           role="status"></span>
+                    Run all tests
                 </button>
                 <a href="{% url 'testgroup-export-pdf' group.pk %}"
                    class="btn btn-sm btn-outline-danger">
