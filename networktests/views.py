@@ -323,10 +323,30 @@ def run_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     try:
         testcase.run()
-        messages.success(request, f"Successfully executed test: {testcase.label}")
+        msg = f"Successfully executed test: {testcase.label}"
+        level = "success"
     except Exception as e:
         logger.exception("Error running testcase %s", testcase.label)
-        messages.error(request, f"Failed to run test {testcase.label}: {e}")
+        msg = f"Failed to run test {testcase.label}: {e}"
+        level = "danger"
+
+    if request.headers.get("HX-Request"):
+        testcase.refresh_from_db()
+        testcase = TestCase.objects.prefetch_related("results").get(pk=pk)
+        response = render(
+            request,
+            "networktests/partials/testcase_row.html",
+            {"testcase": testcase},
+        )
+        response["HX-Trigger"] = json.dumps(
+            {"showMessage": {"message": msg, "level": level}}
+        )
+        return response
+
+    if level == "success":
+        messages.success(request, msg)
+    else:
+        messages.error(request, msg)
     return redirect("networktests-page")
 
 
