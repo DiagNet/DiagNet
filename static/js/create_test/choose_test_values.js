@@ -33,6 +33,8 @@ createTestButton.addEventListener("click", async () => {
   showSuccess("TestCase created successfully!");
   // Hide the popup
   closeModel();
+  // Refresh the "All Tests" table without collapsing accordions
+  htmx.trigger(document.body, "refreshAllTests");
 });
 
 // Label Input
