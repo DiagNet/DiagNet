@@ -56,18 +56,16 @@
         {% endif %}
     </td>
     <td class="align-middle">
-        <button class="btn btn-sm btn-primary"
+        <button class="btn btn-sm btn-primary run-test-btn"
                 title="Run test case"
                 hx-post="{% url 'tests-run' testcase.id %}"
                 hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                hx-target="#testcase-row-{{ testcase.id }}"
+                hx-target="closest tr"
                 hx-swap="outerHTML"
-                hx-disabled-elt="this"
-                hx-indicator="#run-indicator-{{ testcase.id }}">
-            <i class="bi bi-play-fill"></i>
+                hx-disabled-elt="this">
+            <i class="bi bi-play-fill run-test-icon"></i>
+            <span class="spinner-border spinner-border-sm run-test-spinner d-none"
+                  role="status"></span>
         </button>
-        <span class="spinner-border spinner-border-sm text-primary htmx-indicator ms-1"
-              id="run-indicator-{{ testcase.id }}"
-              role="status"></span>
     </td>
 </tr>
