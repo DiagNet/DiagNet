@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, QuerySet
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.text import slugify
 from django.views import generic
 from django.views.decorators.http import require_http_methods, require_POST
 
@@ -651,7 +652,7 @@ def export_group_pdf(request, pk):
     buffer.seek(0)
     response = HttpResponse(buffer, content_type="application/pdf")
     datestamp = date.today().strftime("%Y-%m-%d")
-    filename = f"DiagNet-Report-{group.name}-{datestamp}.pdf"
+    filename = f"DiagNet-Report-{slugify(group.name)}-{datestamp}.pdf"
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
 
