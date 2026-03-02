@@ -558,14 +558,14 @@ def save_testgroup(request, pk=None):
         else:
             # Create: need full dashboard refresh to insert new accordion
             response = HttpResponse(status=204)
-            response["HX-Trigger-After-Settle"] = json.dumps({"refreshDashboard": True})
 
-        response["HX-Trigger"] = json.dumps(
-            {
-                "closeModal": True,
-                "showMessage": {"message": msg, "level": "success"},
-            }
-        )
+        triggers = {
+            "closeModal": True,
+            "showMessage": {"message": msg, "level": "success"},
+        }
+        if not pk:
+            triggers["refreshDashboard"] = True
+        response["HX-Trigger"] = json.dumps(triggers)
         return response
 
     return render(
