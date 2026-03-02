@@ -515,16 +515,35 @@ def save_testgroup(request, pk=None):
         action = "created"
 
     if form.is_valid():
-        form.save()
-        response = HttpResponse(status=204)
+        saved_group = form.save()
+        msg = f"Test group '{form.cleaned_data['name']}' {action}."
+
+        if pk:
+            # Edit: swap just this accordion item (kept open), no full refresh
+            saved_group = TestGroup.objects.prefetch_related(
+                Prefetch(
+                    "testcases",
+                    queryset=TestCase.objects.prefetch_related("results").order_by(
+                        "label"
+                    ),
+                )
+            ).get(pk=pk)
+            response = render(
+                request,
+                "networktests/partials/group_accordion_item.html",
+                {"group": saved_group, "accordion_open": True},
+            )
+            response["HX-Retarget"] = f"#accordion-item-group-{pk}"
+            response["HX-Reswap"] = "outerHTML"
+        else:
+            # Create: need full dashboard refresh to insert new accordion
+            response = HttpResponse(status=204)
+            response["HX-Trigger-After-Settle"] = json.dumps({"refreshDashboard": True})
+
         response["HX-Trigger"] = json.dumps(
             {
-                "refreshDashboard": True,
                 "closeModal": True,
-                "showMessage": {
-                    "message": f"Test group '{form.cleaned_data['name']}' {action}.",
-                    "level": "success",
-                },
+                "showMessage": {"message": msg, "level": "success"},
             }
         )
         return response
@@ -678,4 +697,27 @@ def all_tests_table_partial(request):
         request,
         "networktests/partials/group_testcases_table.html",
         {"testcases": all_testcases},
+    )
+
+
+@permission_required(
+    ["networktests.view_testcase", "testgroups.view_testgroup"],
+    raise_exception=True,
+)
+@require_http_methods(["GET"])
+def group_accordion_item_partial(request, pk):
+    """HTMX partial: returns a single accordion item for a group, kept open."""
+    group = get_object_or_404(
+        TestGroup.objects.prefetch_related(
+            Prefetch(
+                "testcases",
+                queryset=TestCase.objects.prefetch_related("results").order_by("label"),
+            )
+        ),
+        pk=pk,
+    )
+    return render(
+        request,
+        "networktests/partials/group_accordion_item.html",
+        {"group": group, "accordion_open": True},
     )
