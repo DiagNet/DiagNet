@@ -22,19 +22,26 @@ from networktests.models import (
     TestParameter,
     TestResult,
 )
+from networktests.forms import TestGroupForm
 from networktests.pdf_report import PDFReport
 from networktests.testcases.base import get_parameter_names
 from networktests.utils import (
     get_all_available_test_classes,
     sync_custom_testcases,
 )
+from testgroups.models import TestGroup
 
 logger = logging.getLogger(__name__)
 
 
 @permission_required("networktests.view_testcase", raise_exception=True)
 def index(request):
-    return render(request, "networktests/index.html")
+    testgroups = TestGroup.objects.prefetch_related("testcases").order_by("name")
+    return render(
+        request,
+        "networktests/index.html",
+        {"testgroups": testgroups},
+    )
 
 
 @permission_required("networktests.view_testcase", raise_exception=True)
@@ -466,3 +473,209 @@ def sync_custom_templates_view(request):
     else:
         messages.success(request, f"Sync complete. Discovered {count} new template(s).")
     return redirect("manage-custom-templates")
+
+
+@permission_required("testgroups.view_testgroup", raise_exception=True)
+@require_http_methods(["GET"])
+def testgroup_form_modal(request, pk=None):
+    """
+    Return the testgroup create/edit modal HTML via HTMX.
+    Reuses the same form and template for both create and edit.
+    """
+    if pk:
+        group = get_object_or_404(TestGroup, pk=pk)
+        form = TestGroupForm(instance=group)
+    else:
+        group = None
+        form = TestGroupForm()
+
+    return render(
+        request,
+        "networktests/partials/testgroup_modal.html",
+        {"form": form, "group": group},
+    )
+
+
+@require_http_methods(["POST"])
+def save_testgroup(request, pk=None):
+    """
+    Handle POST for creating or updating a TestGroup.
+    Returns an HTMX trigger to refresh the dashboard.
+    """
+    if pk:
+        if not request.user.has_perm("testgroups.change_testgroup"):
+            return HttpResponse(status=403)
+        group = get_object_or_404(TestGroup, pk=pk)
+        form = TestGroupForm(request.POST, instance=group)
+        action = "updated"
+    else:
+        if not request.user.has_perm("testgroups.add_testgroup"):
+            return HttpResponse(status=403)
+        form = TestGroupForm(request.POST)
+        action = "created"
+
+    if form.is_valid():
+        form.save()
+        response = HttpResponse(status=204)
+        response["HX-Trigger"] = json.dumps(
+            {
+                "refreshDashboard": True,
+                "closeModal": True,
+                "showMessage": {
+                    "message": f"Test group '{form.cleaned_data['name']}' {action}.",
+                    "level": "success",
+                },
+            }
+        )
+        return response
+
+    return render(
+        request,
+        "networktests/partials/testgroup_modal.html",
+        {"form": form, "group": group if pk else None},
+    )
+
+
+@permission_required("testgroups.delete_testgroup", raise_exception=True)
+@require_http_methods(["POST"])
+def delete_testgroup(request, pk):
+    """Delete a TestGroup and refresh the dashboard."""
+    group = get_object_or_404(TestGroup, pk=pk)
+    name = group.name
+    group.delete()
+    response = HttpResponse(status=204)
+    response["HX-Trigger"] = json.dumps(
+        {
+            "refreshDashboard": True,
+            "showMessage": {
+                "message": f"Test group '{name}' deleted.",
+                "level": "success",
+            },
+        }
+    )
+    return response
+
+
+@permission_required(
+    ["networktests.view_testcase", "testgroups.view_testgroup"],
+    raise_exception=True,
+)
+@require_http_methods(["POST"])
+def run_group_tests(request, pk):
+    """
+    Run all tests belonging to a TestGroup sequentially.
+    Returns the updated testcases table for this group.
+    """
+    group = get_object_or_404(TestGroup, pk=pk)
+    testcases = list(group.testcases.prefetch_related("results").order_by("label"))
+
+    passed = 0
+    failed = 0
+    for tc in testcases:
+        try:
+            tc.run()
+            passed += 1
+        except Exception:
+            logger.exception(
+                "Error running testcase %s in group %s", tc.label, group.name
+            )
+            failed += 1
+
+    msg = f"Group '{group.name}': {passed} passed, {failed} failed."
+    level = "success" if failed == 0 else "warning"
+
+    # Re-fetch to get updated results
+    group.refresh_from_db()
+    updated_testcases = group.testcases.prefetch_related("results").order_by("label")
+
+    response = render(
+        request,
+        "networktests/partials/group_testcases_table.html",
+        {"testcases": updated_testcases},
+    )
+    response["HX-Trigger"] = json.dumps(
+        {"showMessage": {"message": msg, "level": level}}
+    )
+    return response
+
+
+@permission_required(
+    [
+        "networktests.view_testcase",
+        "networktests.view_testresult",
+        "testgroups.view_testgroup",
+    ],
+    raise_exception=True,
+)
+@require_http_methods(["GET"])
+def export_group_pdf(request, pk):
+    """Generate a PDF report filtered to a specific TestGroup."""
+    group = get_object_or_404(TestGroup, pk=pk)
+    buffer = BytesIO()
+    report = PDFReport(buffer, group=group)
+    report.generate()
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type="application/pdf")
+    datestamp = date.today().strftime("%Y-%m-%d")
+    filename = f"DiagNet-Report-{group.name}-{datestamp}.pdf"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
+
+@permission_required(
+    ["networktests.view_testcase", "testgroups.view_testgroup"],
+    raise_exception=True,
+)
+@require_http_methods(["GET"])
+def dashboard_content(request):
+    """
+    HTMX partial: renders the accordion dashboard with all groups + all-tests section.
+    """
+    testgroups = TestGroup.objects.prefetch_related(
+        Prefetch(
+            "testcases",
+            queryset=TestCase.objects.prefetch_related("results").order_by("label"),
+        )
+    ).order_by("name")
+    all_testcases = TestCase.objects.prefetch_related("results").order_by("label")
+
+    return render(
+        request,
+        "networktests/partials/dashboard_content.html",
+        {"testgroups": testgroups, "all_testcases": all_testcases},
+    )
+
+
+@permission_required(
+    ["networktests.view_testcase", "testgroups.view_testgroup"],
+    raise_exception=True,
+)
+@require_http_methods(["GET"])
+def group_table_partial(request, pk):
+    """HTMX partial: returns just the testcases table for a specific group."""
+    group = get_object_or_404(
+        TestGroup.objects.prefetch_related(
+            Prefetch(
+                "testcases",
+                queryset=TestCase.objects.prefetch_related("results").order_by("label"),
+            )
+        ),
+        pk=pk,
+    )
+    return render(
+        request,
+        "networktests/partials/group_testcases_table.html",
+        {"testcases": group.testcases.all()},
+    )
+
+
+@permission_required("networktests.view_testcase", raise_exception=True)
+@require_http_methods(["GET"])
+def all_tests_table_partial(request):
+    """HTMX partial: returns the testcases table for 'All Tests'."""
+    all_testcases = TestCase.objects.prefetch_related("results").order_by("label")
+    return render(
+        request,
+        "networktests/partials/group_testcases_table.html",
+        {"testcases": all_testcases},
+    )
