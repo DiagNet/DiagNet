@@ -303,6 +303,7 @@ async function init() {
   searchInput.addEventListener("input", debounce(handleInput, 200));
   searchInput.addEventListener("keydown", handleKeyboardNavigation);
   popupWindow.addEventListener("keydown", onPopUpClickHandler);
+  popupWindow.addEventListener("hidden.bs.modal", resetModal);
   await handleInput();
 }
 
@@ -320,5 +321,55 @@ function openModel() {
 /** Closes the popup */
 function closeModel() {
   popupWindowModel.hide();
-  //popupWindowModel.dispose();
+}
+
+/** Resets the modal to its initial state */
+function resetModal() {
+  // Reset search input and results
+  searchInput.value = "";
+  currentIndex = -1;
+  renderResults(allTestClasses.slice());
+  hideInfoForTestClass();
+
+  // Reset tabs to first tab
+  const tabs = document.querySelectorAll("#popupTabs .nav-link");
+  const container = document.getElementById("popupTabsContent");
+  tabs.forEach((t) => t.classList.remove("active"));
+  tabs[0].classList.add("active");
+  container.style.transform = "translateX(0%)";
+
+  // Disable parameters and info tabs
+  paramTab.classList.add("disabled");
+  paramTab.disabled = true;
+  paramTab.setAttribute("tabindex", "-1");
+  infoTab.disabled = true;
+  infoTab.classList.add("disabled");
+  infoTab.setAttribute("tabindex", "-1");
+
+  // Clear parameter fields and state
+  chooseParametersContainer.innerHTML = "";
+  previousTestClass = "";
+  allParametersDisplayed = [];
+  activationDependencyMap = {};
+  settingUp = false;
+
+  // Clear info tab fields and state
+  labelInput.value = "";
+  description.value = "";
+  document.getElementById("passBtn").checked = true;
+  disableCreateTest();
+  params = undefined;
+  setupParams = false;
+
+  // Reset parameter info container
+  parameterInfoContainer.innerHTML = "";
+  parameterInfoContainer.classList.add("hidden");
+
+  // Re-enable submit parameters button default state
+  submitParametersButton.disabled = true;
+
+  // Re-attach keyboard handler for template tab
+  popupWindow.addEventListener("keydown", onPopUpClickHandler);
+
+  updateTabContentAccessibility();
 }
