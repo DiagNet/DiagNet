@@ -92,6 +92,7 @@ class UserListView(PermissionRequiredMixin, ListView):
     template_name = "accounts/user_list.html"
     context_object_name = "users"
     ordering = ["username"]
+    paginate_by = 25
 
 
 class UserCreateView(PermissionRequiredMixin, CreateView):
@@ -275,6 +276,7 @@ class GroupListView(PermissionRequiredMixin, ListView):
     template_name = "accounts/group_list.html"
     context_object_name = "groups"
     ordering = ["name"]
+    paginate_by = 25
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
