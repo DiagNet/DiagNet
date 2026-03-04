@@ -62,12 +62,12 @@
                         <td class="align-middle">
                             {% if testcase.results.last %}
                                 {% if testcase.expected_result == testcase.results.last.result %}
-                                    <span class="badge rounded-pill bg-success">Pass</span>
+                                    {% include "networktests/partials/status_badge.html" with status="PASS" %}
                                 {% else %}
-                                    <span class="badge rounded-pill bg-danger">Fail</span>
+                                    {% include "networktests/partials/status_badge.html" with status="FAIL" %}
                                 {% endif %}
                             {% else %}
-                                <span class="badge rounded-pill bg-secondary">Unknown</span>
+                                {% include "networktests/partials/status_badge.html" with status="NEW" %}
                             {% endif %}
                         </td>
                         {% if perms.networktests.add_testresult %}
