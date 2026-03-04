@@ -330,6 +330,9 @@ function resetModal() {
   currentIndex = -1;
   renderResults(allTestClasses.slice());
   hideInfoForTestClass();
+  // Cancel any pending debounced fetch triggered by renderResults
+  // (happens when there is exactly one test class in the list)
+  fetchTestClassInfoDebounced.cancel();
 
   // Reset tabs to first tab
   const tabs = document.querySelectorAll("#popupTabs .nav-link");
@@ -365,10 +368,18 @@ function resetModal() {
   parameterInfoContainer.innerHTML = "";
   parameterInfoContainer.classList.add("hidden");
 
-  // Re-enable submit parameters button default state
+  // Reset submit parameters button: remove stacked listener and disable
+  if (submitParametersHandler) {
+    submitParametersButton.removeEventListener(
+      "click",
+      submitParametersHandler,
+    );
+    submitParametersHandler = null;
+  }
   submitParametersButton.disabled = true;
 
-  // Re-attach keyboard handler for template tab
+  // Re-attach keyboard handler for template tab (remove first to avoid duplicates)
+  popupWindow.removeEventListener("keydown", onPopUpClickHandler);
   popupWindow.addEventListener("keydown", onPopUpClickHandler);
 
   updateTabContentAccessibility();
