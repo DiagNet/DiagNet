@@ -33,9 +33,9 @@
                             </td>
                             <td class="text-center">
                                 {% if testcase.expected_result == result.result %}
-                                    <span class="badge rounded-pill px-3 bg-success-subtle text-success-emphasis border border-success-subtle">PASS</span>
+                                    {% include "networktests/partials/status_badge.html" with status="PASS" %}
                                 {% else %}
-                                    <span class="badge rounded-pill px-3 bg-danger-subtle text-danger-emphasis border border-danger-subtle">FAIL</span>
+                                    {% include "networktests/partials/status_badge.html" with status="FAIL" %}
                                 {% endif %}
                             </td>
                             <td class="text-center">
@@ -77,11 +77,7 @@
                                                             {% for module_name, data in result.log.tests.items %}
                                                                 <tr>
                                                                     <td class="font-monospace text-body px-3 py-2">{{ module_name }}</td>
-                                                                    <td class="text-center py-2">
-                                                                        <span class="badge rounded-pill px-2 border {% if data.status == 'PASS' %}bg-success-subtle text-success-emphasis border-success-subtle {% elif data.status == 'FAIL' %}bg-danger-subtle text-danger-emphasis border-danger-subtle {% else %}bg-secondary-subtle text-secondary-emphasis border-secondary-subtle{% endif %}">
-                                                                            {{ data.status|upper }}
-                                                                        </span>
-                                                                    </td>
+                                                                    <td class="text-center py-2">{% include "networktests/partials/status_badge.html" with status=data.status|upper %}</td>
                                                                     <td class="text-break text-body-secondary py-2">{{ data.message|default:"-" }}</td>
                                                                     <td class="text-end font-monospace text-secondary pe-3 py-2">{{ data.time|floatformat:4 }}s</td>
                                                                 </tr>
