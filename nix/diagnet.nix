@@ -195,9 +195,14 @@
             contents = [
               pkgs.dockerTools.fakeNss
 
+              pkgs.bashInteractive
               pkgs.cacert
               pkgs.coreutils
-              pkgs.bashInteractive
+
+              # pyATS deps
+              pkgs.openssh
+              pkgs.inetutils
+
               entrypoint
               ../.
             ];
