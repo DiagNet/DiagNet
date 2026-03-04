@@ -73,14 +73,14 @@
                         {% endif %}
                     </ul>
                     <hr class="d-lg-none text-white-50 my-2">
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+                    <ul class="navbar-nav ms-auto mb-lg-0 align-items-lg-center">
                         {% if user.is_authenticated %}
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle"
                                    href="#"
                                    role="button"
                                    data-bs-toggle="dropdown"
-                                   aria-expanded="false">{{ user.username }}</a>
+                                   aria-expanded="false"><i class="bi bi-person-circle me-2"></i>{{ user.username }}</a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
                                         <a class="dropdown-item" href="{% url 'my-password-change' %}">Change Password</a>
