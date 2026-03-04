@@ -511,6 +511,7 @@ let activationDependencyMap = {};
 let allParametersDisplayed = [];
 let previousTestClass = ""; // Store last TestClass to avoid recreating same parameter-fields
 let settingUp = false; // Locks up TestClass selection while fields are being created
+let submitParametersHandler = null; // Stored so it can be removed on reset
 
 /**
  * "Selects" the given test class for further handling.
@@ -583,9 +584,14 @@ async function selectTestClass(testClass) {
     parameter["parameter_info"].afterCreatingField();
   });
 
-  submitParametersButton.addEventListener("click", () => {
-    selectParameters(allParameters);
-  });
+  if (submitParametersHandler) {
+    submitParametersButton.removeEventListener(
+      "click",
+      submitParametersHandler,
+    );
+  }
+  submitParametersHandler = () => selectParameters(allParameters);
+  submitParametersButton.addEventListener("click", submitParametersHandler);
 
   // Activate navigation towards parameter tab
   paramTab.classList.remove("disabled");
