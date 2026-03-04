@@ -334,6 +334,12 @@ function resetModal() {
   // (happens when there is exactly one test class in the list)
   fetchTestClassInfoDebounced.cancel();
 
+  // Remove stale "Choose Test Class" button handler
+  if (docClickHandler) {
+    chooseTestClassBtn.removeEventListener("click", docClickHandler);
+    docClickHandler = null;
+  }
+
   // Reset tabs to first tab
   const tabs = document.querySelectorAll("#popupTabs .nav-link");
   const container = document.getElementById("popupTabsContent");
