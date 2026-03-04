@@ -305,7 +305,7 @@ def create_test_page(request):
 class TestCaseListView(PermissionRequiredMixin, generic.ListView):
     permission_required = "networktests.view_testcase"
     model = TestCase
-    paginate_by = 20
+    paginate_by = 25
 
     def get_queryset(self) -> QuerySet:
         if hasattr(self, "queryset") and self.queryset is not None:
