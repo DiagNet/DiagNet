@@ -44,7 +44,7 @@
                         {% for param in testcase.parameters.all %}
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="text-secondary small">{{ param.name }}</span>
-                                <span class="badge bg-white text-primary border fw-medium font-monospace">{{ param.value|default:"-" }}</span>
+                                <span class="badge bg-body text-primary border fw-medium font-monospace">{{ param.value|default:"-" }}</span>
                             </div>
                         {% empty %}
                             <span class="text-muted small fst-italic">No parameters</span>
@@ -55,8 +55,8 @@
                     <label class="text-uppercase small fw-bold text-muted mb-3 d-block">Devices</label>
                     <div class="d-flex flex-wrap gap-2">
                         {% for device in testcase.devices.all %}
-                            <div class="bg-white border rounded-2 px-3 py-2 shadow-sm">
-                                <div class="fw-bold small text-dark">{{ device.device }}</div>
+                            <div class="bg-body border rounded-2 px-3 py-2 shadow-sm">
+                                <div class="fw-bold small text-body">{{ device.device }}</div>
                                 <div class="text-muted small" style="font-size: 0.7rem;">({{ device.name }})</div>
                             </div>
                         {% empty %}
