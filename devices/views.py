@@ -138,6 +138,42 @@ class DeviceDelete(PermissionRequiredMixin, DeleteView):
 
 
 @permission_required("networktests.add_testresult", raise_exception=True)
+def check_all_devices(request):
+    """Check connectivity for all devices and store results in session."""
+    devices = Device.objects.all()
+    reachable = 0
+    unreachable = 0
+
+    if "devices" not in request.session:
+        request.session["devices"] = {}
+
+    for device in devices:
+        success, error_msg, error_category = device.test_connection()
+        if success:
+            new_status = "reachable"
+            reachable += 1
+        elif error_category == "decryption_error":
+            new_status = "decryption_error"
+            unreachable += 1
+        else:
+            new_status = "unreachable"
+            unreachable += 1
+
+        request.session["devices"][str(device.pk)] = {"status": new_status}
+
+    request.session.modified = True
+
+    msg = f"Checked {len(devices)} devices: {reachable} reachable, {unreachable} unreachable."
+    level = "success" if unreachable == 0 else "warning"
+
+    response = HttpResponse(status=204)
+    response["HX-Trigger"] = json.dumps(
+        {"devicesRefresh": True, "showMessage": {"message": msg, "level": level}}
+    )
+    return response
+
+
+@permission_required("networktests.add_testresult", raise_exception=True)
 def device_check(request, pk):
     device = get_object_or_404(Device, pk=pk)
 
