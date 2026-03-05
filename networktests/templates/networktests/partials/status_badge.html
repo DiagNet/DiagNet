@@ -1,13 +1,13 @@
 {% if status == "PASS" %}
-    <span class="badge rounded-pill px-3 bg-success-subtle text-success-emphasis border border-success-subtle {{ extra_classes }}"
+    <span class="badge rounded-pill px-3 bg-success {{ extra_classes }}"
           style="min-width:5rem;
                  {{ extra_style }}"><i class="bi bi-check-circle-fill me-1"></i>PASS</span>
 {% elif status == "FAIL" %}
-    <span class="badge rounded-pill px-3 bg-danger-subtle text-danger-emphasis border border-danger-subtle {{ extra_classes }}"
+    <span class="badge rounded-pill px-3 bg-danger {{ extra_classes }}"
           style="min-width:5rem;
                  {{ extra_style }}"><i class="bi bi-exclamation-octagon-fill me-1"></i>FAIL</span>
 {% else %}
-    <span class="badge rounded-pill px-3 bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle {{ extra_classes }}"
+    <span class="badge rounded-pill px-3 bg-secondary {{ extra_classes }}"
           style="min-width:5rem;
                  {{ extra_style }}"><i class="bi bi-question-circle-fill me-1"></i>NEW</span>
 {% endif %}
