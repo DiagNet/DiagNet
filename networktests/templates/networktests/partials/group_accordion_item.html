@@ -46,9 +46,10 @@
                     <i class="bi bi-trash"></i> Delete
                 </button>
             </div>
-            <div id="group-table-{{ group.pk }}">
-                {% include "networktests/partials/group_testcases_table.html" with testcases=group.testcases.all %}
-            </div>
+            <div id="group-table-{{ group.pk }}"
+                 hx-get="{% url 'group-table-partial' group.pk %}"
+                 hx-trigger="load"
+                 hx-swap="innerHTML"></div>
         </div>
     </div>
 </div>

@@ -25,10 +25,8 @@
             <div class="accordion-body">
                 <div id="all-tests-table"
                      hx-get="{% url 'all-tests-table-partial' %}"
-                     hx-trigger="refreshAllTests from:body"
-                     hx-swap="innerHTML">
-                    {% include "networktests/partials/group_testcases_table.html" with testcases=all_testcases %}
-                </div>
+                     hx-trigger="load, refreshAllTests from:body"
+                     hx-swap="innerHTML"></div>
             </div>
         </div>
     </div>
