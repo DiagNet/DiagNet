@@ -27,7 +27,7 @@
                     <div class="d-flex justify-content-end gap-2">
                         {% if template.is_enabled %}
                             <button type="button"
-                                    class="btn btn-sm btn-outline-warning"
+                                    class="btn btn-sm btn-warning"
                                     hx-post="{% url 'toggle-custom-template' template.pk %}"
                                     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                                     hx-target="#templates-table-content">
@@ -35,7 +35,7 @@
                             </button>
                         {% else %}
                             <button type="button"
-                                    class="btn btn-sm btn-outline-success"
+                                    class="btn btn-sm btn-success"
                                     hx-post="{% url 'toggle-custom-template' template.pk %}"
                                     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                                     hx-target="#templates-table-content">
