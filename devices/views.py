@@ -144,8 +144,7 @@ def check_all_devices(request):
     reachable = 0
     unreachable = 0
 
-    if "devices" not in request.session:
-        request.session["devices"] = {}
+    session_devices = request.session.get("devices", {})
 
     for device in devices:
         success, error_msg, error_category = device.test_connection()
@@ -159,9 +158,9 @@ def check_all_devices(request):
             new_status = "unreachable"
             unreachable += 1
 
-        request.session["devices"][str(device.pk)] = {"status": new_status}
+        session_devices[str(device.pk)] = {"status": new_status}
 
-    request.session.modified = True
+    request.session["devices"] = session_devices
 
     msg = f"Checked {len(devices)} devices: {reachable} reachable, {unreachable} unreachable."
     level = "success" if unreachable == 0 else "warning"
