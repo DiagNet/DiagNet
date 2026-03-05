@@ -34,16 +34,16 @@
                     <i class="bi bi-table"></i> Compare
                 </button>
                 <a href="{% url 'testgroup-export-pdf' group.pk %}"
-                   class="btn btn-sm btn-outline-danger">
+                   class="btn btn-sm btn-danger">
                     <i class="bi bi-file-earmark-pdf"></i> Export PDF
                 </a>
-                <button class="btn btn-sm btn-outline-secondary"
+                <button class="btn btn-sm btn-secondary"
                         hx-get="{% url 'testgroup-edit-modal' group.pk %}"
                         hx-target="#testgroup-modal-container"
                         hx-swap="innerHTML">
                     <i class="bi bi-pencil"></i> Edit
                 </button>
-                <button class="btn btn-sm btn-outline-danger"
+                <button class="btn btn-sm btn-danger"
                         hx-post="{% url 'testgroup-delete' group.pk %}"
                         hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                         hx-swap="none"
