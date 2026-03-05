@@ -91,6 +91,43 @@
   --bs-btn-disabled-color: rgba(167, 172, 177, 0.5);
 }
 
+/* Neon-style badges in dark mode */
+[data-bs-theme="dark"] .badge.bg-primary {
+  background-color: rgba(13, 110, 253, 0.15) !important;
+  color: #6ea8fe !important;
+  border: 1px solid rgba(13, 110, 253, 0.3);
+}
+
+[data-bs-theme="dark"] .badge.bg-success {
+  background-color: rgba(25, 135, 84, 0.15) !important;
+  color: #75b798 !important;
+  border: 1px solid rgba(25, 135, 84, 0.3);
+}
+
+[data-bs-theme="dark"] .badge.bg-danger {
+  background-color: rgba(220, 53, 69, 0.15) !important;
+  color: #ea868f !important;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+[data-bs-theme="dark"] .badge.bg-warning {
+  background-color: rgba(255, 193, 7, 0.15) !important;
+  color: #ffda6a !important;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+[data-bs-theme="dark"] .badge.bg-info {
+  background-color: rgba(13, 202, 240, 0.15) !important;
+  color: #6edff6 !important;
+  border: 1px solid rgba(13, 202, 240, 0.3);
+}
+
+[data-bs-theme="dark"] .badge.bg-secondary {
+  background-color: rgba(108, 117, 125, 0.15) !important;
+  color: #a7acb1 !important;
+  border: 1px solid rgba(108, 117, 125, 0.3);
+}
+
 .diagnet-header {
   background-color: var(--diagnet-header-color) !important;
 }
