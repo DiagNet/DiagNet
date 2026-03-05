@@ -21,3 +21,45 @@
         </tbody>
     </table>
 </div>
+{% if page_obj.paginator.num_pages > 1 %}
+    <div class="bg-body border-top py-2 px-3 d-flex justify-content-between align-items-center">
+        <small class="text-secondary">{{ page_obj.paginator.count }} total</small>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           role="button"
+                           hx-get="{% if group %}{% url 'group-table-partial' group.pk %}{% else %}{% url 'all-tests-table-partial' %}{% endif %}?page={{ page_obj.previous_page_number }}"
+                           hx-target="#{% if group %}group-table-{{ group.pk }}{% else %}all-tests-table{% endif %}"
+                           hx-swap="innerHTML">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                    </li>
+                {% endif %}
+                <li class="page-item disabled">
+                    <span class="page-link text-body fw-medium">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           role="button"
+                           hx-get="{% if group %}{% url 'group-table-partial' group.pk %}{% else %}{% url 'all-tests-table-partial' %}{% endif %}?page={{ page_obj.next_page_number }}"
+                           hx-target="#{% if group %}group-table-{{ group.pk }}{% else %}all-tests-table{% endif %}"
+                           hx-swap="innerHTML">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+{% endif %}
