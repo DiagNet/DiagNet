@@ -26,7 +26,7 @@
                 {% for testgroup in testgroup_list %}
                     <tr id="testgroups-{{ testgroup.name }}">
                         <td>
-                            <button class="btn btn-sm btn-outline-secondary"
+                            <button class="btn btn-sm btn-secondary"
                                     type="button"
                                     data-bs-toggle="collapse"
                                     data-bs-target="#collapse-{{ testgroup.name }}"
@@ -60,7 +60,7 @@
                                     <button hx-get="popup/{{ testgroup.name }}"
                                             hx-target="#modal-container"
                                             hx-swap="innerHTML"
-                                            class="btn btn-sm btn-outline-success">
+                                            class="btn btn-sm btn-success">
                                         <i class="bi bi-plus"></i> Add Testcase
                                     </button>
                                 {% endif %}

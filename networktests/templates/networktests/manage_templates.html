@@ -14,7 +14,7 @@
             <h1>Custom Test Templates</h1>
             <div class="d-flex gap-2">
                 <button type="button"
-                        class="btn btn-outline-primary"
+                        class="btn btn-primary"
                         hx-post="{% url 'sync-custom-templates' %}"
                         hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                         hx-target="#templates-table-content"
