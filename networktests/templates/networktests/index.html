@@ -9,7 +9,7 @@
             </a>
         {% endif %}
         {% if perms.testgroups.add_testgroup %}
-            <button class="btn btn-outline-primary"
+            <button class="btn btn-primary"
                     hx-get="{% url 'testgroup-create-modal' %}"
                     hx-target="#testgroup-modal-container"
                     hx-swap="innerHTML">
@@ -18,7 +18,7 @@
         {% endif %}
         {% if perms.networktests.view_testcase and perms.networktests.view_testresult and perms.testgroups.view_testgroup %}
             <a href="{% url 'networktests-export-pdf' %}"
-               class="btn btn-outline-danger ms-auto">
+               class="btn btn-danger ms-auto">
                 <i class="bi bi-file-earmark-pdf"></i> Export PDF Report
             </a>
         {% endif %}
