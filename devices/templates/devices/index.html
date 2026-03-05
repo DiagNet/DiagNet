@@ -7,9 +7,18 @@
         {% include "devices/partials/device_create_modal.html" %}
     {% endif %}
     {% if perms.networktests.add_testresult %}
-        <a class="btn btn-success mb-3" id="check-all-devices">
-            <i class="bi bi-check2-all"></i> Check All Devices
-        </a>
+        <button class="btn btn-success mb-3"
+                id="check-all-btn"
+                hx-post="{% url 'device-check-all' %}"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                hx-swap="none"
+                hx-disabled-elt="this"
+                hx-indicator="#check-all-btn">
+            <i class="bi bi-check2-all check-all-icon"></i>
+            <span class="spinner-border spinner-border-sm check-all-spinner d-none"
+                  role="status"></span>
+            Check All Devices
+        </button>
     {% endif %}
     {% if perms.devices.add_device %}
         <a class="btn btn-primary mb-3" href="{% url 'device-import' %}">
@@ -58,6 +67,22 @@
 
 	document.body.addEventListener('devicesRefresh', () => {
 		htmx.trigger('#device-table', 'refresh');
+	});
+
+	// Swap icon for spinner on check-all button during request
+	document.body.addEventListener('htmx:beforeRequest', function (evt) {
+		const btn = evt.detail.elt;
+		if (btn.id === 'check-all-btn') {
+			btn.querySelector('.check-all-icon').classList.add('d-none');
+			btn.querySelector('.check-all-spinner').classList.remove('d-none');
+		}
+	});
+	document.body.addEventListener('htmx:afterRequest', function (evt) {
+		const btn = evt.detail.elt;
+		if (btn.id === 'check-all-btn') {
+			btn.querySelector('.check-all-icon').classList.remove('d-none');
+			btn.querySelector('.check-all-spinner').classList.add('d-none');
+		}
 	});
     </script>
 {% endblock %}
