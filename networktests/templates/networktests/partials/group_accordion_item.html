@@ -28,7 +28,7 @@
                           role="status"></span>
                     Run all tests
                 </button>
-                <button class="btn btn-sm btn-outline-info"
+                <button class="btn btn-sm btn-primary"
                         data-bs-toggle="modal"
                         data-bs-target="#comparisonModal-{{ group.pk }}">
                     <i class="bi bi-table"></i> Compare
@@ -63,9 +63,10 @@
                     </div>
                 </div>
             </div>
-            <div id="group-table-{{ group.pk }}">
-                {% include "networktests/partials/group_testcases_table.html" with testcases=group.testcases.all %}
-            </div>
+            <div id="group-table-{{ group.pk }}"
+                 hx-get="{% url 'group-table-partial' group.pk %}"
+                 hx-trigger="load"
+                 hx-swap="innerHTML"></div>
         </div>
     </div>
 </div>
