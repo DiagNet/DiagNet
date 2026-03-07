@@ -8,7 +8,7 @@
       ...
     }:
     let
-      wsgiApp = "diagnet.asgi:application";
+      asgiApp = "diagnet.asgi:application";
       settingsModules = {
         prod = "diagnet.settings";
       };
@@ -188,7 +188,7 @@
               fi
 
               # Start the application
-              exec ${venv}/bin/daphne -b 0.0.0.0 ${wsgiApp}
+              exec ${venv}/bin/daphne -b 0.0.0.0 ${asgiApp}
             '';
           in
           pkgs.dockerTools.buildLayeredImage {
