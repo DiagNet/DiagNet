@@ -633,7 +633,7 @@ def run_group_tests(request, pk):
     updated_testcases = group.testcases.prefetch_related("results").order_by("label")
 
     paginator = Paginator(updated_testcases, 25)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    page_obj = paginator.get_page(request.POST.get("page") or request.GET.get("page"))
 
     response = render(
         request,
