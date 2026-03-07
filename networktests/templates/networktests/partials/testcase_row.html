@@ -10,6 +10,17 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
+                        <div>
+                            <div class="d-flex align-items-center gap-3 mb-1">
+                                <h5 class="fw-bold mb-0 text-body">{{ testcase.label }}</h5>
+                                <span class="badge bg-body-tertiary text-body border fw-normal font-monospace">
+                                    <i class="bi bi-code-square me-1"></i>{{ testcase.test_module }}
+                                </span>
+                            </div>
+                            {% if testcase.description %}
+                                <p class="text-secondary small mt-1 mb-0">{{ testcase.description|truncatewords:20 }}</p>
+                            {% endif %}
+                        </div>
                         <button type="button"
                                 class="btn-close"
                                 data-bs-dismiss="modal"
@@ -46,12 +57,12 @@
     <td class="align-middle">
         {% if testcase.results.last %}
             {% if testcase.expected_result == testcase.results.last.result %}
-                <span class="badge rounded-pill bg-success">Pass</span>
+                {% include "networktests/partials/status_badge.html" with status="PASS" %}
             {% else %}
-                <span class="badge rounded-pill bg-danger">Fail</span>
+                {% include "networktests/partials/status_badge.html" with status="FAIL" %}
             {% endif %}
         {% else %}
-            <span class="badge rounded-pill bg-secondary">Unknown</span>
+            {% include "networktests/partials/status_badge.html" with status="NEW" %}
         {% endif %}
     </td>
     <td class="align-middle">

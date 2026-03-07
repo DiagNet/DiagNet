@@ -305,7 +305,7 @@ def create_test_page(request):
 class TestCaseListView(PermissionRequiredMixin, generic.ListView):
     permission_required = "networktests.view_testcase"
     model = TestCase
-    paginate_by = 20
+    paginate_by = 25
 
     def get_queryset(self) -> QuerySet:
         if hasattr(self, "queryset") and self.queryset is not None:
@@ -623,10 +623,13 @@ def run_group_tests(request, pk):
     group.refresh_from_db()
     updated_testcases = group.testcases.prefetch_related("results").order_by("label")
 
+    paginator = Paginator(updated_testcases, 25)
+    page_obj = paginator.get_page(request.POST.get("page") or request.GET.get("page"))
+
     response = render(
         request,
         "networktests/partials/group_testcases_table.html",
-        {"testcases": updated_testcases},
+        {"testcases": page_obj, "page_obj": page_obj, "group": group},
     )
     response["HX-Trigger"] = json.dumps(
         {"showMessage": {"message": msg, "level": level}}
@@ -697,10 +700,12 @@ def group_table_partial(request, pk):
         ),
         pk=pk,
     )
+    paginator = Paginator(group.testcases.all(), 25)
+    page_obj = paginator.get_page(request.GET.get("page"))
     return render(
         request,
         "networktests/partials/group_testcases_table.html",
-        {"testcases": group.testcases.all()},
+        {"testcases": page_obj, "page_obj": page_obj, "group": group},
     )
 
 
@@ -709,10 +714,12 @@ def group_table_partial(request, pk):
 def all_tests_table_partial(request):
     """HTMX partial: returns the testcases table for 'All Tests'."""
     all_testcases = TestCase.objects.prefetch_related("results").order_by("label")
+    paginator = Paginator(all_testcases, 25)
+    page_obj = paginator.get_page(request.GET.get("page"))
     return render(
         request,
         "networktests/partials/group_testcases_table.html",
-        {"testcases": all_testcases},
+        {"testcases": page_obj, "page_obj": page_obj},
     )
 
 

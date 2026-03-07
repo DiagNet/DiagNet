@@ -8,7 +8,9 @@
     <h1>Groups</h1>
     <button class="btn btn-primary mb-3"
             data-bs-toggle="modal"
-            data-bs-target="#groupCreateModal">Add Group</button>
+            data-bs-target="#groupCreateModal">
+        <i class="bi bi-people"></i> Add Group
+    </button>
     <!-- Group Create Modal -->
     <div class="modal fade"
          id="groupCreateModal"
@@ -91,60 +93,108 @@
          hx-select="#group-table-content"
          id="group-table">
         <div id="group-table-content">
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Role Type</th>
-                            <th>Members</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if groups %}
-                            {% for group in groups %}
-                                <tr id="group-{{ group.pk }}">
-                                    <td class="align-middle">
-                                        <button class="btn btn-link detail-group-btn" data-group-id="{{ group.pk }}">{{ group.name }}</button>
-                                    </td>
-                                    <td class="align-middle">
-                                        {% if group.role_type == "Viewers" %}
-                                            <span class="badge bg-secondary">Read Only</span>
-                                        {% elif group.role_type == "Editors" %}
-                                            <span class="badge bg-info">View + Edit</span>
-                                        {% elif group.role_type == "Managers" %}
-                                            <span class="badge bg-warning text-dark">Full CRUD</span>
-                                        {% elif group.role_type == "Admins" %}
-                                            <span class="badge bg-danger">Full Access</span>
-                                        {% else %}
-                                            <span class="badge bg-dark">Custom</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="align-middle">{{ group.user_count }} user{{ group.user_count|pluralize }}</td>
-                                    <td class="align-middle">
-                                        <button title="Manage members"
-                                                class="btn btn-sm btn-primary membership-group-btn"
-                                                data-group-id="{{ group.pk }}">
-                                            <i class="bi bi-people"></i>
-                                        </button>
-                                        <button title="Delete group"
-                                                class="btn btn-sm btn-danger"
-                                                hx-delete="{% url 'group-delete' group.pk %}"
-                                                hx-headers='{"X-CSRFToken": "{{ csrf_token|escapejs }}"}'
-                                                hx-confirm="Are you sure you want to delete the group '{{ group.name }}'?">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
+            <div class="card border shadow bg-body">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role Type</th>
+                                    <th>Members</th>
+                                    <th>Actions</th>
                                 </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="4">No groups yet.</td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
+                            </thead>
+                            <tbody>
+                                {% if groups %}
+                                    {% for group in groups %}
+                                        <tr id="group-{{ group.pk }}">
+                                            <td class="align-middle">
+                                                <button class="btn btn-link detail-group-btn" data-group-id="{{ group.pk }}">{{ group.name }}</button>
+                                            </td>
+                                            <td class="align-middle">
+                                                {% if group.role_type == "Viewers" %}
+                                                    <span class="badge bg-secondary">Read Only</span>
+                                                {% elif group.role_type == "Editors" %}
+                                                    <span class="badge bg-info">View + Edit</span>
+                                                {% elif group.role_type == "Managers" %}
+                                                    <span class="badge bg-warning text-dark">Full CRUD</span>
+                                                {% elif group.role_type == "Admins" %}
+                                                    <span class="badge bg-danger">Full Access</span>
+                                                {% else %}
+                                                    <span class="badge bg-dark">Custom</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="align-middle">{{ group.user_count }} user{{ group.user_count|pluralize }}</td>
+                                            <td class="align-middle">
+                                                <button title="Manage members"
+                                                        class="btn btn-sm btn-primary membership-group-btn"
+                                                        data-group-id="{{ group.pk }}">
+                                                    <i class="bi bi-people"></i>
+                                                </button>
+                                                <button title="Delete group"
+                                                        class="btn btn-sm btn-danger"
+                                                        hx-delete="{% url 'group-delete' group.pk %}"
+                                                        hx-headers='{"X-CSRFToken": "{{ csrf_token|escapejs }}"}'
+                                                        hx-confirm="Are you sure you want to delete the group '{{ group.name }}'?">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4">No groups yet.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% if page_obj.paginator.num_pages > 1 %}
+                    <div class="card-footer bg-body border-top py-2 d-flex justify-content-between align-items-center">
+                        <small class="text-secondary">{{ page_obj.paginator.count }} total</small>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           role="button"
+                                           hx-get="{% url 'group-list' %}?page={{ page_obj.previous_page_number }}"
+                                           hx-target="#group-table-content"
+                                           hx-select="#group-table-content"
+                                           hx-swap="outerHTML">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                                    </li>
+                                {% endif %}
+                                <li class="page-item disabled">
+                                    <span class="page-link text-body fw-medium">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                                </li>
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           role="button"
+                                           hx-get="{% url 'group-list' %}?page={{ page_obj.next_page_number }}"
+                                           hx-target="#group-table-content"
+                                           hx-select="#group-table-content"
+                                           hx-swap="outerHTML">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

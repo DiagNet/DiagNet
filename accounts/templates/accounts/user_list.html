@@ -9,7 +9,9 @@
     <h1>Users</h1>
     <button class="btn btn-primary mb-3"
             data-bs-toggle="modal"
-            data-bs-target="#userCreateModal">Add User</button>
+            data-bs-target="#userCreateModal">
+        <i class="bi bi-person-plus"></i> Add User
+    </button>
     <!-- User Create Modal -->
     <div class="modal fade"
          id="userCreateModal"
@@ -116,74 +118,122 @@
          hx-select="#user-table-content"
          id="user-table">
         <div id="user-table-content">
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                            <th>Groups</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if users %}
-                            {% for account in users %}
-                                <tr id="user-{{ account.pk }}">
-                                    <td class="align-middle">
-                                        <button class="btn btn-link detail-user-btn" data-user-id="{{ account.pk }}">{{ account.username }}</button>
-                                        {% if account == request.user %}<span class="badge bg-info">You</span>{% endif %}
-                                    </td>
-                                    <td class="align-middle">{{ account.email|default:"-" }}</td>
-                                    <td class="align-middle">
-                                        {% if account.is_superuser %}
-                                            <span class="badge bg-danger">Superuser</span>
-                                        {% elif account.is_staff %}
-                                            <span class="badge bg-warning text-dark">Staff</span>
-                                        {% elif account.is_active %}
-                                            <span class="badge bg-success">Active</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">Inactive</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="align-middle">
-                                        {% for group in account.groups.all %}
-                                            <span class="badge bg-primary">{{ group.name }}</span>
-                                        {% empty %}
-                                            -
-                                        {% endfor %}
-                                    </td>
-                                    <td class="align-middle">
-                                        <button title="Edit user"
-                                                class="btn btn-sm btn-primary edit-user-btn"
-                                                data-user-id="{{ account.pk }}">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button title="Change password"
-                                                class="btn btn-sm btn-warning password-user-btn"
-                                                data-user-id="{{ account.pk }}">
-                                            <i class="bi bi-key"></i>
-                                        </button>
-                                        {% if account != request.user and not account.is_superuser %}
-                                            <button title="Delete user"
-                                                    class="btn btn-sm btn-danger"
-                                                    hx-delete="{% url 'user-delete' account.pk %}"
-                                                    hx-headers='{"X-CSRFToken": "{{ csrf_token|escapejs }}"}'
-                                                    hx-confirm="Are you sure you want to delete the user '{{ account.username }}'?">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        {% endif %}
-                                    </td>
+            <div class="card border shadow bg-body">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Groups</th>
+                                    <th>Actions</th>
                                 </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="5">No users yet.</td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
+                            </thead>
+                            <tbody>
+                                {% if users %}
+                                    {% for account in users %}
+                                        <tr id="user-{{ account.pk }}">
+                                            <td class="align-middle">
+                                                <button class="btn btn-link detail-user-btn" data-user-id="{{ account.pk }}">{{ account.username }}</button>
+                                                {% if account == request.user %}<span class="badge bg-info">You</span>{% endif %}
+                                            </td>
+                                            <td class="align-middle">{{ account.email|default:"-" }}</td>
+                                            <td class="align-middle">
+                                                {% if account.is_superuser %}
+                                                    <span class="badge bg-danger">Superuser</span>
+                                                {% elif account.is_staff %}
+                                                    <span class="badge bg-warning text-dark">Staff</span>
+                                                {% elif account.is_active %}
+                                                    <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="align-middle">
+                                                {% for group in account.groups.all %}
+                                                    <span class="badge bg-primary">{{ group.name }}</span>
+                                                {% empty %}
+                                                    -
+                                                {% endfor %}
+                                            </td>
+                                            <td class="align-middle">
+                                                <button title="Edit user"
+                                                        class="btn btn-sm btn-primary edit-user-btn"
+                                                        data-user-id="{{ account.pk }}">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button title="Change password"
+                                                        class="btn btn-sm btn-warning password-user-btn"
+                                                        data-user-id="{{ account.pk }}">
+                                                    <i class="bi bi-key"></i>
+                                                </button>
+                                                {% if account != request.user and not account.is_superuser %}
+                                                    <button title="Delete user"
+                                                            class="btn btn-sm btn-danger"
+                                                            hx-delete="{% url 'user-delete' account.pk %}"
+                                                            hx-headers='{"X-CSRFToken": "{{ csrf_token|escapejs }}"}'
+                                                            hx-confirm="Are you sure you want to delete the user '{{ account.username }}'?">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5">No users yet.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% if page_obj.paginator.num_pages > 1 %}
+                    <div class="card-footer bg-body border-top py-2 d-flex justify-content-between align-items-center">
+                        <small class="text-secondary">{{ page_obj.paginator.count }} total</small>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           role="button"
+                                           hx-get="{% url 'user-list' %}?page={{ page_obj.previous_page_number }}"
+                                           hx-target="#user-table-content"
+                                           hx-select="#user-table-content"
+                                           hx-swap="outerHTML">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                                    </li>
+                                {% endif %}
+                                <li class="page-item disabled">
+                                    <span class="page-link text-body fw-medium">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                                </li>
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           role="button"
+                                           hx-get="{% url 'user-list' %}?page={{ page_obj.next_page_number }}"
+                                           hx-target="#user-table-content"
+                                           hx-select="#user-table-content"
+                                           hx-swap="outerHTML">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

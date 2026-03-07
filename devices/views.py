@@ -1,5 +1,6 @@
 import yaml
 import json
+from concurrent.futures import ThreadPoolExecutor
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
@@ -32,6 +33,7 @@ class DeviceListView(PermissionRequiredMixin, generic.ListView):
     permission_required = "devices.view_device"
     devices = Device.objects.all()
     model = Device
+    paginate_by = 25
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -134,6 +136,44 @@ class DeviceDelete(PermissionRequiredMixin, DeleteView):
             response["HX-Trigger"] = "devicesRefresh"
             return response
         return HttpResponseRedirect(self.success_url)
+
+
+@permission_required("networktests.add_testresult", raise_exception=True)
+def check_all_devices(request):
+    """Check connectivity for all devices and store results in session."""
+    devices = list(Device.objects.all())
+
+    def _check(device):
+        success, error_msg, error_category = device.test_connection()
+        if success:
+            return device.pk, "reachable"
+        elif error_category == "decryption_error":
+            return device.pk, "decryption_error"
+        else:
+            return device.pk, "unreachable"
+
+    session_devices = request.session.get("devices", {})
+    reachable = 0
+    unreachable = 0
+
+    with ThreadPoolExecutor() as executor:
+        for pk, status in executor.map(_check, devices):
+            session_devices[str(pk)] = {"status": status}
+            if status == "reachable":
+                reachable += 1
+            else:
+                unreachable += 1
+
+    request.session["devices"] = session_devices
+
+    msg = f"Checked {len(devices)} devices: {reachable} reachable, {unreachable} unreachable."
+    level = "success" if unreachable == 0 else "warning"
+
+    response = HttpResponse(status=204)
+    response["HX-Trigger"] = json.dumps(
+        {"devicesRefresh": True, "showMessage": {"message": msg, "level": level}}
+    )
+    return response
 
 
 @permission_required("networktests.add_testresult", raise_exception=True)
