@@ -22,7 +22,8 @@
                         hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                         hx-target="#group-table-{{ group.pk }}"
                         hx-swap="innerHTML"
-                        hx-disabled-elt="this">
+                        hx-disabled-elt="this"
+                        hx-vals='js:{"page": document.querySelector("#group-table-{{ group.pk }} [data-page]")?.dataset.page || ""}'>
                     <i class="bi bi-play-fill run-all-icon"></i>
                     <span class="spinner-border spinner-border-sm run-all-spinner d-none"
                           role="status"></span>
