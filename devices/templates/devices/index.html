@@ -66,7 +66,9 @@
 	});
 
 	document.body.addEventListener('devicesRefresh', () => {
-		htmx.trigger('#device-table', 'refresh');
+		const card = document.querySelector('#device-table .card');
+		const page = card ? card.dataset.page : 1;
+		htmx.ajax('GET', '{% url "devices-table" %}?page=' + page, {target: '#device-table', swap: 'innerHTML'});
 	});
 
 	// Swap icon for spinner on check-all button during request
