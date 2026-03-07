@@ -164,7 +164,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "diagnet.wsgi.application"
+ASGI_APPLICATION = "diagnet.asgi.application"
 
 
 # Database
