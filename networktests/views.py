@@ -1,6 +1,5 @@
 import json
 import logging
-from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 from io import BytesIO
 
@@ -319,16 +318,12 @@ class TestCaseListView(PermissionRequiredMixin, generic.ListView):
 def run_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
     try:
-        test_data = testcase.run()
-        if test_data.get("result") == "PASS":
-            msg = f"Test passed: {testcase.label}"
-            level = "success"
-        else:
-            msg = f"Test failed: {testcase.label}"
-            level = "warning"
+        testcase.run()
+        msg = f"Successfully executed test: {testcase.label}"
+        level = "success"
     except Exception as e:
         logger.exception("Error running testcase %s", testcase.label)
-        msg = f"Error running test {testcase.label}: {e}"
+        msg = f"Failed to run test {testcase.label}: {e}"
         level = "danger"
 
     if request.headers.get("HX-Request"):
@@ -609,21 +604,17 @@ def run_group_tests(request, pk):
     group = get_object_or_404(TestGroup, pk=pk)
     testcases = list(group.testcases.prefetch_related("results").order_by("label"))
 
-    def _run(tc):
+    passed = 0
+    failed = 0
+    for tc in testcases:
         try:
-            test_data = tc.run()
-            return test_data.get("result") == "PASS"
+            tc.run()
+            passed += 1
         except Exception:
             logger.exception(
                 "Error running testcase %s in group %s", tc.label, group.name
             )
-            return False
-
-    with ThreadPoolExecutor() as executor:
-        results = list(executor.map(_run, testcases))
-
-    passed = sum(results)
-    failed = len(results) - passed
+            failed += 1
 
     msg = f"Group '{group.name}': {passed} passed, {failed} failed."
     level = "success" if failed == 0 else "warning"
