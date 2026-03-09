@@ -129,7 +129,6 @@ INSTALLED_APPS = [
     "dashboard.apps.DashboardConfig",
     "devices.apps.DevicesConfig",
     "networktests.apps.NetworktestsConfig",
-    "testgroups.apps.TestgroupsConfig",
 ]
 
 MIDDLEWARE = [

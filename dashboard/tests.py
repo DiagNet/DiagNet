@@ -20,7 +20,7 @@ class DashboardPermissionTests(TestCase):
         """Test that dashboard index returns 403 if user lacks required permissions."""
         self.client.login(username="testuser", password="password123")
         response = self.client.get(reverse("dashboard"))
-        # Dashboard index requires: networktests.view_testcase, networktests.view_testresult, testgroups.view_testgroup
+        # Dashboard index requires: networktests.view_testcase, networktests.view_testresult, networktests.view_testgroup
         # We now use raise_exception=True for all FBVs
         self.assertEqual(response.status_code, 403)
 
@@ -40,7 +40,7 @@ class DashboardPermissionTests(TestCase):
                 codename="view_testresult", content_type__app_label="networktests"
             ),
             Permission.objects.get(
-                codename="view_testgroup", content_type__app_label="testgroups"
+                codename="view_testgroup", content_type__app_label="networktests"
             ),
         ]
         self.user.user_permissions.add(*perms)

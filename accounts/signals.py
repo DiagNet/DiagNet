@@ -8,8 +8,7 @@ from django.db.models.signals import post_delete, post_migrate, post_save
 from django.dispatch import receiver
 
 from devices.models import Device
-from networktests.models import CustomTestTemplate, TestCase, TestResult
-from testgroups.models import TestGroup
+from networktests.models import CustomTestTemplate, TestCase, TestGroup, TestResult
 
 from .models import GroupProfile
 

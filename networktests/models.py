@@ -145,6 +145,14 @@ class TestDevice(models.Model):
         return f"{self.name}: {self.device}"
 
 
+class TestGroup(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    testcases = models.ManyToManyField(TestCase)
+
+    def __str__(self):
+        return self.name
+
+
 class TestResult(models.Model):
     attempt_id = models.IntegerField(null=True, blank=True)
     test_case = models.ForeignKey(
