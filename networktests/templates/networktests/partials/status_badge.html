@@ -6,6 +6,10 @@
     <span class="badge rounded-pill px-3 bg-danger {{ extra_classes }}"
           style="min-width:5rem;
                  {{ extra_style }}"><i class="bi bi-exclamation-octagon-fill me-1"></i>FAIL</span>
+{% elif status == "SKIPPED" %}
+    <span class="badge rounded-pill px-3 bg-warning text-dark {{ extra_classes }}"
+          style="min-width:5rem;
+                 {{ extra_style }}"><i class="bi bi-skip-forward-fill me-1"></i>SKIP</span>
 {% else %}
     <span class="badge rounded-pill px-3 bg-secondary {{ extra_classes }}"
           style="min-width:5rem;
