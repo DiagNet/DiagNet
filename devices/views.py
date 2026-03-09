@@ -1,15 +1,17 @@
-import yaml
 import json
 from concurrent.futures import ThreadPoolExecutor
+
+import yaml
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views import generic
+from django.views.decorators.http import require_POST
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from django.contrib.auth.decorators import permission_required
-from django.contrib.auth.mixins import PermissionRequiredMixin
 
-from django.core.exceptions import ImproperlyConfigured
 from devices.forms import DeviceForm, UploadFileForm
 
 from .models import Device
@@ -138,6 +140,7 @@ class DeviceDelete(PermissionRequiredMixin, DeleteView):
         return HttpResponseRedirect(self.success_url)
 
 
+@require_POST
 @permission_required("networktests.add_testresult", raise_exception=True)
 def check_all_devices(request):
     """Check connectivity for all devices and store results in session."""
