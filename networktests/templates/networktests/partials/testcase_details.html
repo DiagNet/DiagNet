@@ -1,51 +1,88 @@
-<div class="container-fluid px-0">
-    {% with last_run=testcase.results.last %}
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                {% if last_run %}
-                    {% if testcase.expected_result == last_run.result %}
-                        {% include "networktests/partials/status_badge.html" with status="PASS" extra_classes="py-2" %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-sliders me-1"></i> Test Details</span>
+                {% with last_run=testcase.results.first %}
+                    {% if last_run %}
+                        {% if testcase.expected_result == last_run.result %}
+                            {% include "networktests/partials/status_badge.html" with status="PASS" %}
+                        {% else %}
+                            {% include "networktests/partials/status_badge.html" with status="FAIL" %}
+                        {% endif %}
                     {% else %}
-                        {% include "networktests/partials/status_badge.html" with status="FAIL" extra_classes="py-2" %}
+                        {% include "networktests/partials/status_badge.html" with status="NEW" %}
                     {% endif %}
-                    <span class="text-secondary small ms-2">Last run: {{ last_run.finished_at|date:"Y-m-d H:i" }}</span>
-                {% else %}
-                    {% include "networktests/partials/status_badge.html" with status="NEW" extra_classes="py-2" %}
-                {% endif %}
+                {% endwith %}
             </div>
-        </div>
-    {% endwith %}
-    <div class="card border-0 shadow-sm mb-5 bg-light-subtle">
-        <div class="card-body p-4">
-            <div class="row g-4">
-                <div class="col-md-6 border-end">
-                    <label class="text-uppercase small fw-bold text-muted mb-3 d-block">Input Parameters</label>
-                    <div class="d-flex flex-column gap-2">
-                        {% for param in testcase.parameters.all %}
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-secondary small">{{ param.name }}</span>
-                                <span class="badge bg-body text-primary border fw-medium font-monospace">{{ param.value|default:"-" }}</span>
-                            </div>
-                        {% empty %}
-                            <span class="text-muted small fst-italic">No parameters</span>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="col-md-6 ps-md-4">
-                    <label class="text-uppercase small fw-bold text-muted mb-3 d-block">Devices</label>
-                    <div class="d-flex flex-wrap gap-2">
-                        {% for device in testcase.devices.all %}
-                            <div class="bg-body border rounded-2 px-3 py-2 shadow-sm">
-                                <div class="fw-bold small text-body">{{ device.device }}</div>
-                                <div class="text-muted small" style="font-size: 0.7rem;">({{ device.name }})</div>
-                            </div>
-                        {% empty %}
-                            <span class="text-muted small fst-italic">None</span>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+            <table class="table table-sm mb-0">
+                <tbody>
+                    <tr>
+                        <th class="ps-3 py-2 text-muted fw-normal text-nowrap" style="width: 40%">Expected</th>
+                        <td class="py-2 pe-3">
+                            {% if testcase.expected_result %}
+                                {% include "networktests/partials/status_badge.html" with status="PASS" %}
+                            {% else %}
+                                {% include "networktests/partials/status_badge.html" with status="FAIL" %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% with last_run=testcase.results.first %}
+                        {% if last_run %}
+                            <tr>
+                                <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Last Run</th>
+                                <td class="py-2 pe-3 text-muted small">{{ last_run.finished_at|date:"Y-m-d H:i" }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endwith %}
+                    {% for param in testcase.parameters.all %}
+                        <tr>
+                            <th class="ps-3 py-2 text-muted fw-normal text-nowrap">{{ param.name }}</th>
+                            <td class="py-2 pe-3 font-monospace">{{ param.value|default:"-" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-    <div id="history-container">{% include "networktests/partials/history_card.html" %}</div>
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-hdd-network me-1"></i> Associated Devices
+            </div>
+            {% if testcase.devices.all %}
+                <table class="table table-sm table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-3">Device</th>
+                            <th class="text-center">Type</th>
+                            <th class="text-center">Protocol</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for td in testcase.devices.all %}
+                            <tr>
+                                <td class="ps-3">
+                                    <button class="btn btn-link p-0 text-start"
+                                            hx-get="{% url 'device-modal-content' td.device.pk %}?from_testcase={{ testcase.pk }}"
+                                            hx-target="closest .modal-content"
+                                            hx-swap="innerHTML">{{ td.device.name }}</button>
+                                    <div class="text-muted small font-monospace">{{ td.device.ip_address }}</div>
+                                </td>
+                                <td class="text-center align-middle">
+                                    <span class="badge bg-body-tertiary text-body border fw-normal">{{ td.device.get_device_type_display }}</span>
+                                </td>
+                                <td class="text-center align-middle">
+                                    <span class="badge bg-body-tertiary text-body border fw-normal">{{ td.device.get_protocol_display }}</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="card-body text-muted small fst-italic">No devices associated.</div>
+            {% endif %}
+        </div>
+    </div>
 </div>
+<div id="history-container">{% include "networktests/partials/history_card.html" %}</div>

@@ -1,0 +1,20 @@
+<div class="d-flex align-items-center gap-2 mb-4">
+    <button class="btn btn-sm btn-outline-secondary"
+            hx-get="{% url 'testcase-details' from_testcase_pk %}"
+            hx-target="closest .modal-body"
+            hx-swap="innerHTML">
+        <i class="bi bi-arrow-left"></i> Back
+    </button>
+    <div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="fw-semibold">{{ device.name }}</span>
+            <span class="badge bg-body-tertiary text-body border fw-normal font-monospace">
+                <i class="bi bi-hdd-network me-1"></i>{{ device.get_device_type_display }}
+            </span>
+        </div>
+        <p class="text-secondary small mb-0">
+            {{ device.ip_address }}:{{ device.port }} &middot; {{ device.get_protocol_display }}
+        </p>
+    </div>
+</div>
+{% include "devices/partials/device_details.html" %}

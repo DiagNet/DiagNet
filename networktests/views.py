@@ -410,6 +410,37 @@ def testcase_detail_view(request, pk):
     return render(request, "networktests/partials/testcase_details.html", context)
 
 
+@require_http_methods(["GET"])
+@permission_required("networktests.view_testcase", raise_exception=True)
+def testcase_modal_content(request, pk):
+    testcase = get_object_or_404(
+        TestCase.objects.prefetch_related(
+            "parameters",
+            Prefetch(
+                "devices",
+                queryset=TestDevice.objects.select_related("device"),
+            ),
+            Prefetch(
+                "results",
+                queryset=TestResult.objects.order_by("-attempt_id"),
+            ),
+        ),
+        pk=pk,
+    )
+    results_list = testcase.results.all()
+    paginator = Paginator(results_list, 10)
+    results_page = paginator.get_page(request.GET.get("page", 1))
+    return render(
+        request,
+        "networktests/partials/testcase_modal_content.html",
+        {
+            "testcase": testcase,
+            "results_page": results_page,
+            "from_device_pk": request.GET.get("from_device"),
+        },
+    )
+
+
 @login_required
 @permission_required("networktests.change_customtesttemplate", raise_exception=True)
 def manage_custom_templates(request):

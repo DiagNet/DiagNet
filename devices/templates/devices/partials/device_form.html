@@ -1,5 +1,7 @@
 <form method="post"
-      hx-post="{% if object %}{% url 'device-update' object.pk %}{% else %}{% url 'device-create' %}{% endif %}">
+      hx-post="{% if object %}{% url 'device-update' object.pk %}{% else %}{% url 'device-create' %}{% endif %}"
+      hx-target="closest .modal-body"
+      hx-swap="innerHTML">
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:", " }}</div>{% endif %}
     {% if encryption_state == "unencrypted" %}
@@ -17,18 +19,27 @@
     {% endif %}
     {% for field in form %}
         {% if field.label != "Id" %}
-            <div class="form-floating mb-3">
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
                 {{ field }}
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {% if field.errors %}<div class="invalid-feedback d-block">{{ field.errors|join:", " }}</div>{% endif %}
             </div>
         {% endif %}
     {% endfor %}
-    <button class="btn btn-success" type="submit">
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary">
+            {% if object %}
+                Save Changes
+            {% else %}
+                Create
+            {% endif %}
+        </button>
         {% if object %}
-            Save
-        {% else %}
-            Create
+            <button type="button"
+                    class="btn btn-secondary"
+                    hx-get="{% url 'device-detail-partial' object.pk %}"
+                    hx-target="closest .modal-body"
+                    hx-swap="innerHTML">Cancel</button>
         {% endif %}
-    </button>
+    </div>
 </form>

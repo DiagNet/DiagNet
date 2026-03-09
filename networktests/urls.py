@@ -34,6 +34,11 @@ urlpatterns = [
         "tests/<int:pk>/details/", views.testcase_detail_view, name="testcase-details"
     ),
     path(
+        "tests/<int:pk>/modal/",
+        views.testcase_modal_content,
+        name="testcase-modal-content",
+    ),
+    path(
         "templates/manage/",
         views.manage_custom_templates,
         name="manage-custom-templates",
