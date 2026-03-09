@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, QuerySet
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
@@ -491,7 +492,6 @@ def sync_custom_templates_view(request):
     return redirect("manage-custom-templates")
 
 
-@permission_required("networktests.view_testgroup", raise_exception=True)
 @require_http_methods(["GET"])
 def testgroup_form_modal(request, pk=None):
     """
@@ -499,9 +499,13 @@ def testgroup_form_modal(request, pk=None):
     Reuses the same form and template for both create and edit.
     """
     if pk:
+        if not request.user.has_perm("networktests.change_testgroup"):
+            raise PermissionDenied
         group = get_object_or_404(TestGroup, pk=pk)
         form = TestGroupForm(instance=group)
     else:
+        if not request.user.has_perm("networktests.add_testgroup"):
+            raise PermissionDenied
         group = None
         form = TestGroupForm()
 

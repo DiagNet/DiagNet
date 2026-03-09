@@ -352,15 +352,15 @@ class TestGroupPermissionTests(TestCase):
         self.testgroup = TestGroup.objects.create(name="testgroup1")
 
     def test_create_modal_permission_required(self):
-        """Test that testgroup create modal returns 403 without view_testgroup permission."""
+        """Test that testgroup create modal returns 403 without add_testgroup permission."""
         self.client.login(username="testuser", password="password123")
         response = self.client.get(reverse("testgroup-create-modal"))
         self.assertEqual(response.status_code, 403)
 
     def test_create_modal_with_permission(self):
-        """Test that testgroup create modal is accessible with view_testgroup permission."""
+        """Test that testgroup create modal is accessible with add_testgroup permission."""
         permission = Permission.objects.get(
-            codename="view_testgroup", content_type__app_label="networktests"
+            codename="add_testgroup", content_type__app_label="networktests"
         )
         self.user.user_permissions.add(permission)
         self.client.login(username="testuser", password="password123")
