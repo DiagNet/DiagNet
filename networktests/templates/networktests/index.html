@@ -4,7 +4,8 @@
     <h1>Network Tests</h1>
     <div class="d-flex gap-2 mb-3">
         {% if perms.networktests.add_testcase %}
-            <a class="btn btn-primary d-none d-lg-inline" onclick="openModel()">
+            <a class="btn btn-primary d-none d-lg-inline"
+               onclick="collapseTestGroups(); openModel()">
                 <i class="bi bi-database-add"></i> Add Test Case
             </a>
         {% endif %}
@@ -12,7 +13,8 @@
             <button class="btn btn-primary"
                     hx-get="{% url 'testgroup-create-modal' %}"
                     hx-target="#testgroup-modal-container"
-                    hx-swap="innerHTML">
+                    hx-swap="innerHTML"
+                    onclick="collapseTestGroups()">
                 <i class="bi bi-folder-plus"></i> Create Test Group
             </button>
         {% endif %}
@@ -40,6 +42,12 @@
 {% endblock %}
 {% block scripts %}
     <script>
+        function collapseTestGroups() {
+            document.querySelectorAll("#dashboardAccordion .accordion-collapse.show").forEach(el => {
+                bootstrap.Collapse.getOrCreateInstance(el).hide();
+            });
+        }
+
         document.body.addEventListener("closeModal", function () {
             const modalEl = document.getElementById("testgroupModal");
             if (modalEl) {
