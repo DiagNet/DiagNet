@@ -21,6 +21,7 @@ from networktests.models import (
     CustomTestTemplate,
     TestCase,
     TestDevice,
+    TestGroup,
     TestParameter,
     TestResult,
 )
@@ -30,7 +31,6 @@ from networktests.utils import (
     get_all_available_test_classes,
     sync_custom_testcases,
 )
-from testgroups.models import TestGroup
 
 logger = logging.getLogger(__name__)
 
@@ -358,7 +358,7 @@ def delete_testcase(request, pk):
     [
         "networktests.view_testcase",
         "networktests.view_testresult",
-        "testgroups.view_testgroup",
+        "networktests.view_testgroup",
     ],
     raise_exception=True,
 )
@@ -491,7 +491,7 @@ def sync_custom_templates_view(request):
     return redirect("manage-custom-templates")
 
 
-@permission_required("testgroups.view_testgroup", raise_exception=True)
+@permission_required("networktests.view_testgroup", raise_exception=True)
 @require_http_methods(["GET"])
 def testgroup_form_modal(request, pk=None):
     """
@@ -519,13 +519,13 @@ def save_testgroup(request, pk=None):
     Returns an HTMX trigger to refresh the dashboard.
     """
     if pk:
-        if not request.user.has_perm("testgroups.change_testgroup"):
+        if not request.user.has_perm("networktests.change_testgroup"):
             return HttpResponse(status=403)
         group = get_object_or_404(TestGroup, pk=pk)
         form = TestGroupForm(request.POST, instance=group)
         action = "updated"
     else:
-        if not request.user.has_perm("testgroups.add_testgroup"):
+        if not request.user.has_perm("networktests.add_testgroup"):
             return HttpResponse(status=403)
         form = TestGroupForm(request.POST)
         action = "created"
@@ -571,7 +571,7 @@ def save_testgroup(request, pk=None):
     )
 
 
-@permission_required("testgroups.delete_testgroup", raise_exception=True)
+@permission_required("networktests.delete_testgroup", raise_exception=True)
 @require_http_methods(["POST"])
 def delete_testgroup(request, pk):
     """Delete a TestGroup and refresh the dashboard."""
@@ -592,7 +592,7 @@ def delete_testgroup(request, pk):
 
 
 @permission_required(
-    ["networktests.view_testcase", "testgroups.view_testgroup"],
+    ["networktests.view_testcase", "networktests.view_testgroup"],
     raise_exception=True,
 )
 @require_http_methods(["POST"])
@@ -641,7 +641,7 @@ def run_group_tests(request, pk):
     [
         "networktests.view_testcase",
         "networktests.view_testresult",
-        "testgroups.view_testgroup",
+        "networktests.view_testgroup",
     ],
     raise_exception=True,
 )
@@ -661,7 +661,7 @@ def export_group_pdf(request, pk):
 
 
 @permission_required(
-    ["networktests.view_testcase", "testgroups.view_testgroup"],
+    ["networktests.view_testcase", "networktests.view_testgroup"],
     raise_exception=True,
 )
 @require_http_methods(["GET"])
@@ -685,7 +685,7 @@ def dashboard_content(request):
 
 
 @permission_required(
-    ["networktests.view_testcase", "testgroups.view_testgroup"],
+    ["networktests.view_testcase", "networktests.view_testgroup"],
     raise_exception=True,
 )
 @require_http_methods(["GET"])
@@ -717,7 +717,7 @@ def all_tests_table_partial(request):
 
 
 @permission_required(
-    ["networktests.view_testcase", "testgroups.view_testgroup"],
+    ["networktests.view_testcase", "networktests.view_testgroup"],
     raise_exception=True,
 )
 @require_http_methods(["GET"])

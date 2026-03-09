@@ -25,5 +25,4 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("devices/", include("devices.urls")),
     path("networktests/", include("networktests.urls")),
-    path("testgroups/", include("testgroups.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -22,8 +22,7 @@ from django.views.generic import (
 )
 
 from devices.models import Device
-from networktests.models import CustomTestTemplate, TestCase, TestResult
-from testgroups.models import TestGroup
+from networktests.models import CustomTestTemplate, TestCase, TestGroup, TestResult
 
 from .forms import (
     GroupForm,

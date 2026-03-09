@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["diagnet", "dashboard", "devices", "networktests", "testgroups"]
+packages = ["diagnet", "dashboard", "devices", "networktests"]
 
 [tool.basedpyright]
 typeCheckingMode = "standard"

@@ -2,11 +2,12 @@ import os
 import shutil
 import tempfile
 
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from django.contrib.auth import get_user_model
 
-from .models import CustomTestTemplate
+from .models import CustomTestTemplate, TestGroup
 from .testcases.base import DiagNetTest
 from .utils import (
     get_all_available_test_classes,
@@ -337,4 +338,54 @@ class NetworkTestsPermissionTests(TestCase):
         # Using a dummy PK 999
         url = reverse("tests-run", kwargs={"pk": 999})
         response = self.client.post(url)
+        self.assertEqual(response.status_code, 403)
+
+
+class TestGroupPermissionTests(TestCase):
+    def setUp(self):
+        User.objects.create_superuser(
+            username="admin", password="password123", email="admin@diagnet.dev"
+        )
+        self.user = User.objects.create_user(
+            username="testuser", password="password123"
+        )
+        self.testgroup = TestGroup.objects.create(name="testgroup1")
+
+    def test_create_modal_permission_required(self):
+        """Test that testgroup create modal returns 403 without view_testgroup permission."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(reverse("testgroup-create-modal"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_create_modal_with_permission(self):
+        """Test that testgroup create modal is accessible with view_testgroup permission."""
+        permission = Permission.objects.get(
+            codename="view_testgroup", content_type__app_label="networktests"
+        )
+        self.user.user_permissions.add(permission)
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(reverse("testgroup-create-modal"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_save_testgroup_add_permission_required(self):
+        """Test that saving a new testgroup returns 403 without add_testgroup permission."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.post(reverse("testgroup-save"), {"name": "newgroup"})
+        self.assertEqual(response.status_code, 403)
+
+    def test_save_testgroup_change_permission_required(self):
+        """Test that editing a testgroup returns 403 without change_testgroup permission."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.post(
+            reverse("testgroup-save-pk", kwargs={"pk": self.testgroup.pk}),
+            {"name": "renamed"},
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_testgroup_permission_required(self):
+        """Test that deleting a testgroup returns 403 without delete_testgroup permission."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.post(
+            reverse("testgroup-delete", kwargs={"pk": self.testgroup.pk})
+        )
         self.assertEqual(response.status_code, 403)
