@@ -1,7 +1,7 @@
 [project]
 name = "DiagNet"
-version = "0.3.0"
-description = "Test Driven Networking"
+version = "0.3.1"
+description = "Test Driven Networking made easy"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
