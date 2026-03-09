@@ -159,7 +159,7 @@ def check_all_devices(request):
     reachable = 0
     unreachable = 0
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         for pk, status in executor.map(_check, devices):
             session_devices[str(pk)] = {"status": status}
             if status == "reachable":
