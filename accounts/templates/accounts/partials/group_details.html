@@ -1,41 +1,65 @@
-<div class="mb-4">
-    <div class="row mb-3">
-        <div class="col-md-4 text-muted">Group Name</div>
-        <div class="col-md-8">
-            <strong>{{ group.name }}</strong>
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-people me-1"></i> Group Info
+            </div>
+            <table class="table table-sm mb-0">
+                <tbody>
+                    <tr>
+                        <th class="ps-3 py-2 text-muted fw-normal text-nowrap" style="width: 40%">Name</th>
+                        <td class="py-2 pe-3 fw-semibold">{{ group.name }}</td>
+                    </tr>
+                    <tr>
+                        <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Role</th>
+                        <td class="py-2 pe-3">
+                            {% if role_type == "Viewers" %}
+                                <span class="badge bg-secondary">Read Only</span>
+                            {% elif role_type == "Editors" %}
+                                <span class="badge bg-info">View + Edit</span>
+                            {% elif role_type == "Managers" %}
+                                <span class="badge bg-warning text-dark">Full CRUD</span>
+                            {% elif role_type == "Admins" %}
+                                <span class="badge bg-danger">Full Access</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Custom</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Members</th>
+                        <td class="py-2 pe-3">{{ members|length }} user{{ members|length|pluralize }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
-    <div class="row mb-3">
-        <div class="col-md-4 text-muted">Role Type</div>
-        <div class="col-md-8">
-            {% if role_type == "Viewers" %}
-                <span class="badge bg-secondary">Read Only</span>
-            {% elif role_type == "Editors" %}
-                <span class="badge bg-info">View + Edit</span>
-            {% elif role_type == "Managers" %}
-                <span class="badge bg-warning text-dark">Full CRUD</span>
-            {% elif role_type == "Admins" %}
-                <span class="badge bg-danger">Full Access</span>
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-shield-check me-1"></i> Permissions
+            </div>
+            {% if permissions %}
+                <div class="card-body d-flex flex-wrap gap-1">
+                    {% for perm in permissions %}
+                        <span class="badge bg-body-tertiary text-body border fw-normal font-monospace">{{ perm.codename }}</span>
+                    {% endfor %}
+                </div>
             {% else %}
-                <span class="badge bg-dark">Custom</span>
+                <div class="card-body text-muted small fst-italic">No permissions assigned.</div>
             {% endif %}
         </div>
     </div>
-    <div class="row mb-3">
-        <div class="col-md-4 text-muted">Members</div>
-        <div class="col-md-8">
-            <span class="badge bg-primary rounded-pill">{{ members|length }} user{{ members|length|pluralize }}</span>
-        </div>
-    </div>
 </div>
-<hr>
-<h6 class="mb-3">Group Members</h6>
-{% if members %}
-    <div class="table-responsive">
-        <table class="table table-sm table-striped">
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-person me-1"></i> Members
+    </div>
+    {% if members %}
+        <table class="table table-sm table-hover mb-0">
             <thead>
                 <tr>
-                    <th>Username</th>
+                    <th class="ps-3">Username</th>
                     <th>Email</th>
                     <th>Status</th>
                 </tr>
@@ -43,7 +67,7 @@
             <tbody>
                 {% for member in members %}
                     <tr>
-                        <td>{{ member.username }}</td>
+                        <td class="ps-3">{{ member.username }}</td>
                         <td>{{ member.email|default:"-" }}</td>
                         <td>
                             {% if member.is_superuser %}
@@ -58,19 +82,7 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-{% else %}
-    <p class="text-muted">No members in this group.</p>
-{% endif %}
-<hr>
-<h6 class="mb-3">Permissions</h6>
-{% if permissions %}
-    <div class="d-flex flex-wrap gap-1 mb-3">
-        {% for perm in permissions %}<span class="badge bg-light text-dark border">{{ perm.codename }}</span>{% endfor %}
-    </div>
-{% else %}
-    <p class="text-muted">No permissions assigned to this group.</p>
-{% endif %}
-<div class="d-flex justify-content-end">
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    {% else %}
+        <div class="card-body text-muted small fst-italic">No members.</div>
+    {% endif %}
 </div>

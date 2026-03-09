@@ -1,69 +1,77 @@
-<div class="mb-4">
-    <div class="row mb-3">
-        <div class="col-md-4 text-muted">Username</div>
-        <div class="col-md-8">
-            <strong>{{ account.username }}</strong>
+<div class="row g-4 mb-4">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-person me-1"></i> User Info
+            </div>
+            <table class="table table-sm mb-0">
+                <tbody>
+                    <tr>
+                        <th class="ps-3 py-2 text-muted fw-normal text-nowrap" style="width: 40%">Username</th>
+                        <td class="py-2 pe-3 fw-semibold">{{ account.username }}</td>
+                    </tr>
+                    <tr>
+                        <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Email</th>
+                        <td class="py-2 pe-3">{{ account.email|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Status</th>
+                        <td class="py-2 pe-3">
+                            {% if account.is_superuser %}
+                                <span class="badge bg-danger">Superuser</span>
+                            {% elif account.is_staff %}
+                                <span class="badge bg-warning text-dark">Staff</span>
+                            {% elif account.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Groups</th>
+                        <td class="py-2 pe-3">
+                            {% for group in account.groups.all %}
+                                <span class="badge bg-body-tertiary text-body border fw-normal me-1">{{ group.name }}</span>
+                            {% empty %}
+                                <span class="text-muted small fst-italic">None</span>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Date Joined</th>
+                        <td class="py-2 pe-3 text-muted small">{{ account.date_joined|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Last Login</th>
+                        <td class="py-2 pe-3 text-muted small">{{ account.last_login|date:"Y-m-d H:i"|default:"Never" }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
-    <div class="row mb-3">
-        <div class="col-md-4 text-muted">Email</div>
-        <div class="col-md-8">{{ account.email|default:"-" }}</div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-4 text-muted">Status</div>
-        <div class="col-md-8">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-shield-check me-1"></i> Permissions
+            </div>
             {% if account.is_superuser %}
-                <span class="badge bg-danger">Superuser</span>
-            {% elif account.is_staff %}
-                <span class="badge bg-warning text-dark">Staff</span>
-            {% elif account.is_active %}
-                <span class="badge bg-success">Active</span>
+                <div class="card-body">
+                    <div class="alert alert-danger mb-0">This user is a superuser and has all permissions.</div>
+                </div>
             {% else %}
-                <span class="badge bg-secondary">Inactive</span>
+                {% with perms=account.get_group_permissions %}
+                    {% if perms %}
+                        <div class="card-body d-flex flex-wrap gap-1">
+                            {% for perm in perms %}
+                                <span class="badge bg-body-tertiary text-body border fw-normal font-monospace">{{ perm }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="card-body text-muted small fst-italic">No permissions.</div>
+                    {% endif %}
+                {% endwith %}
             {% endif %}
         </div>
     </div>
-    <div class="row mb-3">
-        <div class="col-md-4 text-muted">Groups</div>
-        <div class="col-md-8">
-            {% for group in account.groups.all %}
-                <span class="badge bg-primary me-1">{{ group.name }}</span>
-            {% empty %}
-                <span class="text-muted">No groups assigned</span>
-            {% endfor %}
-        </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-4 text-muted">Date Joined</div>
-        <div class="col-md-8">{{ account.date_joined|date:"F j, Y, g:i a" }}</div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-4 text-muted">Last Login</div>
-        <div class="col-md-8">{{ account.last_login|date:"F j, Y, g:i a"|default:"Never" }}</div>
-    </div>
-</div>
-<hr>
-<h6 class="mb-3">Permissions</h6>
-{% if account.is_superuser %}
-    <div class="alert alert-danger">This user is a superuser and has all permissions.</div>
-{% else %}
-    <div class="mb-3">
-        <strong>Group Permissions:</strong>
-        {% with perms=account.get_group_permissions %}
-            {% if perms %}
-                <ul class="list-unstyled mt-2">
-                    {% for perm in perms %}
-                        <li>
-                            <span class="badge bg-light text-dark border">{{ perm }}</span>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-muted mt-2">No group permissions.</p>
-            {% endif %}
-        {% endwith %}
-    </div>
-{% endif %}
-<div class="d-flex justify-content-end">
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 </div>
