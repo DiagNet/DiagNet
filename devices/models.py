@@ -369,6 +369,13 @@ class Device(models.Model):
             logger.error("Failed to connect to %s: %s", self.name, e)
             raise
 
+        # Normalize CLI state: send 'end' to ensure we land in enable mode.
+        # This handles vIOS sessions left in config mode by a previous connection.
+        try:
+            device.execute("end", log_stdout=log_stdout, timeout=5)
+        except Exception:
+            pass
+
         device_connections[self.pk] = device
         return device
 
