@@ -66,6 +66,19 @@ Once you have saved the file, you can start DiagNet:
 docker compose up
 ```
 
+### Updating
+
+To update DiagNet to the latest version, pull the newest image and recreate the container:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+This will download the latest image from GHCR and restart the container with
+zero configuration changes. Your data in the `./data` volume is preserved
+across updates.
+
 ## 💻 Local Development
 
 If you are looking to contribute to DiagNet, tinker with the code, or run it locally without Docker, here is how you set up the development environment.
