@@ -8,9 +8,14 @@ def move_testgroup_table(apps, schema_editor):
         schema_editor.execute(
             "ALTER TABLE testgroups_testgroup RENAME TO networktests_testgroup"
         )
-        schema_editor.execute(
-            "ALTER TABLE testgroups_testgroup_testcases RENAME TO networktests_testgroup_testcases"
-        )
+        if "testgroups_testgroup_testcases" in existing_tables:
+            schema_editor.execute(
+                "ALTER TABLE testgroups_testgroup_testcases RENAME TO networktests_testgroup_testcases"
+            )
+        elif "networktests_testgroup_testcases" not in existing_tables:
+            TestGroup = apps.get_model("networktests", "TestGroup")
+            through = TestGroup._meta.get_field("testcases").remote_field.through
+            schema_editor.create_model(through)
     elif "networktests_testgroup" not in existing_tables:
         TestGroup = apps.get_model("networktests", "TestGroup")
         schema_editor.create_model(TestGroup)
@@ -23,6 +28,7 @@ def reverse_move_testgroup_table(apps, schema_editor):
         schema_editor.execute(
             "ALTER TABLE networktests_testgroup RENAME TO testgroups_testgroup"
         )
+    if "networktests_testgroup_testcases" in existing_tables:
         schema_editor.execute(
             "ALTER TABLE networktests_testgroup_testcases RENAME TO testgroups_testgroup_testcases"
         )
