@@ -16,6 +16,7 @@ from django.views import generic
 from django.views.decorators.http import require_http_methods, require_POST
 
 from devices.models import Device
+from networktests.forms import TestGroupForm
 from networktests.models import (
     CustomTestTemplate,
     TestCase,
@@ -23,7 +24,6 @@ from networktests.models import (
     TestParameter,
     TestResult,
 )
-from networktests.forms import TestGroupForm
 from networktests.pdf_report import PDFReport
 from networktests.testcases.base import get_parameter_names
 from networktests.utils import (
@@ -691,16 +691,9 @@ def dashboard_content(request):
 @require_http_methods(["GET"])
 def group_table_partial(request, pk):
     """HTMX partial: returns just the testcases table for a specific group."""
-    group = get_object_or_404(
-        TestGroup.objects.prefetch_related(
-            Prefetch(
-                "testcases",
-                queryset=TestCase.objects.prefetch_related("results").order_by("label"),
-            )
-        ),
-        pk=pk,
-    )
-    paginator = Paginator(group.testcases.all(), 25)
+    group = get_object_or_404(TestGroup, pk=pk)
+    testcases_qs = group.testcases.prefetch_related("results").order_by("label")
+    paginator = Paginator(testcases_qs, 25)
     page_obj = paginator.get_page(request.GET.get("page"))
     return render(
         request,
