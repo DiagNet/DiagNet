@@ -128,7 +128,7 @@
             venv = pythonSet.mkVirtualEnv "diagnet-env" deps;
             entrypoint = pkgs.writeShellScriptBin "entrypoint" ''
               set -euo pipefail
-              mkdir /tmp
+              mkdir -p /tmp
 
               # Default to /data if not set
               export DIAGNET_DATA_PATH="''${DIAGNET_DATA_PATH:-/data}"
