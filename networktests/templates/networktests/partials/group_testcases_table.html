@@ -12,7 +12,7 @@
         </thead>
         <tbody>
             {% for testcase in testcases %}
-                {% include "networktests/partials/testcase_row.html" with testcase=testcase %}
+                {% include "networktests/partials/testcase_row.html" with testcase=testcase group=group %}
             {% empty %}
                 <tr>
                     <td colspan="5" class="text-muted">No test cases.</td>

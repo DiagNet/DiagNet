@@ -34,14 +34,13 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button"
-                                class="btn btn-danger"
-                                hx-delete="{% url 'testcase_delete' testcase.id %}"
-                                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                hx-confirm="Are you sure you want to delete this test case?"
-                                hx-trigger="click"
-                                hx-on::after-request="htmx.trigger(document.body, 'refreshDashboard')"
-                                data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-danger" hx-delete="{% url 'testcase_delete' testcase.id %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-confirm="Are you sure you want to delete this test case?" hx-trigger="click" hx-swap="none" hx-on::after-request="if(event.detail.successful){var el=document.getElementById('testcase-row-{{ testcase.id }}');if(el)el.remove();
+                            {% if group %}
+                                var tbl=document.getElementById('group-table-{{ group.pk }}');if(tbl){var pg=tbl.querySelector('[data-page]');if(pg){tbl.setAttribute('hx-get','{% url 'group-table-partial' group.pk %}?page='+pg.dataset.page);htmx.process(tbl)}htmx.trigger(tbl,'refreshGroupTable')}
+                            {% else %}
+                                htmx.trigger(document.body,'refreshDashboard');
+                            {% endif %}
+                            }" data-bs-dismiss="modal">
                             <i class="bi bi-trash"></i> Delete
                         </button>
                     </div>

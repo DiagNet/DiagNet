@@ -49,7 +49,7 @@
             </div>
             <div id="group-table-{{ group.pk }}"
                  hx-get="{% url 'group-table-partial' group.pk %}"
-                 hx-trigger="load"
+                 hx-trigger="load, refreshGroupTable"
                  hx-swap="innerHTML"></div>
         </div>
     </div>
