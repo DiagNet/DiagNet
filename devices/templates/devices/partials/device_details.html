@@ -1,20 +1,87 @@
-<div>
-    {% for field, value in device.get_fields_display %}
-        {% if field != "Id" %}
-            <div class="form-floating mb-2">
-                <input type="text"
-                       readonly
-                       class="form-control-plaintext"
-                       id="device-field-{{ forloop.counter }}"
-                       value="{{ value }}">
-                <label for="device-field-{{ forloop.counter }}">{{ field }}</label>
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-hdd-network me-1"></i> Device Info
             </div>
-        {% endif %}
-    {% endfor %}
-    {% if perms.devices.change_device %}
-        <button hx-get="{% url 'device-update' device.pk %}" class="btn btn-primary">Edit</button>
-    {% endif %}
+            <table class="table table-sm mb-0">
+                <tbody>
+                    {% for field, value in device.get_fields_display %}
+                        {% if field != "Id" %}
+                            <tr>
+                                <th class="ps-3 py-2 text-muted fw-normal text-nowrap" style="width: 40%">{{ field }}</th>
+                                <td class="py-2 pe-3">{{ value }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if perms.devices.change_device %}
+                <div class="card-footer bg-transparent">
+                    <button hx-get="{% url 'device-update' device.pk %}"
+                            hx-target="closest .modal-body"
+                            hx-swap="innerHTML"
+                            class="btn btn-sm btn-primary">
+                        <i class="bi bi-pencil"></i> Edit
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-clipboard-check me-1"></i> Associated Test Cases
+            </div>
+            {% if perms.networktests.view_testcase %}
+                {% if testcases %}
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">Label</th>
+                                <th class="text-center">Expected</th>
+                                <th class="text-center">Last Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tc in testcases %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <button class="btn btn-link p-0 text-start"
+                                                hx-get="{% url 'testcase-modal-content' tc.pk %}?from_device={{ device.pk }}"
+                                                hx-target="closest .modal-content"
+                                                hx-swap="innerHTML">{{ tc.label }}</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if tc.expected_result %}
+                                            <span class="badge bg-success">PASS</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">FAIL</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% with tc.ordered_results|first as last %}
+                                            {% if last %}
+                                                {% if last.result %}
+                                                    <span class="badge bg-success">PASS</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">FAIL</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">—</span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="card-body text-muted small fst-italic">No test cases reference this device.</div>
+                {% endif %}
+            {% else %}
+                <div class="card-body text-muted small fst-italic">You don't have permission to view test cases.</div>
+            {% endif %}
+        </div>
+    </div>
 </div>
-<hr>
-<h2 class="fs-5">Associated tests</h2>
-work in progress

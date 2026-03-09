@@ -9,6 +9,14 @@ urlpatterns = [
     path("api/create/", views.DeviceCreate.as_view(), name="device-create"),
     path("api/update/<int:pk>/", views.DeviceUpdate.as_view(), name="device-update"),
     path("api/delete/<int:pk>/", views.DeviceDelete.as_view(), name="device-delete"),
+    path(
+        "api/details/<int:pk>/",
+        views.device_detail_partial,
+        name="device-detail-partial",
+    ),
+    path(
+        "api/modal/<int:pk>/", views.device_modal_content, name="device-modal-content"
+    ),
     path("api/check/all/", views.check_all_devices, name="device-check-all"),
     path("api/check/<int:pk>/", views.device_check, name="device-check"),
     path("api/export/", views.export_devices_from_yaml, name="devices-export"),
