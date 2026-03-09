@@ -1,6 +1,8 @@
 import json
 from concurrent.futures import ThreadPoolExecutor
 
+from django.db.models import Prefetch
+
 import yaml
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -9,10 +11,11 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views import generic
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from devices.forms import DeviceForm, UploadFileForm
+from networktests.models import TestCase, TestResult
 
 from .models import Device
 
@@ -27,6 +30,59 @@ STATE_MAP = {
 @permission_required("devices.view_device", raise_exception=True)
 def index(request):
     return render(request, "devices/index.html")
+
+
+@permission_required("devices.view_device", raise_exception=True)
+@require_http_methods(["GET"])
+def device_modal_content(request, pk):
+    device = get_object_or_404(Device, pk=pk)
+    testcases = (
+        TestCase.objects.filter(devices__device=device)
+        .distinct()
+        .prefetch_related(
+            Prefetch(
+                "results",
+                queryset=TestResult.objects.order_by("-attempt_id"),
+                to_attr="ordered_results",
+            )
+        )
+    )
+    return render(
+        request,
+        "devices/partials/device_modal_content.html",
+        {
+            "device": device,
+            "testcases": testcases,
+            "from_testcase_pk": request.GET.get("from_testcase"),
+        },
+    )
+
+
+@permission_required("devices.view_device", raise_exception=True)
+@require_http_methods(["GET"])
+def device_detail_partial(request, pk):
+    device = get_object_or_404(Device, pk=pk)
+    testcases = (
+        TestCase.objects.filter(devices__device=device)
+        .distinct()
+        .prefetch_related(
+            Prefetch(
+                "results",
+                queryset=TestResult.objects.order_by("-attempt_id"),
+                to_attr="ordered_results",
+            )
+        )
+    )
+    context = {"device": device, "testcases": testcases}
+
+    from_testcase = request.GET.get("from_testcase")
+    if from_testcase:
+        context["from_testcase_pk"] = from_testcase
+        return render(
+            request, "devices/partials/device_detail_in_testcase_modal.html", context
+        )
+
+    return render(request, "devices/partials/device_details.html", context)
 
 
 class DeviceListView(PermissionRequiredMixin, generic.ListView):
@@ -99,10 +155,21 @@ class DeviceUpdate(PermissionRequiredMixin, UpdateView):
             return self.form_invalid(form)
 
         if self.request.headers.get("HX-Request") == "true":
+            testcases = (
+                TestCase.objects.filter(devices__device=self.object)
+                .distinct()
+                .prefetch_related(
+                    Prefetch(
+                        "results",
+                        queryset=TestResult.objects.order_by("-attempt_id"),
+                        to_attr="ordered_results",
+                    )
+                )
+            )
             return render(
                 self.request,
                 "devices/partials/device_details.html",
-                {"device": self.object},
+                {"device": self.object, "testcases": testcases},
             )
         return HttpResponseRedirect(self.get_success_url())
 

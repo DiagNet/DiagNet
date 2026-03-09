@@ -1,0 +1,38 @@
+<div class="modal-header">
+    {% if from_testcase_pk %}
+        <button class="btn btn-sm btn-outline-secondary me-2"
+                hx-get="{% url 'testcase-modal-content' from_testcase_pk %}"
+                hx-target="closest .modal-content"
+                hx-swap="innerHTML">
+            <i class="bi bi-arrow-left"></i>
+        </button>
+    {% endif %}
+    <div>
+        <div class="d-flex align-items-center gap-3 mb-1">
+            <h5 class="fw-bold mb-0 text-body">{{ device.name }}</h5>
+            <span class="badge bg-body-tertiary text-body border fw-normal font-monospace">
+                <i class="bi bi-hdd-network me-1"></i>{{ device.get_device_type_display }}
+            </span>
+        </div>
+        <p class="text-secondary small mt-1 mb-0">
+            {{ device.ip_address }}:{{ device.port }} &middot; {{ device.get_protocol_display }}
+        </p>
+    </div>
+    <button type="button"
+            class="btn-close ms-auto"
+            data-bs-dismiss="modal"
+            aria-label="Close"></button>
+</div>
+<div class="modal-body">{% include "devices/partials/device_details.html" %}</div>
+<div class="modal-footer">
+    {% if perms.devices.delete_device %}
+        <button type="button"
+                class="btn btn-danger"
+                hx-delete="{% url 'device-delete' device.pk %}"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                hx-confirm="Are you sure you want to delete this device?"
+                data-bs-dismiss="modal">
+            <i class="bi bi-trash"></i> Delete
+        </button>
+    {% endif %}
+</div>
