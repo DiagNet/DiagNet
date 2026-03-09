@@ -1,7 +1,6 @@
 from django import forms
 
-from networktests.models import TestCase
-from testgroups.models import TestGroup
+from networktests.models import TestCase, TestGroup
 
 
 class TestGroupForm(forms.ModelForm):

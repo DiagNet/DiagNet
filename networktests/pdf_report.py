@@ -9,8 +9,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
-from networktests.models import TestResult
-from testgroups.models import TestGroup
+from networktests.models import TestGroup, TestResult
 
 W, H = A4
 

@@ -7,8 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 
-from networktests.models import TestResult
-from testgroups.models import TestGroup
+from networktests.models import TestGroup, TestResult
 
 
 def get_dashboard_data(range_code: str, group_name: Optional[str]):
@@ -126,7 +125,7 @@ def get_dashboard_data(range_code: str, group_name: Optional[str]):
     [
         "networktests.view_testcase",
         "networktests.view_testresult",
-        "testgroups.view_testgroup",
+        "networktests.view_testgroup",
     ],
     raise_exception=True,
 )
@@ -142,7 +141,7 @@ def dashboard_data(request):
     [
         "networktests.view_testcase",
         "networktests.view_testresult",
-        "testgroups.view_testgroup",
+        "networktests.view_testgroup",
     ],
     raise_exception=True,
 )
