@@ -21,3 +21,21 @@
 .htmx-request.htmx-indicator {
   display: inline;
 }
+
+/* Dark Mode Table Fixes */
+[data-bs-theme="dark"] .table thead th {
+  background-color: #2b3035 !important;
+  color: #dee2e6 !important;
+  border-bottom-color: #495057;
+}
+
+[data-bs-theme="dark"] .card {
+  background-color: #212529;
+  border-color: #373b3e;
+}
+
+[data-bs-theme="dark"] .badge.bg-white {
+  background-color: #343a40 !important;
+  color: #f8f9fa !important;
+  border-color: #495057 !important;
+}

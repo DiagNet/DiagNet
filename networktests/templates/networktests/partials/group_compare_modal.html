@@ -1,0 +1,165 @@
+<div class="modal fade"
+     id="compareRunsModal-{{ group.pk }}"
+     tabindex="-1"
+     aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-bottom border-opacity-10 py-3">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0">
+                        <i class="bi bi-arrow-left-right me-2 text-body-secondary"></i>
+                        Run Comparison — {{ group.name }}
+                    </h5>
+                    <p class="text-body-secondary small mb-0 mt-1">Previous run vs. latest run per testcase</p>
+                </div>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                {% if comparison_data %}
+                    <div class="accordion accordion-flush"
+                         id="compareAccordion-{{ group.pk }}">
+                        {% for item in comparison_data %}
+                            <div class="accordion-item border-bottom border-opacity-10">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed py-3"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#cmp-collapse-{{ item.testcase.pk }}"
+                                            aria-expanded="false"
+                                            aria-controls="cmp-collapse-{{ item.testcase.pk }}">
+                                        <span class="fw-medium text-body me-3"
+                                              style="min-width: 0;
+                                                     flex: 1 1 auto;
+                                                     overflow: hidden;
+                                                     text-overflow: ellipsis;
+                                                     white-space: nowrap">{{ item.testcase.label }}</span>
+                                        <span class="d-flex align-items-center gap-2 flex-shrink-0 me-3">
+                                            <span class="text-body-secondary small me-1">Previous:</span>
+                                            {% if item.prev_run %}
+                                                {% if item.testcase.expected_result == item.prev_run.result %}
+                                                    <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">PASS</span>
+                                                {% else %}
+                                                    <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis border border-danger-subtle">FAIL</span>
+                                                {% endif %}
+                                                <span class="text-body-secondary small font-monospace">{{ item.prev_run.started_at|date:"m-d H:i" }}</span>
+                                            {% else %}
+                                                <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">—</span>
+                                            {% endif %}
+                                            <span class="text-body-secondary small ms-2 me-1">Latest:</span>
+                                            {% if item.last_run %}
+                                                {% if item.testcase.expected_result == item.last_run.result %}
+                                                    <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">PASS</span>
+                                                {% else %}
+                                                    <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis border border-danger-subtle">FAIL</span>
+                                                {% endif %}
+                                                <span class="text-body-secondary small font-monospace">{{ item.last_run.started_at|date:"m-d H:i" }}</span>
+                                            {% else %}
+                                                <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">New</span>
+                                            {% endif %}
+                                        </span>
+                                    </button>
+                                </h2>
+                                <div id="cmp-collapse-{{ item.testcase.pk }}"
+                                     class="accordion-collapse collapse">
+                                    <div class="accordion-body p-0">
+                                        {% if item.modules %}
+                                            <div class="table-responsive">
+                                                <table class="table table-sm align-middle mb-0">
+                                                    <thead>
+                                                        <tr class="border-bottom border-opacity-10">
+                                                            <th class="small text-uppercase fw-bold text-body-secondary bg-body-tertiary ps-4 py-2"
+                                                                style="width: 28%">Module</th>
+                                                            <th class="small text-uppercase fw-bold text-body-secondary bg-body-tertiary py-2"
+                                                                style="width: 36%">
+                                                                <i class="bi bi-clock-history me-1 opacity-50"></i>
+                                                                Previous Run
+                                                                {% if item.prev_run %}
+                                                                    <span class="fw-normal text-body-secondary font-monospace opacity-75">
+                                                                        · {{ item.prev_run.started_at|date:"Y-m-d H:i" }}
+                                                                    </span>
+                                                                {% endif %}
+                                                            </th>
+                                                            <th class="small text-uppercase fw-bold text-body-secondary bg-body-tertiary py-2 pe-4"
+                                                                style="width: 36%">
+                                                                <i class="bi bi-clock me-1 opacity-50"></i>
+                                                                Latest Run
+                                                                {% if item.last_run %}
+                                                                    <span class="fw-normal text-body-secondary font-monospace opacity-75">
+                                                                        · {{ item.last_run.started_at|date:"Y-m-d H:i" }}
+                                                                    </span>
+                                                                {% endif %}
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for mod in item.modules %}
+                                                            <tr>
+                                                                <td class="font-monospace text-body ps-4 py-2 small">{{ mod.name }}</td>
+                                                                <td class="py-2">
+                                                                    {% if mod.prev %}
+                                                                        <div class="d-flex align-items-start gap-2">
+                                                                            <span class="badge rounded-pill border flex-shrink-0 mt-1 {% if mod.prev.status == 'PASS' %}bg-success-subtle text-success-emphasis border-success-subtle {% elif mod.prev.status == 'FAIL' %}bg-danger-subtle text-danger-emphasis border-danger-subtle {% else %}bg-secondary-subtle text-secondary-emphasis border-secondary-subtle{% endif %}">
+                                                                                {{ mod.prev.status|upper }}
+                                                                            </span>
+                                                                            <span class="text-body-secondary small text-break">{{ mod.prev.message|default:"—" }}</span>
+                                                                        </div>
+                                                                    {% else %}
+                                                                        <span class="text-body-secondary small fst-italic">not tested</span>
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td class="py-2 pe-4">
+                                                                    {% if mod.last %}
+                                                                        <div class="d-flex align-items-start gap-2">
+                                                                            <span class="badge rounded-pill border flex-shrink-0 mt-1 {% if mod.last.status == 'PASS' %}bg-success-subtle text-success-emphasis border-success-subtle {% elif mod.last.status == 'FAIL' %}bg-danger-subtle text-danger-emphasis border-danger-subtle {% else %}bg-secondary-subtle text-secondary-emphasis border-secondary-subtle{% endif %}">
+                                                                                {{ mod.last.status|upper }}
+                                                                            </span>
+                                                                            <span class="text-body-secondary small text-break">{{ mod.last.message|default:"—" }}</span>
+                                                                        </div>
+                                                                    {% else %}
+                                                                        <span class="text-body-secondary small fst-italic">not tested</span>
+                                                                    {% endif %}
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        {% else %}
+                                            <div class="text-center py-4 text-body-secondary small">
+                                                <i class="bi bi-inbox me-1"></i> No run data available for this testcase.
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox text-secondary opacity-25" style="font-size: 3rem"></i>
+                        <p class="text-secondary mt-3">No testcases in this group.</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer border-top border-opacity-10 py-2">
+                <small class="text-body-secondary me-auto">
+                    {{ comparison_data|length }} testcase{{ comparison_data|length|pluralize }} · click a row to expand module details
+                </small>
+                <button type="button"
+                        class="btn btn-sm btn-outline-secondary"
+                        data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    (() => {
+        const modalEl = document.getElementById("compareRunsModal-{{ group.pk }}");
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+        modalEl.addEventListener("hidden.bs.modal", () => modalEl.remove());
+    })();
+</script>

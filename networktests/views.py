@@ -712,7 +712,56 @@ def all_tests_table_partial(request):
     return render(
         request,
         "networktests/partials/group_testcases_table.html",
-        {"testcases": all_testcases},
+        {"testcases": all_testcases, "row_prefix": "all-"},
+    )
+
+
+@permission_required(
+    ["networktests.view_testcase", "testgroups.view_testgroup"],
+    raise_exception=True,
+)
+@require_http_methods(["GET"])
+def testgroup_compare_view(request, pk):
+    """
+    HTMX partial: returns the run-comparison modal for a TestGroup.
+    Builds per-testcase comparison data for the last two runs, including
+    module-level results, in a single pair of DB queries.
+    """
+    group = get_object_or_404(TestGroup, pk=pk)
+    testcases_qs = group.testcases.prefetch_related(
+        Prefetch(
+            "results",
+            queryset=TestResult.objects.order_by("-attempt_id"),
+            to_attr="sorted_results",
+        )
+    ).order_by("label")
+
+    comparison_data = []
+    for tc in testcases_qs:
+        results = tc.sorted_results
+        last = results[0] if len(results) > 0 else None
+        prev = results[1] if len(results) > 1 else None
+
+        last_tests = (last.log or {}).get("tests", {}) if last else {}
+        prev_tests = (prev.log or {}).get("tests", {}) if prev else {}
+        all_modules = sorted(set(list(last_tests.keys()) + list(prev_tests.keys())))
+
+        comparison_data.append(
+            {
+                "testcase": tc,
+                "last_run": last,
+                "prev_run": prev,
+                "modules": [
+                    {"name": m, "last": last_tests.get(m), "prev": prev_tests.get(m)}
+                    for m in all_modules
+                ],
+            }
+        )
+
+    return render(
+        request,
+        "networktests/partials/group_compare_modal.html",
+        {"group": group, "comparison_data": comparison_data},
     )
 
 

@@ -7,6 +7,7 @@ from reportlab.graphics.charts.barcharts import VerticalBarChart
 from reportlab.graphics.shapes import Drawing
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen import canvas
 
 from networktests.models import TestResult
@@ -14,41 +15,75 @@ from testgroups.models import TestGroup
 
 W, H = A4
 
+# ── Brand colours ────────────────────────────────────────────────────────────
+BLUE = colors.HexColor("#00267F")
+ORANGE = colors.HexColor("#c2410c")
+GREEN = colors.HexColor("#16a34a")
+RED = colors.HexColor("#dc2626")
+LIGHT_GREY = colors.HexColor("#f1f5f9")
+MID_GREY = colors.HexColor("#94a3b8")
+DARK_GREY = colors.HexColor("#334155")
+
+
+def _truncate(text: str, max_width_pt: float, font: str, size: int) -> str:
+    """Truncate *text* so it fits within *max_width_pt* points."""
+    if not text:
+        return ""
+    if stringWidth(text, font, size) <= max_width_pt:
+        return text
+    while text and stringWidth(text + "…", font, size) > max_width_pt:
+        text = text[:-1]
+    return text + "…"
+
 
 class PDFReport:
-    # Layout Constants
-    MARGIN_LEFT = 50
-    PAGE_WIDTH = W
-    PAGE_HEIGHT = H
-    MARGIN_RIGHT = PAGE_WIDTH - MARGIN_LEFT
-    CONTENT_WIDTH = MARGIN_RIGHT - MARGIN_LEFT
+    # ── Layout ────────────────────────────────────────────────────────────────
+    ML = 48  # margin left
+    MR = W - 48  # margin right
+    CW = MR - ML  # content width  ≈ 499 pt on A4
+    MB = 55  # bottom margin (space for footer)
+
+    # Column x-positions for the logs table
+    _COL_TS = ML  # timestamp   (~100 pt)
+    _COL_TC = ML + 105  # testcase    (~130 pt)
+    _COL_RES = ML + 238  # result      (~52 pt)
+    _COL_MSG = ML + 293  # message     (remaining ≈ 203 pt)
+
+    # Column x-positions for group summary table
+    _COL_GRP = ML  # group name  (~195 pt)
+    _COL_PASS = ML + 200  # pass
+    _COL_FAIL = ML + 270  # fail
+    _COL_TOTAL = ML + 335  # total
 
     def __init__(self, buffer, group=None):
         self.buffer = buffer
         self.pdf = canvas.Canvas(self.buffer, pagesize=A4)
         self.now = timezone.now()
         self.group = group
+        self._page = 0
 
+    # ── Public entry point ────────────────────────────────────────────────────
     def generate(self):
         self.fetch_data()
-        self.draw_header()
-        self.draw_overview()
-        self.draw_group_charts()
-        self.draw_group_summary()
-        self.draw_recent_logs()
+        self._cover_page()
+        self._draw_charts()
+        self._draw_group_summary()
+        self._draw_recent_logs()
         self.pdf.save()
         return self.buffer
 
+    # ── Data ──────────────────────────────────────────────────────────────────
     def fetch_data(self):
         results_qs = TestResult.objects.select_related("test_case").order_by(
             "-started_at"
         )
-
         if self.group:
-            testcase_ids = self.group.testcases.values_list("pk", flat=True)
-            results_qs = results_qs.filter(test_case_id__in=testcase_ids)
+            tc_ids = self.group.testcases.values_list("pk", flat=True)
+            results_qs = results_qs.filter(test_case_id__in=tc_ids)
 
-        self.results = results_qs[:50]
+        # Only failed results in the log section — keeps the page readable
+        self.failed_results = list(results_qs.filter(result=False)[:40])
+        self.pass_results = list(results_qs.filter(result=True)[:10])
 
         groups_qs = TestGroup.objects.all()
         if self.group:
@@ -58,249 +93,397 @@ class PDFReport:
             groups_qs.annotate(
                 total_count=Count("testcases__results"),
                 pass_count=Count(
-                    "testcases__results", filter=Q(testcases__results__result=True)
+                    "testcases__results",
+                    filter=Q(testcases__results__result=True),
                 ),
             )
             .filter(total_count__gt=0)
             .order_by("name")
         )
 
-        group_labels_all = [g.name for g in groups_with_stats]
-        group_passes_all = [g.pass_count for g in groups_with_stats]
-        group_fails_all = [(g.total_count - g.pass_count) for g in groups_with_stats]
+        labels = [g.name for g in groups_with_stats]
+        passes = [g.pass_count for g in groups_with_stats]
+        fails = [(g.total_count - g.pass_count) for g in groups_with_stats]
 
         self.group_chart_chunks = [
-            (
-                group_labels_all[i : i + 5],
-                group_passes_all[i : i + 5],
-                group_fails_all[i : i + 5],
-            )
-            for i in range(0, len(group_labels_all), 5)
+            (labels[i : i + 5], passes[i : i + 5], fails[i : i + 5])
+            for i in range(0, len(labels), 5)
         ]
 
-        self.total_pass = sum(group_passes_all)
-        self.total_fail = sum(group_fails_all)
+        self.total_pass = sum(passes)
+        self.total_fail = sum(fails)
         self.total_tests = self.total_pass + self.total_fail
-        self.group_labels_all = group_labels_all
-        self.group_passes_all = group_passes_all
-        self.group_fails_all = group_fails_all
+        self.group_labels = labels
+        self.group_passes = passes
+        self.group_fails = fails
 
-    def draw_header(self):
-        y_pos = self.PAGE_HEIGHT - 90
-        self.pdf.setFont("Helvetica-Bold", 30)
+    # ── Helpers ───────────────────────────────────────────────────────────────
+    def _new_page(self, title: str = ""):
+        self._page += 1
+        self.pdf.showPage()
+        self._draw_footer()
+        if title:
+            self._section_header(title)
+
+    def _start_page(self, title: str = ""):
+        """Mark the start of a fresh page (first page after showPage already called)."""
+        self._page += 1
+        self._draw_footer()
+        if title:
+            self._section_header(title)
+
+    def _draw_footer(self):
+        y = 30
+        self.pdf.setFont("Helvetica", 8)
+        self.pdf.setFillColor(MID_GREY)
+        label = "DiagNet Automated Network Test Report"
+        if self.group:
+            label += f" — {self.group.name}"
+        self.pdf.drawString(self.ML, y, label)
+        self.pdf.drawRightString(
+            self.MR, y, f"Page {self._page}  ·  {self.now.strftime('%Y-%m-%d %H:%M')}"
+        )
+        self.pdf.setStrokeColor(LIGHT_GREY)
+        self.pdf.setLineWidth(0.5)
+        self.pdf.line(self.ML, y + 10, self.MR, y + 10)
+        self.pdf.setFillColor(colors.black)
+
+    def _section_header(self, title: str, y: float = None):
+        if y is None:
+            y = H - 58
+        # Accent bar
+        self.pdf.setFillColor(BLUE)
+        self.pdf.rect(self.ML, y - 4, 4, 26, fill=True, stroke=False)
+        self.pdf.setFont("Helvetica-Bold", 18)
+        self.pdf.setFillColor(DARK_GREY)
+        self.pdf.drawString(self.ML + 12, y, title)
+        self.pdf.setFillColor(colors.black)
+
+    def _h_rule(self, y: float, color=None):
+        self.pdf.setStrokeColor(color or LIGHT_GREY)
+        self.pdf.setLineWidth(0.5)
+        self.pdf.line(self.ML, y, self.MR, y)
+        self.pdf.setStrokeColor(colors.black)
+        self.pdf.setLineWidth(1)
+
+    # ── Cover page ────────────────────────────────────────────────────────────
+    def _cover_page(self):
+        self._page += 1
+        pdf = self.pdf
+
+        # Top accent band
+        pdf.setFillColor(BLUE)
+        pdf.rect(0, H - 110, W, 110, fill=True, stroke=False)
+
+        # Title
+        pdf.setFillColor(colors.white)
+        pdf.setFont("Helvetica-Bold", 28)
         title = "DiagNet Test Report"
         if self.group:
-            title += f" – {self.group.name}"
-        self.pdf.drawString(self.MARGIN_LEFT, y_pos, title)
+            title = f"DiagNet — {self.group.name}"
+        pdf.drawString(self.ML, H - 60, title)
 
-        y_pos -= 35
-        self.pdf.setFont("Helvetica", 16)
-        self.pdf.setFillColor(colors.grey)
-        subtitle = "Automated Network Test Summary"
+        pdf.setFont("Helvetica", 13)
+        pdf.setFillColor(colors.HexColor("#bfdbfe"))
+        subtitle = "Automated Network Infrastructure Test Summary"
         if self.group:
-            subtitle = f"Report for group: {self.group.name}"
-        self.pdf.drawString(self.MARGIN_LEFT, y_pos, subtitle)
+            subtitle = f"Report for test group: {self.group.name}"
+        pdf.drawString(self.ML, H - 84, subtitle)
 
-        y_pos -= 35
-        self.pdf.setFillColor(colors.black)
-        self.pdf.setFont("Helvetica", 12)
-        self.pdf.drawString(
-            self.MARGIN_LEFT, y_pos, f"Generated: {self.now.strftime('%Y-%m-%d %H:%M')}"
+        # Meta line
+        pdf.setFillColor(DARK_GREY)
+        pdf.setFont("Helvetica", 11)
+        pdf.drawString(
+            self.ML,
+            H - 130,
+            f"Generated:  {self.now.strftime('%A, %d %B %Y  at  %H:%M')}",
         )
 
-    def draw_overview(self):
-        y_pos = self.PAGE_HEIGHT - 210
-        self.pdf.setFont("Helvetica-Bold", 14)
-        self.pdf.drawString(self.MARGIN_LEFT, y_pos, "Overview")
+        # Overview stat boxes
+        stats = [
+            ("Total Runs", str(self.total_tests), DARK_GREY),
+            ("Passed", str(self.total_pass), GREEN),
+            ("Failed", str(self.total_fail), RED),
+            ("Test Groups", str(len(self.group_labels)), BLUE),
+        ]
+        box_w = 110
+        box_h = 70
+        box_y = H - 240
+        box_gap = 14
+        total_boxes_w = len(stats) * box_w + (len(stats) - 1) * box_gap
+        box_start_x = self.ML + (self.CW - total_boxes_w) / 2
 
-        y_pos -= 30
-        bullet_x = self.MARGIN_LEFT + 20
-        self.pdf.setFont("Helvetica", 12)
-        self.pdf.drawString(bullet_x, y_pos, f"• Total Test Runs: {self.total_tests}")
-        y_pos -= 20
-        self.pdf.drawString(bullet_x, y_pos, f"• Passed: {self.total_pass}")
-        y_pos -= 20
-        self.pdf.drawString(bullet_x, y_pos, f"• Failed: {self.total_fail}")
-        y_pos -= 20
-        self.pdf.drawString(
-            bullet_x, y_pos, f"• TestGroups: {len(self.group_labels_all)}"
-        )
+        for i, (label, value, col) in enumerate(stats):
+            bx = box_start_x + i * (box_w + box_gap)
+            # Shadow
+            pdf.setFillColor(colors.HexColor("#e2e8f0"))
+            pdf.roundRect(bx + 2, box_y - 2, box_w, box_h, 6, fill=True, stroke=False)
+            # Box
+            pdf.setFillColor(colors.white)
+            pdf.roundRect(bx, box_y, box_w, box_h, 6, fill=True, stroke=False)
+            # Top colour strip
+            pdf.setFillColor(col)
+            pdf.roundRect(bx, box_y + box_h - 6, box_w, 6, 3, fill=True, stroke=False)
+            # Value
+            pdf.setFont("Helvetica-Bold", 26)
+            pdf.setFillColor(col)
+            pdf.drawCentredString(bx + box_w / 2, box_y + 22, value)
+            # Label
+            pdf.setFont("Helvetica", 9)
+            pdf.setFillColor(MID_GREY)
+            pdf.drawCentredString(bx + box_w / 2, box_y + 10, label.upper())
 
-        y_pos -= 20
-        self.pdf.line(self.MARGIN_LEFT, y_pos, self.MARGIN_RIGHT, y_pos)
-        self.pdf.showPage()
+        # Pass-rate bar
+        if self.total_tests > 0:
+            bar_y = box_y - 48
+            bar_h = 14
+            bar_w = self.CW
 
-    def draw_group_charts(self):
-        chart_y = self.PAGE_HEIGHT - 360
-        legend_y = self.PAGE_HEIGHT - 390
-        pass_legend_x = self.MARGIN_LEFT + 10
-        fail_legend_x = self.MARGIN_LEFT + 80
-
-        for idx, (labels, passes, fails) in enumerate(self.group_chart_chunks, start=1):
-            self.pdf.setFont("Helvetica-Bold", 20)
-            self.pdf.drawString(
-                self.MARGIN_LEFT,
-                self.PAGE_HEIGHT - 60,
-                f"TestGroups – Pass/Fail (Block {idx})",
+            pdf.setFillColor(colors.HexColor("#f1f5f9"))
+            pdf.roundRect(
+                self.ML, bar_y, bar_w, bar_h, bar_h / 2, fill=True, stroke=False
             )
 
-            drawing = Drawing(self.CONTENT_WIDTH, 280)
+            pass_w = bar_w * self.total_pass / self.total_tests
+            if pass_w > 0:
+                pdf.setFillColor(GREEN)
+                pdf.roundRect(
+                    self.ML, bar_y, pass_w, bar_h, bar_h / 2, fill=True, stroke=False
+                )
+
+            rate = round(100 * self.total_pass / self.total_tests, 1)
+            pdf.setFont("Helvetica-Bold", 9)
+            pdf.setFillColor(DARK_GREY)
+            pdf.drawCentredString(self.ML + bar_w / 2, bar_y + 2, f"Pass rate: {rate}%")
+
+        self._draw_footer()
+        self._h_rule(self.MB + 12)
+
+    # ── Charts ────────────────────────────────────────────────────────────────
+    def _draw_charts(self):
+        for idx, (labels, passes, fails) in enumerate(self.group_chart_chunks, start=1):
+            self.pdf.showPage()
+            self._start_page(
+                f"Pass / Fail by Test Group  (block {idx} of {len(self.group_chart_chunks)})"
+            )
+
+            drawing = Drawing(self.CW, 290)
             bc = VerticalBarChart()
-            bc.x = 40
-            bc.y = 50
-            bc.width = self.CONTENT_WIDTH - 80
-            bc.height = 200
+            bc.x = 45
+            bc.y = 55
+            bc.width = self.CW - 90
+            bc.height = 210
             bc.data = [passes, fails]
             bc.categoryAxis.categoryNames = labels
-            bc.bars[0].fillColor = colors.HexColor("#16a34a")
-            bc.bars[1].fillColor = colors.HexColor("#dc2626")
-            bc.groupSpacing = 12
-            bc.barSpacing = 2
+            bc.categoryAxis.labels.fontSize = 9
+            bc.valueAxis.labels.fontSize = 9
+            bc.bars[0].fillColor = GREEN
+            bc.bars[1].fillColor = RED
+            bc.groupSpacing = 14
+            bc.barSpacing = 3
             bc.valueAxis.valueMin = 0
             max_val = max(passes + fails) if (passes + fails) else 1
             bc.valueAxis.valueMax = max_val + 1
-            bc.valueAxis.valueStep = max(1, max_val // 4 or 1)
+            bc.valueAxis.valueStep = max(1, max_val // 5 or 1)
 
             drawing.add(bc)
-            renderPDF.draw(drawing, self.pdf, self.MARGIN_LEFT, chart_y)
+            renderPDF.draw(drawing, self.pdf, self.ML, H - 390)
 
-            self.pdf.setFont("Helvetica", 11)
-            self.pdf.setFillColor(colors.HexColor("#16a34a"))
-            self.pdf.rect(pass_legend_x, legend_y, 10, 10, fill=True)
+            # Legend
+            leg_y = H - 405
+            self.pdf.setFont("Helvetica", 10)
+            self.pdf.setFillColor(GREEN)
+            self.pdf.rect(self.ML, leg_y, 10, 10, fill=True, stroke=False)
+            self.pdf.setFillColor(DARK_GREY)
+            self.pdf.drawString(self.ML + 14, leg_y + 1, "Pass")
+            self.pdf.setFillColor(RED)
+            self.pdf.rect(self.ML + 70, leg_y, 10, 10, fill=True, stroke=False)
+            self.pdf.setFillColor(DARK_GREY)
+            self.pdf.drawString(self.ML + 84, leg_y + 1, "Fail")
             self.pdf.setFillColor(colors.black)
-            self.pdf.drawString(pass_legend_x + 15, legend_y - 2, "Pass")
-            self.pdf.setFillColor(colors.HexColor("#dc2626"))
-            self.pdf.rect(fail_legend_x, legend_y, 10, 10, fill=True)
-            self.pdf.setFillColor(colors.black)
-            self.pdf.drawString(fail_legend_x + 15, legend_y - 2, "Fail")
-            self.pdf.showPage()
 
-    def draw_recent_logs(self):
-        header_y = self.PAGE_HEIGHT - 110
-        y = header_y
-        col_ts = self.MARGIN_LEFT
-        col_tc = self.MARGIN_LEFT + 110
-        col_result = self.MARGIN_LEFT + 260
-        col_msg = self.MARGIN_LEFT + 320
-        line_height = 20
-        bottom_margin = 70
-
-        self.pdf.setFont("Helvetica-Bold", 20)
-        self.pdf.drawString(
-            self.MARGIN_LEFT, self.PAGE_HEIGHT - 60, "Recent Logs – error messages"
-        )
-
-        def draw_logs_header():
-            self.pdf.setFont("Helvetica-Bold", 11)
-            self.pdf.drawString(col_ts, y, "Timestamp")
-            self.pdf.drawString(col_tc, y, "TestCase")
-            self.pdf.drawString(col_result, y, "Result")
-            self.pdf.drawString(col_msg, y, "Message")
-            self.pdf.line(self.MARGIN_LEFT, y - 4, self.MARGIN_RIGHT, y - 4)
-
-        draw_logs_header()
-        y -= 25
-        self.pdf.setFont("Helvetica", 10)
-
-        for r in self.results:
-            if y < bottom_margin:
-                self.pdf.showPage()
-                y = header_y
-                draw_logs_header()
-                y -= 25
-                self.pdf.setFont("Helvetica", 10)
-
-            ts = r.started_at.strftime("%Y-%m-%d %H:%M")
-            tc = (r.test_case.label or "")[:24]
-            raw = r.log
-            msg = self.format_message_for_pdf(raw)
-            max_len = 60
-
-            self.pdf.drawString(col_ts, y, ts)
-            self.pdf.drawString(col_tc, y, tc)
-
-            if r.result:
-                self.pdf.setFillColor(colors.HexColor("#16a34a"))
-                self.pdf.drawString(col_result, y, "PASS")
-                if msg == "Log format not recognized.":
-                    if raw:
-                        raw_as_string = str(raw)
-                        if len(raw_as_string) > max_len:
-                            msg = raw_as_string[: max_len - 3] + "..."
-                        else:
-                            msg = raw_as_string
-            else:
-                self.pdf.setFillColor(colors.HexColor("#dc2626"))
-                self.pdf.drawString(col_result, y, "FAIL")
-            self.pdf.setFillColor(colors.black)
-            self.pdf.drawString(col_msg, y, msg)
-            y -= line_height
-
-    def draw_group_summary(self):
-        y = self.PAGE_HEIGHT - 110
-        col_group = self.MARGIN_LEFT
-        col_pass = self.MARGIN_LEFT + 200
-        col_fail = self.MARGIN_LEFT + 270
-        col_total = self.MARGIN_LEFT + 330
-        pass_right_align = col_pass + 40
-        fail_right_align = col_fail + 30
-        total_right_align = col_total + 50
-        line_height = 20
-        header_line_spacing = 24
-        bottom_margin = 70
-        page_break_y_start = self.PAGE_HEIGHT - 80
-
-        self.pdf.setFont("Helvetica-Bold", 20)
-        self.pdf.drawString(self.MARGIN_LEFT, self.PAGE_HEIGHT - 60, "Group Summary")
-
-        def draw_summary_header():
-            self.pdf.setFont("Helvetica-Bold", 12)
-            self.pdf.drawString(col_group, y, "Group")
-            self.pdf.drawString(col_pass, y, "Pass")
-            self.pdf.drawString(col_fail, y, "Fail")
-            self.pdf.drawString(col_total, y, "Total")
-            self.pdf.line(self.MARGIN_LEFT, y - 4, self.MARGIN_RIGHT, y - 4)
-
-        draw_summary_header()
-        y -= header_line_spacing
-        self.pdf.setFont("Helvetica", 12)
-
-        for name, p, f in zip(
-            self.group_labels_all, self.group_passes_all, self.group_fails_all
-        ):
-            if y < bottom_margin:
-                self.pdf.showPage()
-                y = page_break_y_start
-                draw_summary_header()
-                y -= header_line_spacing
-                self.pdf.setFont("Helvetica", 12)
-
-            self.pdf.drawString(col_group, y, name[:28])
-            self.pdf.setFillColor(colors.HexColor("#16a34a"))
-            self.pdf.drawRightString(pass_right_align, y, str(p))
-            self.pdf.setFillColor(colors.HexColor("#dc2626"))
-            self.pdf.drawRightString(fail_right_align, y, str(f))
-            self.pdf.setFillColor(colors.black)
-            self.pdf.drawRightString(total_right_align, y, str(p + f))
-            y -= line_height
+    # ── Group summary ─────────────────────────────────────────────────────────
+    def _draw_group_summary(self):
         self.pdf.showPage()
+        self._start_page("Group Summary")
 
-    def format_message_for_pdf(self, raw, max_len=60):
-        if not raw:
-            return "No log message."
-        if isinstance(raw, str):
+        y = H - 90
+        lh = 22
+        header_h = 26
+
+        def _table_header(y_):
+            self.pdf.setFillColor(LIGHT_GREY)
+            self.pdf.rect(self.ML, y_ - 6, self.CW, header_h, fill=True, stroke=False)
+            self.pdf.setFont("Helvetica-Bold", 10)
+            self.pdf.setFillColor(DARK_GREY)
+            self.pdf.drawString(self._COL_GRP + 4, y_, "Test Group")
+            self.pdf.drawRightString(self._COL_PASS + 36, y_, "Pass")
+            self.pdf.drawRightString(self._COL_FAIL + 30, y_, "Fail")
+            self.pdf.drawRightString(self._COL_TOTAL + 48, y_, "Total")
+            self._h_rule(y_ - 7)
+
+        _table_header(y)
+        y -= lh + 4
+        self.pdf.setFont("Helvetica", 11)
+
+        for row_i, (name, p, f) in enumerate(
+            zip(self.group_labels, self.group_passes, self.group_fails)
+        ):
+            if y < self.MB + 20:
+                self.pdf.showPage()
+                self._start_page("Group Summary (continued)")
+                y = H - 90
+                _table_header(y)
+                y -= lh + 4
+                self.pdf.setFont("Helvetica", 11)
+
+            # Alternating row bg
+            if row_i % 2 == 0:
+                self.pdf.setFillColor(colors.HexColor("#f8fafc"))
+                self.pdf.rect(self.ML, y - 5, self.CW, lh, fill=True, stroke=False)
+
+            max_name_w = self._COL_PASS - self._COL_GRP - 8
+            self.pdf.setFillColor(DARK_GREY)
+            self.pdf.setFont("Helvetica", 11)
+            self.pdf.drawString(
+                self._COL_GRP + 4, y, _truncate(name, max_name_w, "Helvetica", 11)
+            )
+            self.pdf.setFillColor(GREEN)
+            self.pdf.drawRightString(self._COL_PASS + 36, y, str(p))
+            self.pdf.setFillColor(RED)
+            self.pdf.drawRightString(self._COL_FAIL + 30, y, str(f))
+            self.pdf.setFillColor(DARK_GREY)
+            self.pdf.drawRightString(self._COL_TOTAL + 48, y, str(p + f))
+            y -= lh
+
+        # Total row
+        self._h_rule(y + 2)
+        y -= 8
+        self.pdf.setFont("Helvetica-Bold", 11)
+        self.pdf.setFillColor(DARK_GREY)
+        self.pdf.drawString(self._COL_GRP + 4, y, "Total")
+        self.pdf.setFillColor(GREEN)
+        self.pdf.drawRightString(self._COL_PASS + 36, y, str(self.total_pass))
+        self.pdf.setFillColor(RED)
+        self.pdf.drawRightString(self._COL_FAIL + 30, y, str(self.total_fail))
+        self.pdf.setFillColor(DARK_GREY)
+        self.pdf.drawRightString(self._COL_TOTAL + 48, y, str(self.total_tests))
+
+    # ── Recent logs ───────────────────────────────────────────────────────────
+    def _draw_recent_logs(self):
+        self.pdf.showPage()
+        self._start_page("Failed Test Runs — Error Details")
+
+        # Available widths per column (used for truncation)
+        _w_ts = self._COL_TC - self._COL_TS - 6  # ~99 pt
+        _w_tc = self._COL_RES - self._COL_TC - 6  # ~127 pt
+        _w_res = self._COL_MSG - self._COL_RES - 4  # ~49 pt  (just PASS/FAIL)
+        _w_msg = self.MR - self._COL_MSG - 4  # ~203 pt
+
+        y = H - 90
+        lh = 18
+        header_h = 24
+
+        def _table_header(y_):
+            self.pdf.setFillColor(LIGHT_GREY)
+            self.pdf.rect(self.ML, y_ - 6, self.CW, header_h, fill=True, stroke=False)
+            self.pdf.setFont("Helvetica-Bold", 9)
+            self.pdf.setFillColor(DARK_GREY)
+            self.pdf.drawString(self._COL_TS + 2, y_, "Timestamp")
+            self.pdf.drawString(self._COL_TC + 2, y_, "Test Case")
+            self.pdf.drawString(self._COL_RES + 2, y_, "Result")
+            self.pdf.drawString(self._COL_MSG + 2, y_, "Error Message")
+            self._h_rule(y_ - 7)
+
+        _table_header(y)
+        y -= lh + 4
+
+        def _render_rows(results, is_fail: bool):
+            nonlocal y
+            font = "Helvetica"
+            self.pdf.setFont(font, 9)
+
+            for row_i, r in enumerate(results):
+                if y < self.MB + 14:
+                    self.pdf.showPage()
+                    section = (
+                        "Failed Test Runs (continued)"
+                        if is_fail
+                        else "Passed Test Runs"
+                    )
+                    self._start_page(section)
+                    y = H - 90
+                    _table_header(y)
+                    y -= lh + 4
+                    self.pdf.setFont(font, 9)
+
+                if row_i % 2 == 0:
+                    self.pdf.setFillColor(colors.HexColor("#f8fafc"))
+                    self.pdf.rect(self.ML, y - 4, self.CW, lh, fill=True, stroke=False)
+
+                ts = r.started_at.strftime("%Y-%m-%d %H:%M")
+                tc = _truncate(r.test_case.label or "", _w_tc, font, 9)
+                msg = _truncate(self._extract_message(r.log, is_fail), _w_msg, font, 9)
+
+                self.pdf.setFillColor(DARK_GREY)
+                self.pdf.drawString(self._COL_TS + 2, y, ts)
+                self.pdf.drawString(self._COL_TC + 2, y, tc)
+
+                if r.result:
+                    self.pdf.setFillColor(GREEN)
+                    self.pdf.drawString(self._COL_RES + 2, y, "PASS")
+                else:
+                    self.pdf.setFillColor(RED)
+                    self.pdf.drawString(self._COL_RES + 2, y, "FAIL")
+
+                self.pdf.setFillColor(DARK_GREY)
+                self.pdf.drawString(self._COL_MSG + 2, y, msg)
+                y -= lh
+
+        _render_rows(self.failed_results, is_fail=True)
+
+        # Separator before the passed section
+        if self.pass_results:
+            if y < self.MB + 40:
+                self.pdf.showPage()
+                self._start_page("Passed Test Runs — Sample")
+                y = H - 90
+            else:
+                y -= 14
+                self._h_rule(y + 8)
+                y -= 6
+
+            # Mini sub-header for passed section
+            self.pdf.setFillColor(colors.HexColor("#dcfce7"))
+            self.pdf.rect(self.ML, y - 6, self.CW, header_h, fill=True, stroke=False)
+            self.pdf.setFont("Helvetica-Bold", 9)
+            self.pdf.setFillColor(GREEN)
+            self.pdf.drawString(
+                self.ML + 4, y, f"Passed Runs — last {len(self.pass_results)} shown"
+            )
+            self._h_rule(y - 7, color=GREEN)
+            y -= lh + 4
+
+            _render_rows(self.pass_results, is_fail=False)
+
+    # ── Helpers ───────────────────────────────────────────────────────────────
+    @staticmethod
+    def _extract_message(log, prefer_fail: bool = True) -> str:
+        if not log:
+            return "No log data."
+        if isinstance(log, str):
             try:
-                raw = json.loads(raw)
-            except json.JSONDecodeError:
-                if len(raw) > max_len:
-                    return raw[: max_len - 3] + "..."
-                return raw
-        if isinstance(raw, dict) and "tests" in raw:
-            for testname, test in raw["tests"].items():
-                if test.get("status") == "FAIL":
-                    message = test.get("message", "Unknown error")
-                    if len(message) > max_len:
-                        return message[: max_len - 3] + "..."
-                    return message
-            return "N/A"
-        return "Log format not recognized."
+                log = json.loads(log)
+            except (json.JSONDecodeError, TypeError):
+                return log[:120]
+        if isinstance(log, dict) and "tests" in log:
+            # Return first FAIL message, or first PASS message as fallback
+            first_pass = None
+            for data in log["tests"].values():
+                msg = data.get("message") or ""
+                if data.get("status") == "FAIL":
+                    return msg
+                if first_pass is None:
+                    first_pass = msg
+            return first_pass or "All modules passed."
+        return str(log)[:120]

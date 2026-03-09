@@ -28,6 +28,12 @@
                           role="status"></span>
                     Run all tests
                 </button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        hx-get="{% url 'testgroup-compare' group.pk %}"
+                        hx-target="#testgroup-modal-container"
+                        hx-swap="innerHTML">
+                    <i class="bi bi-arrow-left-right"></i> Compare Runs
+                </button>
                 <a href="{% url 'testgroup-export-pdf' group.pk %}"
                    class="btn btn-sm btn-outline-danger">
                     <i class="bi bi-file-earmark-pdf"></i> Export PDF

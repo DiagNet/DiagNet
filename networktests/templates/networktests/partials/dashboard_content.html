@@ -27,7 +27,7 @@
                      hx-get="{% url 'all-tests-table-partial' %}"
                      hx-trigger="refreshAllTests from:body"
                      hx-swap="innerHTML">
-                    {% include "networktests/partials/group_testcases_table.html" with testcases=all_testcases %}
+                    {% include "networktests/partials/group_testcases_table.html" with testcases=all_testcases row_prefix="all-" %}
                 </div>
             </div>
         </div>
