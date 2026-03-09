@@ -75,3 +75,24 @@
         </div>
     </div>
 </div>
+<div class="d-flex justify-content-end gap-2 pt-3 border-top mt-1">
+    {% if account != request.user and not account.is_superuser %}
+        <button class="btn btn-sm btn-danger"
+                hx-delete="{% url 'user-delete' account.pk %}"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token|escapejs }}"}'
+                hx-confirm="Are you sure you want to delete '{{ account.username }}'?"
+                hx-swap="none">
+            <i class="bi bi-trash"></i> Delete
+        </button>
+    {% endif %}
+    <button class="btn btn-sm btn-warning password-user-btn"
+            data-user-id="{{ account.pk }}"
+            data-bs-dismiss="modal">
+        <i class="bi bi-key"></i> Change Password
+    </button>
+    <button class="btn btn-sm btn-primary edit-user-btn"
+            data-user-id="{{ account.pk }}"
+            data-bs-dismiss="modal">
+        <i class="bi bi-pencil"></i> Edit
+    </button>
+</div>
