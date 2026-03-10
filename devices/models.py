@@ -61,6 +61,7 @@ class Device(models.Model):
     enable_password = models.CharField(max_length=512)
 
     class Meta:
+        ordering = [Lower("name")]
         constraints = [
             models.UniqueConstraint(
                 Lower("name"),
