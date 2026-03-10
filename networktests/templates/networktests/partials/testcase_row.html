@@ -1,4 +1,3 @@
-{% load datetime_helpers %}
 <tr id="testcase-row-{{ testcase.id }}">
     <td class="align-middle">
         <button type="button"
@@ -49,10 +48,7 @@
         </div>
     </td>
     <td class="align-middle">{{ testcase.test_module }}</td>
-    <td class="align-middle"
-        title="{{ testcase.results.last.finished_at|date:'Y-m-d H:i' }}">
-        {{ testcase.results.last.finished_at|relative_or_absolute }}
-    </td>
+    <td class="align-middle">{{ testcase.results.last.finished_at|date:"Y-m-d H:i" }}</td>
     <td class="align-middle">
         {% if testcase.results.last %}
             {% if testcase.expected_result == testcase.results.last.result %}

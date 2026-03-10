@@ -1,4 +1,3 @@
-{% load datetime_helpers %}
 <div class="accordion" id="dashboardAccordion">
     {% for group in testgroups %}
         {% include "networktests/partials/group_accordion_item.html" with group=group %}
