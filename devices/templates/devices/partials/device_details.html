@@ -48,7 +48,7 @@
                                 <tr>
                                     <td class="ps-3">
                                         <button class="btn btn-link p-0 text-start"
-                                                hx-get="{% url 'testcase-modal-content' tc.pk %}?from_device={{ device.pk }}"
+                                                hx-get="{% url 'testcase-modal-content' tc.pk %}?from_device={{ device.pk }}{% if from_testcase_pk %}&from_testcase={{ from_testcase_pk }}{% endif %}"
                                                 hx-target="closest .modal-content"
                                                 hx-swap="innerHTML">{{ tc.label }}</button>
                                     </td>
