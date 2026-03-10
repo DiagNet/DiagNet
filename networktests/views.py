@@ -315,16 +315,37 @@ class TestCaseListView(PermissionRequiredMixin, generic.ListView):
 
 @require_POST
 @permission_required("networktests.add_testresult", raise_exception=True)
+def _check_custom_disabled(test_module):
+    """
+    Returns a warning message if test_module is a custom testcase that cannot
+    be run (globally disabled or individually disabled), otherwise None.
+    """
+    custom = CustomTestTemplate.objects.filter(class_name=test_module).first()
+    if custom is None:
+        return None
+    if not getattr(settings, "ENABLE_CUSTOM_TESTCASES", False):
+        return f"Custom test cases are globally disabled. Set DIAGNET_ENABLE_CUSTOM_TESTCASES=true to run '{test_module}'."
+    if not custom.is_enabled:
+        return f"'{test_module}' is disabled. Enable it in the Templates settings."
+    return None
+
+
 def run_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
-    try:
-        testcase.run()
-        msg = f"Successfully executed test: {testcase.label}"
-        level = "success"
-    except Exception as e:
-        logger.exception("Error running testcase %s", testcase.label)
-        msg = f"Failed to run test {testcase.label}: {e}"
-        level = "danger"
+
+    disabled_msg = _check_custom_disabled(testcase.test_module)
+    if disabled_msg:
+        msg = disabled_msg
+        level = "warning"
+    else:
+        try:
+            testcase.run()
+            msg = f"Successfully executed test: {testcase.label}"
+            level = "success"
+        except Exception as e:
+            logger.exception("Error running testcase %s", testcase.label)
+            msg = f"Failed to run test {testcase.label}: {e}"
+            level = "danger"
 
     if request.headers.get("HX-Request"):
         testcase.refresh_from_db()
@@ -621,9 +642,22 @@ def run_group_tests(request, pk):
     group = get_object_or_404(TestGroup, pk=pk)
     testcases = list(group.testcases.prefetch_related("results").order_by("label"))
 
+    custom_enabled = getattr(settings, "ENABLE_CUSTOM_TESTCASES", False)
+    custom_templates = {
+        t.class_name: t
+        for t in CustomTestTemplate.objects.filter(
+            class_name__in=[tc.test_module for tc in testcases]
+        )
+    }
+
     passed = 0
     failed = 0
+    skipped = 0
     for tc in testcases:
+        custom = custom_templates.get(tc.test_module)
+        if custom is not None and (not custom_enabled or not custom.is_enabled):
+            skipped += 1
+            continue
         try:
             tc.run()
             passed += 1
@@ -633,8 +667,15 @@ def run_group_tests(request, pk):
             )
             failed += 1
 
-    msg = f"Group '{group.name}': {passed} passed, {failed} failed."
-    level = "success" if failed == 0 else "warning"
+    parts = []
+    if passed:
+        parts.append(f"{passed} passed")
+    if failed:
+        parts.append(f"{failed} failed")
+    if skipped:
+        parts.append(f"{skipped} skipped (disabled custom test)")
+    msg = f"Group '{group.name}': {', '.join(parts) or 'no tests ran'}."
+    level = "success" if failed == 0 and skipped == 0 else "warning"
 
     # Re-fetch to get updated results
     group.refresh_from_db()
