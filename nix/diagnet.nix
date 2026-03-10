@@ -188,6 +188,7 @@
               fi
 
               # Start the application
+              echo DiagNet started
               exec ${venv}/bin/daphne -b 0.0.0.0 ${asgiApp}
             '';
           in
