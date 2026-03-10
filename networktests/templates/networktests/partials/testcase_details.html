@@ -25,6 +25,10 @@
                             {% endif %}
                         </td>
                     </tr>
+                    <tr>
+                        <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Created</th>
+                        <td class="py-2 pe-3 text-muted small">{{ testcase.created_at|date:"Y-m-d H:i" }}</td>
+                    </tr>
                     {% if last_run %}
                         <tr>
                             <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Last Run</th>
