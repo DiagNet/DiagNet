@@ -309,7 +309,10 @@ class AAA_Radius_Configuration(DiagNetTest):
     def test_validate_group_name(self) -> bool:
         expected_group = getattr(self, "expected_group_name", None)
         if expected_group:
-            if expected_group not in self.aaa_data["aaa_groups"]:
+            found = any(
+                g.lower() == expected_group.lower() for g in self.aaa_data["aaa_groups"]
+            )
+            if not found:
                 raise ValueError(
                     f"AAA Radius group '{expected_group}' is completely missing from the configuration."
                 )
