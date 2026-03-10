@@ -118,8 +118,10 @@ class DeviceCreate(PermissionRequiredMixin, CreateView):
             return self.form_invalid(form)
 
         if self.request.headers.get("HX-Request") == "true":
+            position = Device.objects.filter(pk__lte=self.object.pk).count()
+            page = (position - 1) // DeviceListView.paginate_by + 1
             response = HttpResponse(status=204)
-            response["HX-Trigger"] = "deviceCreated"
+            response["HX-Trigger"] = json.dumps({"deviceCreated": {"page": page}})
             return response
         return HttpResponseRedirect(self.get_success_url())
 
