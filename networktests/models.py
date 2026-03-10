@@ -1,5 +1,7 @@
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.utils import timezone
 
 from devices.models import Device
@@ -129,7 +131,7 @@ class TestDevice(models.Model):
     device = models.ForeignKey(
         to=Device,
         related_name="device",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
     )
@@ -179,3 +181,15 @@ class TestResult(models.Model):
 
     def __str__(self):
         return f"Attempt {self.attempt_id} for {self.test_case}"
+
+
+@receiver(pre_delete, sender=Device)
+def delete_testcases_using_device(sender, instance, **kwargs):
+    """Delete all TestCases that reference this Device before it is removed.
+
+    A test cannot function without its required devices. Using pre_delete on
+    Device (rather than post_delete on TestDevice) avoids redundant nested
+    deletes that would otherwise fire once per TestDevice row during a
+    TestCase-initiated cascade.
+    """
+    TestCase.objects.filter(devices__device=instance).distinct().delete()
