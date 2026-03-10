@@ -1,7 +1,7 @@
 import json
 from concurrent.futures import ThreadPoolExecutor
 
-from django.db.models import Prefetch
+from django.db.models import OuterRef, Subquery
 
 import yaml
 from django.contrib.auth.decorators import permission_required
@@ -28,15 +28,15 @@ STATE_MAP = {
 
 
 def _get_device_testcases(device):
+    latest_result = TestResult.objects.filter(test_case=OuterRef("pk")).order_by(
+        "-attempt_id"
+    )
     return (
         TestCase.objects.filter(devices__device=device)
         .distinct()
-        .prefetch_related(
-            Prefetch(
-                "results",
-                queryset=TestResult.objects.order_by("-attempt_id"),
-                to_attr="ordered_results",
-            )
+        .annotate(
+            latest_result=Subquery(latest_result.values("result")[:1]),
+            latest_finished_at=Subquery(latest_result.values("finished_at")[:1]),
         )
     )
 

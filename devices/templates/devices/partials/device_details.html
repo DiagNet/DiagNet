@@ -60,17 +60,15 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-center">
-                                        {% with tc.ordered_results|first as last %}
-                                            {% if last %}
-                                                {% if last.result %}
-                                                    <span class="badge bg-success">PASS</span>
-                                                {% else %}
-                                                    <span class="badge bg-danger">FAIL</span>
-                                                {% endif %}
+                                        {% if tc.latest_result is not None %}
+                                            {% if tc.latest_result %}
+                                                <span class="badge bg-success">PASS</span>
                                             {% else %}
-                                                <span class="text-muted">—</span>
+                                                <span class="badge bg-danger">FAIL</span>
                                             {% endif %}
-                                        {% endwith %}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
