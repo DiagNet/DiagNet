@@ -395,6 +395,7 @@ def _get_testcase_with_page(pk, page):
     return testcase, results_page
 
 
+@require_http_methods(["GET"])
 @permission_required("networktests.view_testcase", raise_exception=True)
 def testcase_detail_view(request, pk):
     testcase, results_page = _get_testcase_with_page(pk, request.GET.get("page", 1))
