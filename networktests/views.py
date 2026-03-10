@@ -329,6 +329,8 @@ def _check_custom_disabled(test_module):
     return None
 
 
+@require_http_methods(["POST"])
+@permission_required("networktests.add_testresult", raise_exception=True)
 def run_testcase(request, pk):
     testcase = get_object_or_404(TestCase, pk=pk)
 
