@@ -27,16 +27,8 @@ STATE_MAP = {
 }
 
 
-@permission_required("devices.view_device", raise_exception=True)
-def index(request):
-    return render(request, "devices/index.html")
-
-
-@permission_required("devices.view_device", raise_exception=True)
-@require_http_methods(["GET"])
-def device_modal_content(request, pk):
-    device = get_object_or_404(Device, pk=pk)
-    testcases = (
+def _get_device_testcases(device):
+    return (
         TestCase.objects.filter(devices__device=device)
         .distinct()
         .prefetch_related(
@@ -47,6 +39,18 @@ def device_modal_content(request, pk):
             )
         )
     )
+
+
+@permission_required("devices.view_device", raise_exception=True)
+def index(request):
+    return render(request, "devices/index.html")
+
+
+@permission_required("devices.view_device", raise_exception=True)
+@require_http_methods(["GET"])
+def device_modal_content(request, pk):
+    device = get_object_or_404(Device, pk=pk)
+    testcases = _get_device_testcases(device)
     return render(
         request,
         "devices/partials/device_modal_content.html",
@@ -62,17 +66,7 @@ def device_modal_content(request, pk):
 @require_http_methods(["GET"])
 def device_detail_partial(request, pk):
     device = get_object_or_404(Device, pk=pk)
-    testcases = (
-        TestCase.objects.filter(devices__device=device)
-        .distinct()
-        .prefetch_related(
-            Prefetch(
-                "results",
-                queryset=TestResult.objects.order_by("-attempt_id"),
-                to_attr="ordered_results",
-            )
-        )
-    )
+    testcases = _get_device_testcases(device)
     context = {"device": device, "testcases": testcases}
 
     from_testcase = request.GET.get("from_testcase")
@@ -155,17 +149,7 @@ class DeviceUpdate(PermissionRequiredMixin, UpdateView):
             return self.form_invalid(form)
 
         if self.request.headers.get("HX-Request") == "true":
-            testcases = (
-                TestCase.objects.filter(devices__device=self.object)
-                .distinct()
-                .prefetch_related(
-                    Prefetch(
-                        "results",
-                        queryset=TestResult.objects.order_by("-attempt_id"),
-                        to_attr="ordered_results",
-                    )
-                )
-            )
+            testcases = _get_device_testcases(self.object)
             return render(
                 self.request,
                 "devices/partials/device_details.html",
