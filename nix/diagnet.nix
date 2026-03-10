@@ -14,6 +14,9 @@
       };
 
       workspace = inputs.uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ../.; };
+      pyproject = builtins.fromTOML (builtins.readFile ../pyproject.toml);
+      inherit (pyproject.project) version;
+      inherit (pyproject.project) description;
 
       overlay = workspace.mkPyprojectOverlay { sourcePreference = "wheel"; };
 
@@ -188,7 +191,13 @@
               fi
 
               # Start the application
-              echo DiagNet started
+              echo ""
+              echo "========================================================="
+              echo " DiagNet v${version} - ${description}"
+              echo "---------------------------------------------------------"
+              echo " Starting DiagNet server..."
+              echo "========================================================="
+              echo ""
               exec ${venv}/bin/daphne -b 0.0.0.0 ${asgiApp}
             '';
           in
