@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.paginator import Paginator
-from django.db.models import Count, Prefetch, QuerySet
+from django.db.models import Count, F, Prefetch, QuerySet
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -737,7 +737,7 @@ def group_comparison_modal(request, pk):
     testcases = group.testcases.prefetch_related(
         Prefetch(
             "results",
-            queryset=TestResult.objects.order_by("-attempt_id"),
+            queryset=TestResult.objects.order_by(F("attempt_id").desc(nulls_last=True)),
             to_attr="latest_results",
         )
     ).order_by("label")
