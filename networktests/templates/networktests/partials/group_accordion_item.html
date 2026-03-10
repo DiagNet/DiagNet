@@ -29,6 +29,11 @@
                           role="status"></span>
                     Run all tests
                 </button>
+                <button class="btn btn-sm btn-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#comparisonModal-{{ group.pk }}">
+                    <i class="bi bi-table"></i> Compare
+                </button>
                 <a href="{% url 'testgroup-export-pdf' group.pk %}"
                    class="btn btn-sm btn-danger">
                     <i class="bi bi-file-earmark-pdf"></i> Export PDF
@@ -46,6 +51,18 @@
                         hx-confirm="Are you sure you want to delete the group '{{ group.name }}'?">
                     <i class="bi bi-trash"></i> Delete
                 </button>
+            </div>
+            <div class="modal fade" id="comparisonModal-{{ group.pk }}" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content"
+                         hx-get="{% url 'group-comparison-modal' group.pk %}"
+                         hx-trigger="shown.bs.modal from:closest .modal once"
+                         hx-swap="innerHTML">
+                        <div class="modal-body text-center py-5">
+                            <div class="spinner-border text-primary" role="status"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div id="group-table-{{ group.pk }}"
                  hx-get="{% url 'group-table-partial' group.pk %}"

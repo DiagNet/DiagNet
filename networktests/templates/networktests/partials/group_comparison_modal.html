@@ -1,0 +1,63 @@
+<div class="modal-header">
+    <h5 class="fw-bold mb-0 text-body">
+        <i class="bi bi-table me-2"></i>Comparison – {{ group.name }}
+    </h5>
+    <button type="button"
+            class="btn-close ms-auto"
+            data-bs-dismiss="modal"
+            aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <div class="card shadow-sm">
+        <div class="card-header fw-semibold">
+            <i class="bi bi-clock-history me-1"></i> Last 2 Runs per Test Case
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Test Case</th>
+                        <th class="text-center">Last Run</th>
+                        <th class="text-center">Newest Run</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <td class="ps-3">{{ row.testcase.label }}</td>
+                            <td class="text-center">
+                                {% if row.results|length >= 2 %}
+                                    {% if row.results.1.result == row.testcase.expected_result %}
+                                        {% include "networktests/partials/status_badge.html" with status="PASS" %}
+                                    {% else %}
+                                        {% include "networktests/partials/status_badge.html" with status="FAIL" %}
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">–</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if row.results|length >= 1 %}
+                                    {% if row.results.0.result == row.testcase.expected_result %}
+                                        {% include "networktests/partials/status_badge.html" with status="PASS" %}
+                                    {% else %}
+                                        {% include "networktests/partials/status_badge.html" with status="FAIL" %}
+                                    {% endif %}
+                                {% else %}
+                                    {% include "networktests/partials/status_badge.html" with status="NEW" %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-muted text-center ps-3">No test cases in this group.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
