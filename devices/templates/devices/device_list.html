@@ -59,7 +59,7 @@
                                                                 class="btn btn-danger"
                                                                 hx-delete="{% url 'device-delete' device.pk %}"
                                                                 hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                                                hx-confirm="Are you sure you want to delete this device?"
+                                                                hx-confirm="Are you sure you want to delete {{ device.name }}?{% if device.affected_testcases_count %} This will also delete {{ device.affected_testcases_count }} test case{{ device.affected_testcases_count|pluralize }}.{% endif %}"
                                                                 data-bs-dismiss="modal">
                                                             <i class="bi bi-trash"></i> Delete
                                                         </button>
@@ -96,7 +96,7 @@
                                                     class="btn btn-sm btn-danger"
                                                     hx-delete="{% url 'device-delete' device.pk %}"
                                                     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                                    hx-confirm="Are you sure you want to delete this device?">
+                                                    hx-confirm="Are you sure you want to delete {{ device.name }}?{% if device.affected_testcases_count %} This will also delete {{ device.affected_testcases_count }} test case{{ device.affected_testcases_count|pluralize }}.{% endif %}">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         {% endif %}
