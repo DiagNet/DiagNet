@@ -7,7 +7,12 @@ from django.contrib.auth.models import Permission
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from .models import CustomTestTemplate, TestGroup
+from .models import (
+    CustomTestTemplate,
+    TestCase as NetworkTestCase,
+    TestGroup,
+    TestResult,
+)
 from .testcases.base import DiagNetTest
 from .utils import (
     get_all_available_test_classes,
@@ -389,3 +394,65 @@ class TestGroupPermissionTests(TestCase):
             reverse("testgroup-delete", kwargs={"pk": self.testgroup.pk})
         )
         self.assertEqual(response.status_code, 403)
+
+
+class GroupComparisonModalPermissionTests(TestCase):
+    def setUp(self):
+        User.objects.create_superuser(
+            username="admin", password="password123", email="admin@diagnet.dev"
+        )
+        self.user = User.objects.create_user(
+            username="testuser", password="password123"
+        )
+        self.testgroup = TestGroup.objects.create(name="compgroup1")
+        self.testcase = NetworkTestCase.objects.create(
+            test_module="DummyTest",
+            expected_result=True,
+            label="dummy",
+        )
+        self.testgroup.testcases.add(self.testcase)
+
+    def _add_comparison_permissions(self):
+        for codename in ("view_testcase", "view_testresult", "view_testgroup"):
+            perm = Permission.objects.get(
+                codename=codename, content_type__app_label="networktests"
+            )
+            self.user.user_permissions.add(perm)
+
+    def test_comparison_modal_permission_required(self):
+        """group_comparison_modal returns 403 without the required permissions."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(
+            reverse("group-comparison-modal", kwargs={"pk": self.testgroup.pk})
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_comparison_modal_with_permissions(self):
+        """group_comparison_modal returns 200 when the user has all required permissions."""
+        self._add_comparison_permissions()
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(
+            reverse("group-comparison-modal", kwargs={"pk": self.testgroup.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_comparison_modal_at_most_two_results_per_testcase(self):
+        """group_comparison_modal exposes at most 2 results per test case in context."""
+        from django.utils import timezone
+
+        for attempt in range(1, 4):
+            TestResult.objects.create(
+                test_case=self.testcase,
+                attempt_id=attempt,
+                started_at=timezone.now(),
+                result=True,
+            )
+        self._add_comparison_permissions()
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(
+            reverse("group-comparison-modal", kwargs={"pk": self.testgroup.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        rows = response.context["rows"]
+        self.assertEqual(len(rows), 1)
+        self.assertLessEqual(len(rows[0]["results"]), 2)
