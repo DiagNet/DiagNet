@@ -24,7 +24,6 @@ from networktests.models import (
     TestDevice,
     TestGroup,
     TestParameter,
-    TestResult,
 )
 from networktests.pdf_report import PDFReport
 from networktests.testcases.base import get_parameter_names
@@ -384,22 +383,22 @@ def _get_testcase_with_page(pk, page):
                 "devices",
                 queryset=TestDevice.objects.select_related("device"),
             ),
-            Prefetch(
-                "results",
-                queryset=TestResult.objects.order_by("-attempt_id"),
-            ),
         ),
         pk=pk,
     )
-    results_page = Paginator(testcase.results.all(), 10).get_page(page)
-    return testcase, results_page
+    ordered_results = testcase.results.order_by("-attempt_id")
+    last_run = ordered_results.first()
+    results_page = Paginator(ordered_results, 10).get_page(page)
+    return testcase, results_page, last_run
 
 
 @require_http_methods(["GET"])
 @permission_required("networktests.view_testcase", raise_exception=True)
 def testcase_detail_view(request, pk):
-    testcase, results_page = _get_testcase_with_page(pk, request.GET.get("page", 1))
-    context = {"testcase": testcase, "results_page": results_page}
+    testcase, results_page, last_run = _get_testcase_with_page(
+        pk, request.GET.get("page", 1)
+    )
+    context = {"testcase": testcase, "results_page": results_page, "last_run": last_run}
     if request.headers.get("HX-Target") == f"history-card-{pk}":
         return render(request, "networktests/partials/history_card.html", context)
     return render(request, "networktests/partials/testcase_details.html", context)
@@ -408,13 +407,16 @@ def testcase_detail_view(request, pk):
 @require_http_methods(["GET"])
 @permission_required("networktests.view_testcase", raise_exception=True)
 def testcase_modal_content(request, pk):
-    testcase, results_page = _get_testcase_with_page(pk, request.GET.get("page", 1))
+    testcase, results_page, last_run = _get_testcase_with_page(
+        pk, request.GET.get("page", 1)
+    )
     return render(
         request,
         "networktests/partials/testcase_modal_content.html",
         {
             "testcase": testcase,
             "results_page": results_page,
+            "last_run": last_run,
             "from_device_pk": request.GET.get("from_device"),
             "from_testcase_pk": request.GET.get("from_testcase"),
         },
