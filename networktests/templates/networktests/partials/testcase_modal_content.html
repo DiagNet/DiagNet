@@ -1,7 +1,7 @@
 <div class="modal-header">
     {% if from_device_pk %}
         <button class="btn btn-sm btn-outline-secondary me-2"
-                hx-get="{% url 'device-modal-content' from_device_pk %}"
+                hx-get="{% url 'device-modal-content' from_device_pk %}{% if from_testcase_pk %}?from_testcase={{ from_testcase_pk }}{% endif %}"
                 hx-target="closest .modal-content"
                 hx-swap="innerHTML">
             <i class="bi bi-arrow-left"></i>

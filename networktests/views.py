@@ -437,6 +437,7 @@ def testcase_modal_content(request, pk):
             "testcase": testcase,
             "results_page": results_page,
             "from_device_pk": request.GET.get("from_device"),
+            "from_testcase_pk": request.GET.get("from_testcase"),
         },
     )
 
