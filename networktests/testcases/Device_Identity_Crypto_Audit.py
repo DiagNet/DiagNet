@@ -232,9 +232,25 @@ class Device_Identity_Crypto_Audit(DiagNetTest):
             "show crypto key mypubkey rsa"
         )
 
+        # Some IOS versions print "Size = 2048" directly
         modulus_match = re.search(r"Size\s*=\s*(\d+)", self.crypto_data["raw_crypto"])
         if modulus_match:
             self.crypto_data["rsa_key_size"] = self._to_int(modulus_match.group(1))
+            return True
+
+        # IOS XE encodes keys as DER hex blocks. The RSA modulus INTEGER starts
+        # with tag 0x02 and a two-byte length (0x82 XX XX). For a 2048-bit key
+        # the modulus is 256 bytes + 1 leading zero → length = 0x0101.
+        # Supported sizes: 512, 1024, 2048, 4096 bits.
+        hex_data = re.sub(r"\s+", "", self.crypto_data["raw_crypto"])
+        int_match = re.search(r"0282([0-9a-fA-F]{4})", hex_data, re.IGNORECASE)
+        if int_match:
+            modulus_bytes = int(int_match.group(1), 16) - 1  # strip leading zero
+            estimated_bits = modulus_bytes * 8
+            for standard in [512, 1024, 2048, 4096]:
+                if abs(estimated_bits - standard) < 64:
+                    self.crypto_data["rsa_key_size"] = standard
+                    break
 
         return True
 
