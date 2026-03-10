@@ -2,6 +2,7 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 
 from django.db.models import Count, OuterRef, Subquery
+from django.db.models.functions import Lower
 
 import yaml
 from django.contrib.auth.decorators import permission_required
@@ -90,7 +91,7 @@ class DeviceListView(PermissionRequiredMixin, generic.ListView):
     def get_queryset(self):
         return Device.objects.annotate(
             affected_testcases_count=Count("device__test_case", distinct=True)
-        )
+        ).order_by(Lower("name"))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -118,7 +119,11 @@ class DeviceCreate(PermissionRequiredMixin, CreateView):
             return self.form_invalid(form)
 
         if self.request.headers.get("HX-Request") == "true":
-            position = Device.objects.filter(pk__lte=self.object.pk).count()
+            position = (
+                Device.objects.annotate(lower_name=Lower("name"))
+                .filter(lower_name__lte=self.object.name.lower())
+                .count()
+            )
             page = (position - 1) // DeviceListView.paginate_by + 1
             response = HttpResponse(status=204)
             response["HX-Trigger"] = json.dumps({"deviceCreated": {"page": page}})
