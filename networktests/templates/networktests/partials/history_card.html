@@ -63,13 +63,13 @@
                     <ul class="pagination pagination-sm justify-content-center mb-0">
                         {% if results_page.has_previous %}
                             <li class="page-item">
-                                <a class="page-link"
-                                   role="button"
-                                   hx-get="{% url 'testcase-details' testcase.id %}?page={{ results_page.previous_page_number }}"
-                                   hx-target="#history-card-{{ testcase.id }}"
-                                   hx-swap="outerHTML">
+                                <button type="button"
+                                        class="page-link"
+                                        hx-get="{% url 'testcase-details' testcase.id %}?page={{ results_page.previous_page_number }}"
+                                        hx-target="#history-card-{{ testcase.id }}"
+                                        hx-swap="outerHTML">
                                     <i class="bi bi-chevron-left"></i>
-                                </a>
+                                </button>
                             </li>
                         {% else %}
                             <li class="page-item disabled">
@@ -81,13 +81,13 @@
                         </li>
                         {% if results_page.has_next %}
                             <li class="page-item">
-                                <a class="page-link"
-                                   role="button"
-                                   hx-get="{% url 'testcase-details' testcase.id %}?page={{ results_page.next_page_number }}"
-                                   hx-target="#history-card-{{ testcase.id }}"
-                                   hx-swap="outerHTML">
+                                <button type="button"
+                                        class="page-link"
+                                        hx-get="{% url 'testcase-details' testcase.id %}?page={{ results_page.next_page_number }}"
+                                        hx-target="#history-card-{{ testcase.id }}"
+                                        hx-swap="outerHTML">
                                     <i class="bi bi-chevron-right"></i>
-                                </a>
+                                </button>
                             </li>
                         {% else %}
                             <li class="page-item disabled">
