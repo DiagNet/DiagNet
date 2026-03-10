@@ -1,0 +1,107 @@
+{% load datetime_helpers %}
+<div class="modal-header">
+    <h5 class="modal-title">
+        <i class="bi bi-table me-2"></i>Comparison – {{ group.name }}
+    </h5>
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th></th>
+                    <th>Test Case</th>
+                    <th class="text-center">Expected</th>
+                    <th class="text-center">Last Run</th>
+                    <th class="text-center">Previous Run</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr class="cursor-pointer"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#tc-runs-{{ row.testcase.pk }}"
+                        style="cursor:pointer">
+                        <td class="text-muted" style="width:1rem">
+                            <i class="bi bi-chevron-right small"></i>
+                        </td>
+                        <td>{{ row.testcase.label }}</td>
+                        <td class="text-center">
+                            {% if row.testcase.expected_result %}
+                                <span class="badge bg-success">Pass</span>
+                            {% else %}
+                                <span class="badge bg-danger">Fail</span>
+                            {% endif %}
+                        </td>
+                        {% for result in row.results|slice:":2" %}
+                            <td class="text-center">
+                                {% if result.result == row.testcase.expected_result %}
+                                    <span class="badge rounded-pill bg-success">Pass</span>
+                                {% else %}
+                                    <span class="badge rounded-pill bg-danger">Fail</span>
+                                {% endif %}
+                            </td>
+                        {% empty %}
+                            <td class="text-center">
+                                <span class="badge rounded-pill bg-secondary">Unknown</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-muted">–</span>
+                            </td>
+                        {% endfor %}
+                        {% if row.results|length == 1 %}
+                            <td class="text-center">
+                                <span class="text-muted">–</span>
+                            </td>
+                        {% endif %}
+                    </tr>
+                    <tr class="collapse" id="tc-runs-{{ row.testcase.pk }}">
+                        <td colspan="5" class="p-0 border-0">
+                            <table class="table table-sm table-bordered mb-0 bg-light">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">Run #</th>
+                                        <th>Date</th>
+                                        <th class="text-center">Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for result in row.results %}
+                                        {% if result %}
+                                            <tr>
+                                                <td class="ps-4">{{ result.attempt_id }}</td>
+                                                <td>{{ result.finished_at|date:"Y-m-d H:i" }}</td>
+                                                <td class="text-center">
+                                                    {% if result.result == row.testcase.expected_result %}
+                                                        <span class="badge rounded-pill bg-success">Pass</span>
+                                                    {% else %}
+                                                        <span class="badge rounded-pill bg-danger">Fail</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-muted ps-4">No runs yet.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-muted text-center">No test cases in this group.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>

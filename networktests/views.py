@@ -721,6 +721,31 @@ def all_tests_table_partial(request):
     raise_exception=True,
 )
 @require_http_methods(["GET"])
+def group_comparison_modal(request, pk):
+    """HTMX partial: renders the comparison table for all testcases in a group."""
+    group = get_object_or_404(TestGroup, pk=pk)
+    testcases = group.testcases.prefetch_related(
+        Prefetch(
+            "results",
+            queryset=TestResult.objects.order_by("-attempt_id"),
+            to_attr="recent_results",
+        )
+    ).order_by("label")
+
+    rows = [{"testcase": tc, "results": tc.recent_results[:5]} for tc in testcases]
+
+    return render(
+        request,
+        "networktests/partials/group_comparison_modal.html",
+        {"group": group, "rows": rows},
+    )
+
+
+@permission_required(
+    ["networktests.view_testcase", "testgroups.view_testgroup"],
+    raise_exception=True,
+)
+@require_http_methods(["GET"])
 def group_accordion_item_partial(request, pk):
     """HTMX partial: returns a single accordion item for a group, kept open."""
     group = get_object_or_404(

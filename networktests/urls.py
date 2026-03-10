@@ -104,4 +104,9 @@ urlpatterns = [
         views.group_accordion_item_partial,
         name="group-accordion-item-partial",
     ),
+    path(
+        "groups/<int:pk>/comparison/",
+        views.group_comparison_modal,
+        name="group-comparison-modal",
+    ),
 ]
