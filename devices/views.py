@@ -58,6 +58,7 @@ def device_modal_content(request, pk):
             "device": device,
             "testcases": testcases,
             "from_testcase_pk": request.GET.get("from_testcase"),
+            "from_device_pk": request.GET.get("from_device"),
         },
     )
 
