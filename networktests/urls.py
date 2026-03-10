@@ -95,6 +95,11 @@ urlpatterns = [
         name="testgroup-export-pdf",
     ),
     path(
+        "groups/<int:pk>/comparison/",
+        views.group_comparison_modal,
+        name="testgroup-comparison-modal",
+    ),
+    path(
         "groups/<int:pk>/table/",
         views.group_table_partial,
         name="group-table-partial",

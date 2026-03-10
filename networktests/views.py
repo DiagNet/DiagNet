@@ -24,6 +24,7 @@ from networktests.models import (
     TestDevice,
     TestGroup,
     TestParameter,
+    TestResult,
 )
 from networktests.pdf_report import PDFReport
 from networktests.testcases.base import get_parameter_names
@@ -719,6 +720,33 @@ def export_group_pdf(request, pk):
     filename = f"DiagNet-Report-{slugify(group.name)}-{datestamp}.pdf"
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+
+
+@permission_required(
+    [
+        "networktests.view_testcase",
+        "networktests.view_testresult",
+        "networktests.view_testgroup",
+    ],
+    raise_exception=True,
+)
+@require_http_methods(["GET"])
+def group_comparison_modal(request, pk):
+    """HTMX partial: renders a comparison table (last 2 runs) for a TestGroup."""
+    group = get_object_or_404(TestGroup, pk=pk)
+    testcases = group.testcases.prefetch_related(
+        Prefetch(
+            "results",
+            queryset=TestResult.objects.order_by("-attempt_id"),
+            to_attr="latest_results",
+        )
+    ).order_by("label")
+    rows = [{"testcase": tc, "results": tc.latest_results[:2]} for tc in testcases]
+    return render(
+        request,
+        "networktests/partials/group_comparison_modal.html",
+        {"group": group, "rows": rows},
+    )
 
 
 @permission_required(
