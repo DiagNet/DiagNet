@@ -53,22 +53,31 @@
 			htmx.ajax('GET', '{% url "device-create" %}', {target: modalBody});
 		});
 
-		// refresh on modal close
+		// refresh on modal close — stay on current page, but skip if HTMX closed the modal
+		// (in that case devicesRefresh from HX-Trigger already handles the refresh)
 		document.body.addEventListener('hidden.bs.modal', (event) => {
-			htmx.trigger('#device-table', 'refresh');
+			if (event.target.id !== 'deviceCreationModal' && !window._htmxClosedModals) {
+				const card = document.querySelector('#device-table .card');
+				const page = card ? parseInt(card.dataset.page) : 1;
+				htmx.ajax('GET', '{% url "devices-table" %}?page=' + page, {target: '#device-table', swap: 'innerHTML'});
+			}
 		});
 	});
 
-	document.body.addEventListener('deviceCreated', () => {
+	document.body.addEventListener('deviceCreated', (event) => {
 		const modalEl = document.getElementById('deviceCreationModal');
 		const modal = bootstrap.Modal.getInstance(modalEl);
 		if (modal) modal.hide();
+		const page = event.detail && event.detail.page ? event.detail.page : 1;
+		htmx.ajax('GET', '{% url "devices-table" %}?page=' + page, {target: '#device-table', swap: 'innerHTML'});
 	});
 
 	document.body.addEventListener('devicesRefresh', () => {
 		const card = document.querySelector('#device-table .card');
-		const page = card ? card.dataset.page : 1;
-		htmx.ajax('GET', '{% url "devices-table" %}?page=' + page, {target: '#device-table', swap: 'innerHTML'});
+		const page = card ? parseInt(card.dataset.page) : 1;
+		const deviceRows = document.querySelectorAll('#device-table tbody tr[id^="device-"]');
+		const targetPage = (deviceRows.length <= 1 && page > 1) ? page - 1 : page;
+		htmx.ajax('GET', '{% url "devices-table" %}?page=' + targetPage, {target: '#device-table', swap: 'innerHTML'});
 	});
 
 	// Swap icon for spinner on check-all button during request
