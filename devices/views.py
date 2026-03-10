@@ -1,7 +1,7 @@
 import json
 from concurrent.futures import ThreadPoolExecutor
 
-from django.db.models import OuterRef, Subquery
+from django.db.models import Count, OuterRef, Subquery
 
 import yaml
 from django.contrib.auth.decorators import permission_required
@@ -56,6 +56,7 @@ def device_modal_content(request, pk):
         {
             "device": device,
             "testcases": testcases,
+            "affected_testcases_count": testcases.count(),
             "from_testcase_pk": request.GET.get("from_testcase"),
             "from_device_pk": request.GET.get("from_device"),
         },
@@ -83,9 +84,13 @@ class DeviceListView(PermissionRequiredMixin, generic.ListView):
     """Generic class-based view for a list of devices."""
 
     permission_required = "devices.view_device"
-    devices = Device.objects.all()
     model = Device
     paginate_by = 25
+
+    def get_queryset(self):
+        return Device.objects.annotate(
+            affected_testcases_count=Count("device__test_case", distinct=True)
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
