@@ -377,8 +377,7 @@ def export_report_pdf(request):
 
 
 @require_http_methods(["GET"])
-@permission_required("networktests.view_testcase", raise_exception=True)
-def testcase_detail_view(request, pk):
+def _get_testcase_with_page(pk, page):
     testcase = get_object_or_404(
         TestCase.objects.prefetch_related(
             "parameters",
@@ -393,43 +392,23 @@ def testcase_detail_view(request, pk):
         ),
         pk=pk,
     )
-    results_list = testcase.results.all()
+    results_page = Paginator(testcase.results.all(), 10).get_page(page)
+    return testcase, results_page
 
-    paginator = Paginator(results_list, 10)
-    page_number = request.GET.get("page", 1)
-    results_page = paginator.get_page(page_number)
 
-    context = {
-        "testcase": testcase,
-        "results_page": results_page,
-    }
-
+@permission_required("networktests.view_testcase", raise_exception=True)
+def testcase_detail_view(request, pk):
+    testcase, results_page = _get_testcase_with_page(pk, request.GET.get("page", 1))
+    context = {"testcase": testcase, "results_page": results_page}
     if request.headers.get("HX-Target") == f"history-card-{pk}":
         return render(request, "networktests/partials/history_card.html", context)
-
     return render(request, "networktests/partials/testcase_details.html", context)
 
 
 @require_http_methods(["GET"])
 @permission_required("networktests.view_testcase", raise_exception=True)
 def testcase_modal_content(request, pk):
-    testcase = get_object_or_404(
-        TestCase.objects.prefetch_related(
-            "parameters",
-            Prefetch(
-                "devices",
-                queryset=TestDevice.objects.select_related("device"),
-            ),
-            Prefetch(
-                "results",
-                queryset=TestResult.objects.order_by("-attempt_id"),
-            ),
-        ),
-        pk=pk,
-    )
-    results_list = testcase.results.all()
-    paginator = Paginator(results_list, 10)
-    results_page = paginator.get_page(request.GET.get("page", 1))
+    testcase, results_page = _get_testcase_with_page(pk, request.GET.get("page", 1))
     return render(
         request,
         "networktests/partials/testcase_modal_content.html",
