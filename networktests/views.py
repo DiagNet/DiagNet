@@ -376,7 +376,6 @@ def export_report_pdf(request):
     return response
 
 
-@require_http_methods(["GET"])
 def _get_testcase_with_page(pk, page):
     testcase = get_object_or_404(
         TestCase.objects.prefetch_related(
