@@ -1,4 +1,4 @@
-let _htmxClosedModals = false;
+window.window._htmxClosedModals = false;
 
 document.addEventListener("htmx:beforeSwap", (e) => {
   const target = e.detail.target;
@@ -10,7 +10,7 @@ document.addEventListener("htmx:beforeSwap", (e) => {
   }
 
   if (openModals.length > 0) {
-    _htmxClosedModals = true;
+    window._htmxClosedModals = true;
     openModals.forEach((m) => bootstrap.Modal.getInstance(m)?.hide());
     const triggerEl = e.detail.requestConfig?.elt || e.detail.elt;
     const currentSwap =
@@ -20,8 +20,8 @@ document.addEventListener("htmx:beforeSwap", (e) => {
 });
 
 document.addEventListener("htmx:afterSwap", () => {
-  if (!_htmxClosedModals) return;
-  _htmxClosedModals = false;
+  if (!window._htmxClosedModals) return;
+  window._htmxClosedModals = false;
 
   if (document.querySelectorAll(".modal.show").length === 0) {
     document.querySelectorAll(".modal-backdrop").forEach((b) => b.remove());
