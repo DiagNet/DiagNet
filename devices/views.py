@@ -36,7 +36,6 @@ def _get_device_testcases(device):
         .distinct()
         .annotate(
             latest_result=Subquery(latest_result.values("result")[:1]),
-            latest_finished_at=Subquery(latest_result.values("finished_at")[:1]),
         )
     )
 
