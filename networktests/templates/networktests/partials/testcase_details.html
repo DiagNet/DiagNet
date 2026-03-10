@@ -3,17 +3,15 @@
         <div class="card shadow-sm h-100">
             <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-sliders me-1"></i> Test Details</span>
-                {% with last_run=testcase.results.first %}
-                    {% if last_run %}
-                        {% if testcase.expected_result == last_run.result %}
-                            {% include "networktests/partials/status_badge.html" with status="PASS" %}
-                        {% else %}
-                            {% include "networktests/partials/status_badge.html" with status="FAIL" %}
-                        {% endif %}
+                {% if last_run %}
+                    {% if testcase.expected_result == last_run.result %}
+                        {% include "networktests/partials/status_badge.html" with status="PASS" %}
                     {% else %}
-                        {% include "networktests/partials/status_badge.html" with status="NEW" %}
+                        {% include "networktests/partials/status_badge.html" with status="FAIL" %}
                     {% endif %}
-                {% endwith %}
+                {% else %}
+                    {% include "networktests/partials/status_badge.html" with status="NEW" %}
+                {% endif %}
             </div>
             <table class="table table-sm mb-0">
                 <tbody>
@@ -27,14 +25,12 @@
                             {% endif %}
                         </td>
                     </tr>
-                    {% with last_run=testcase.results.first %}
-                        {% if last_run %}
-                            <tr>
-                                <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Last Run</th>
-                                <td class="py-2 pe-3 text-muted small">{{ last_run.finished_at|date:"Y-m-d H:i" }}</td>
-                            </tr>
-                        {% endif %}
-                    {% endwith %}
+                    {% if last_run %}
+                        <tr>
+                            <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Last Run</th>
+                            <td class="py-2 pe-3 text-muted small">{{ last_run.finished_at|date:"Y-m-d H:i" }}</td>
+                        </tr>
+                    {% endif %}
                     {% for param in testcase.parameters.all %}
                         <tr>
                             <th class="ps-3 py-2 text-muted fw-normal text-nowrap">{{ param.name }}</th>
