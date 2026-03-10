@@ -1,7 +1,7 @@
 <div class="card shadow-sm" id="history-card-{{ testcase.id }}">
     <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
         <span><i class="bi bi-clock-history me-1"></i> Execution History</span>
-        <span class="badge bg-secondary rounded-pill">{{ testcase.results.count }} Runs</span>
+        <span class="badge bg-secondary rounded-pill">{{ results_page.paginator.count }} Runs</span>
     </div>
     {% if results_page.object_list %}
         <div class="accordion accordion-flush"
