@@ -14,7 +14,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views import generic
-from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.http import require_http_methods
 
 from devices.models import Device
 from networktests.forms import TestGroupForm
@@ -313,8 +313,6 @@ class TestCaseListView(PermissionRequiredMixin, generic.ListView):
         return super().get_queryset()
 
 
-@require_POST
-@permission_required("networktests.add_testresult", raise_exception=True)
 def _check_custom_disabled(test_module):
     """
     Returns a warning message if test_module is a custom testcase that cannot
@@ -362,6 +360,8 @@ def run_testcase(request, pk):
 
     if level == "success":
         messages.success(request, msg)
+    elif level == "warning":
+        messages.warning(request, msg)
     else:
         messages.error(request, msg)
     return redirect("networktests-page")
@@ -673,7 +673,8 @@ def run_group_tests(request, pk):
     if failed:
         parts.append(f"{failed} failed")
     if skipped:
-        parts.append(f"{skipped} skipped (disabled custom test)")
+        reason = "disabled custom test" if skipped == 1 else "disabled custom tests"
+        parts.append(f"{skipped} skipped ({reason})")
     msg = f"Group '{group.name}': {', '.join(parts) or 'no tests ran'}."
     level = "success" if failed == 0 and skipped == 0 else "warning"
 
