@@ -29,7 +29,7 @@ Using the container is the **only officially supported way** to run DiagNet in
 production, as it guarantees a deterministic environment with all necessary
 networking and Python dependencies pre-installed via Nix.
 
-For detailed configuration options, see the [Configuration Guide](docs/configuration.md).
+For detailed configuration options, see the [Configuration Guide](docs/configuration.md) and our [FAQ](docs/faq.md).
 
 ### Prerequisites
 
