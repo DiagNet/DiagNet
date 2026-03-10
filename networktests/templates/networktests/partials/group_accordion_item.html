@@ -56,7 +56,7 @@
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content"
                          hx-get="{% url 'group-comparison-modal' group.pk %}"
-                         hx-trigger="shown.bs.modal from:closest .modal once"
+                         hx-trigger="shown.bs.modal from:closest .modal"
                          hx-swap="innerHTML">
                         <div class="modal-body text-center py-5">
                             <div class="spinner-border text-primary" role="status"></div>
