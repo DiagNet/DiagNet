@@ -207,6 +207,13 @@ class Local_Account_Security(DiagNetTest):
                     next_val = parts[idx + 1]
                     if next_val.isdigit() and len(next_val) == 1:
                         hash_type = next_val
+                        # IOS XE stores algorithm-type in the secret type number:
+                        # type 9 = scrypt, type 8 = pbkdf2-sha256
+                        if algo == "unknown":
+                            if next_val == "9":
+                                algo = "scrypt"
+                            elif next_val == "8":
+                                algo = "sha256"
                     else:
                         hash_type = "implicit_strong"
             elif "password" in parts:
