@@ -737,7 +737,9 @@ def group_comparison_modal(request, pk):
     testcases = group.testcases.prefetch_related(
         Prefetch(
             "results",
-            queryset=TestResult.objects.order_by(F("attempt_id").desc(nulls_last=True)),
+            queryset=TestResult.objects.defer("log").order_by(
+                F("attempt_id").desc(nulls_last=True)
+            ),
             to_attr="latest_results",
         )
     ).order_by("label")
