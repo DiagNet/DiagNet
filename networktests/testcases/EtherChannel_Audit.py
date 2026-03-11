@@ -147,7 +147,11 @@ class EtherChannel_Audit(DiagNetTest):
             raise ValueError(f"Po{group} is operationally DOWN (Flags: {flags}).")
 
         if expected_proto == "manual":
-            if "-" not in actual_proto and "on" not in actual_proto:
+            if (
+                "-" not in actual_proto
+                and "on" not in actual_proto
+                and "none" not in actual_proto
+            ):
                 raise ValueError(
                     f"Protocol mismatch: expected Manual, found '{actual_proto}'."
                 )

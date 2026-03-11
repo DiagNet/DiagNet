@@ -1,3 +1,5 @@
+import re
+
 from networktests.testcases.base import DiagNetTest, depends_on
 
 __author__ = "Danijel Stamenkovic"
@@ -149,4 +151,14 @@ class Rapid_PVST_Root_Audit(DiagNetTest):
             raise ValueError(
                 f"Switch IS the Root Bridge for VLAN {vlan} (suboptimal). Verify STP priority configuration."
             )
-        return f"STP role for VLAN {vlan} is correct: {'Root Bridge' if is_root else 'Non-Root'}."
+        expected_prio = getattr(self, "expected_priority", None)
+        prio_msg = ""
+        if expected_prio is not None:
+            m = re.search(r"Bridge ID\s+Priority\s+(\d+)", out)
+            if m:
+                actual_prio = int(m.group(1))
+                if actual_prio != int(expected_prio):
+                    prio_msg = f" Warning: bridge priority is {actual_prio}, expected {expected_prio}."
+                else:
+                    prio_msg = f" Bridge priority {actual_prio} matches expected."
+        return f"STP role for VLAN {vlan} is correct: {'Root Bridge' if is_root else 'Non-Root'}.{prio_msg}"
