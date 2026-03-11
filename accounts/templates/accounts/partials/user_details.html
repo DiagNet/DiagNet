@@ -8,11 +8,11 @@
                 <tbody>
                     <tr>
                         <th class="ps-3 py-2 text-muted fw-normal text-nowrap" style="width: 40%">Username</th>
-                        <td class="py-2 pe-3 fw-semibold">{{ account.username }}</td>
+                        <td class="py-2 pe-3 fw-semibold text-break">{{ account.username }}</td>
                     </tr>
                     <tr>
                         <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Email</th>
-                        <td class="py-2 pe-3">{{ account.email|default:"-" }}</td>
+                        <td class="py-2 pe-3 text-break">{{ account.email|default:"-" }}</td>
                     </tr>
                     <tr>
                         <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Status</th>

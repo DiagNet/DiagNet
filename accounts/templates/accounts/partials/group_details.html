@@ -8,7 +8,7 @@
                 <tbody>
                     <tr>
                         <th class="ps-3 py-2 text-muted fw-normal text-nowrap" style="width: 40%">Name</th>
-                        <td class="py-2 pe-3 fw-semibold">{{ group.name }}</td>
+                        <td class="py-2 pe-3 fw-semibold text-break">{{ group.name }}</td>
                     </tr>
                     <tr>
                         <th class="ps-3 py-2 text-muted fw-normal text-nowrap">Role</th>
@@ -67,8 +67,8 @@
             <tbody>
                 {% for member in members %}
                     <tr>
-                        <td class="ps-3">{{ member.username }}</td>
-                        <td>{{ member.email|default:"-" }}</td>
+                        <td class="ps-3 text-break">{{ member.username }}</td>
+                        <td class="text-break">{{ member.email|default:"-" }}</td>
                         <td>
                             {% if member.is_superuser %}
                                 <span class="badge bg-danger">Superuser</span>
