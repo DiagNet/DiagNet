@@ -147,11 +147,17 @@ class SVI_Management_Hardening_Audit(DiagNetTest):
     @depends_on("test_svi_operational_readiness")
     def test_vty_ssh_only_enforcement(self):
         """Confirms VTY lines are restricted to SSH; Telnet must not be permitted."""
-        if "transport input telnet" in self._vty_out.lower():
-            raise ValueError(
-                "Telnet is permitted on VTY lines — plaintext credential exposure risk. "
-                "Replace with 'transport input ssh'."
-            )
+        for line in self._vty_out.splitlines():
+            line = line.strip().lower()
+            if line.startswith("transport input"):
+                tokens = line.split()
+                # tokens: ["transport", "input", "ssh", "telnet", ...] or ["transport", "input", "all"]
+                transports = tokens[2:]
+                if "telnet" in transports or "all" in transports:
+                    raise ValueError(
+                        "Telnet is permitted on VTY lines — plaintext credential exposure risk. "
+                        "Replace with 'transport input ssh'."
+                    )
         return "VTY lines are hardened to SSH-only access."
 
     @depends_on("test_svi_operational_readiness")

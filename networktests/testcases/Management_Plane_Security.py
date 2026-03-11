@@ -143,8 +143,8 @@ class Management_Plane_Security(DiagNetTest):
         self.mgmt_data = {
             "ssh_version": "",
             "rsa_key_size": 0,
-            "http_server": True,
-            "https_server": True,
+            "http_server": False,
+            "https_server": False,
             "vty_transports": [],
             "raw_ssh": "",
             "raw_http": "",
@@ -232,10 +232,16 @@ class Management_Plane_Security(DiagNetTest):
             "show running-config | include http"
         )
 
-        if "no ip http server" in self.mgmt_data["raw_http"]:
-            self.mgmt_data["http_server"] = False
-        if "no ip http secure-server" in self.mgmt_data["raw_http"]:
-            self.mgmt_data["https_server"] = False
+        for line in self.mgmt_data["raw_http"].splitlines():
+            line = line.strip()
+            if line == "ip http server":
+                self.mgmt_data["http_server"] = True
+            elif line == "no ip http server":
+                self.mgmt_data["http_server"] = False
+            elif line == "ip http secure-server":
+                self.mgmt_data["https_server"] = True
+            elif line == "no ip http secure-server":
+                self.mgmt_data["https_server"] = False
 
         return True
 

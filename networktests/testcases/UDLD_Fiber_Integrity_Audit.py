@@ -118,7 +118,9 @@ class UDLD_Fiber_Integrity_Audit(DiagNetTest):
         """Confirms UDLD is globally enabled on the switch."""
         out = self.genie_dev.execute("show udld")
         if "not enabled" in out.lower():
-            return "Warning: UDLD global not enabled. Add 'udld enable'."
+            raise ValueError(
+                "UDLD is not globally enabled on this device. Add 'udld enable'."
+            )
         return "UDLD protocol globally enabled."
 
     @depends_on("test_udld_operational_global")

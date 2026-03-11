@@ -143,7 +143,11 @@ class Switchport_Trunk_Audit(DiagNetTest):
         """Validates native VLAN is not VLAN 1 and matches expected value."""
         expected = str(getattr(self, "expected_native_vlan", 999))
         m = re.search(r"Trunking Native Mode VLAN:\s+(\d+)", self._sp_out)
-        actual = m.group(1) if m else "1"
+        if not m:
+            raise ValueError(
+                f"Could not parse native VLAN from 'show interfaces {self.full_int} switchport' output."
+            )
+        actual = m.group(1)
         if actual == "1":
             raise ValueError(
                 f"CRITICAL: VLAN 1 is the native VLAN on {self.full_int}. VLAN hopping risk!"
@@ -184,6 +188,9 @@ class Switchport_Trunk_Audit(DiagNetTest):
 
     def _vlan_in_allowed_list(self, vlan, allowed_list_str):
         parts = allowed_list_str.split(",")
+        vlan = vlan.strip()
+        if not vlan.isdigit():
+            raise ValueError(f"Invalid VLAN ID '{vlan}' in required_vlans list.")
         target = int(vlan)
         for part in parts:
             if "-" in part:

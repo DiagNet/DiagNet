@@ -127,6 +127,23 @@ class MAC_Address_Table_Stability_Audit(DiagNetTest):
             return f"Warning: Aging timer is {actual}s, expected {exp}s. Set with 'mac address-table aging-time {exp}'."
         return f"MAC aging timer verified at {actual}s."
 
+    def test_mac_count_threshold(self):
+        """Warns if total dynamic MAC entries exceed the configured ceiling."""
+        max_count = int(getattr(self, "max_mac_count", 1000))
+        out = self.genie_dev.execute("show mac address-table count")
+        m = re.search(r"Total Mac Addresses for this criterion:\s+(\d+)", out)
+        if not m:
+            m = re.search(r"Dynamic Address Count\s*:\s*(\d+)", out)
+        if not m:
+            return "Warning: Could not parse MAC address count from output."
+        actual = int(m.group(1))
+        if actual > max_count:
+            return (
+                f"Warning: {actual} dynamic MAC entries exceed threshold of {max_count}. "
+                f"Potential CAM table exhaustion or MAC flooding attack."
+            )
+        return f"MAC table count within limits: {actual}/{max_count} entries."
+
     def test_mac_flapping_detection(self):
         """Scans the system log for MAC flapping events indicating a loop or spoofing."""
         try:
