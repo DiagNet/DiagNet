@@ -38,7 +38,7 @@
                     {% for param in testcase.parameters.all %}
                         <tr>
                             <th class="ps-3 py-2 text-muted fw-normal text-nowrap">{{ param.name }}</th>
-                            <td class="py-2 pe-3 font-monospace text-break">{{ param.value|default:"-" }}</td>
+                            <td class="py-2 pe-3 font-monospace text-break text-start">{{ param.value|default:"-" }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
