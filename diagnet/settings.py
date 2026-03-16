@@ -115,6 +115,12 @@ ALLOWED_HOSTS = [
     )
 ]
 
+_csrf_trusted_origins = os.environ.get("DIAGNET_CSRF_TRUSTED_ORIGINS", "")
+if _csrf_trusted_origins:
+    CSRF_TRUSTED_ORIGINS = [
+        origin.strip() for origin in _csrf_trusted_origins.split(",")
+    ]
+
 # Application definition
 
 INSTALLED_APPS = [

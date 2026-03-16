@@ -6,11 +6,12 @@ These variables can be set in your `compose.yaml` file or passed directly to the
 
 ## Core Configuration
 
-| Variable                | Description                                                                      | Default                                            |
-| :---------------------- | :------------------------------------------------------------------------------- | :------------------------------------------------- |
-| `DIAGNET_DATA_PATH`     | **Recommended.** The base directory for all persistent data (database, secrets). | `/data` (in container) <br> `BASE_DIR` (local dev) |
-| `DIAGNET_ALLOWED_HOSTS` | Comma-separated list of hostnames/IPs that can access the application.           | `localhost,127.0.0.1`                              |
-| `DIAGNET_DEBUG`         | Enables Django debug mode. **Never set this to `True` in production.**           | `False`                                            |
+| Variable                       | Description                                                                                                | Default                                            |
+| :----------------------------- | :--------------------------------------------------------------------------------------------------------- | :------------------------------------------------- |
+| `DIAGNET_DATA_PATH`            | **Recommended.** The base directory for all persistent data (database, secrets).                           | `/data` (in container) <br> `BASE_DIR` (local dev) |
+| `DIAGNET_ALLOWED_HOSTS`        | Comma-separated list of hostnames/IPs that can access the application.                                     | `localhost,127.0.0.1`                              |
+| `DIAGNET_CSRF_TRUSTED_ORIGINS` | Comma-separated list of trusted origins for CSRF checks. **Required when running behind a reverse proxy.** | _(unset)_                                          |
+| `DIAGNET_DEBUG`                | Enables Django debug mode. **Never set this to `True` in production.**                                     | `False`                                            |
 
 ## Data & Storage
 
@@ -50,3 +51,23 @@ services:
       - DIAGNET_DATA_PATH=/data
       - DIAGNET_ALLOWED_HOSTS=diagnet.local,192.168.1.50
 ```
+
+## Behind a Reverse Proxy
+
+When DiagNet runs behind a reverse proxy (e.g. nginx, Caddy, Traefik), the browser sends requests to the proxy's origin, not directly to DiagNet. Django's CSRF protection checks that the `Origin`/`Referer` header matches a trusted origin, so you must tell DiagNet what origin(s) to trust.
+
+Set `DIAGNET_CSRF_TRUSTED_ORIGINS` to a comma-separated list of the scheme + host (and optional port) that users access DiagNet through:
+
+```yaml
+environment:
+  - DIAGNET_ALLOWED_HOSTS=diagnet.example.com
+  - DIAGNET_CSRF_TRUSTED_ORIGINS=https://diagnet.example.com
+```
+
+If your proxy exposes DiagNet on a non-standard port, include it:
+
+```
+DIAGNET_CSRF_TRUSTED_ORIGINS=https://diagnet.example.com:8443
+```
+
+Without this setting, all form submissions and HTMX requests will be rejected with a **403 Forbidden (CSRF verification failed)** error when accessed through the proxy.
