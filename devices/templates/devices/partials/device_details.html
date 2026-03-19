@@ -16,16 +16,6 @@
                     {% endfor %}
                 </tbody>
             </table>
-            {% if perms.devices.change_device %}
-                <div class="card-footer bg-transparent">
-                    <button hx-get="{% url 'device-update' device.pk %}"
-                            hx-target="closest .modal-body"
-                            hx-swap="innerHTML"
-                            class="btn btn-sm btn-primary">
-                        <i class="bi bi-pencil"></i> Edit
-                    </button>
-                </div>
-            {% endif %}
         </div>
     </div>
     <div class="col-lg-7">

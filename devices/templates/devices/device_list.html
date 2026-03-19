@@ -47,6 +47,7 @@
                                                             aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body"
+                                                     id="device-modal-body-{{ device.pk }}"
                                                      hx-get="{% url 'device-detail-partial' device.pk %}"
                                                      hx-trigger="shown.bs.modal from:closest .modal once">
                                                     <div class="text-center py-5">
@@ -54,6 +55,14 @@
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
+                                                    {% if perms.devices.change_device %}
+                                                        <button class="btn btn-secondary"
+                                                                hx-get="{% url 'device-update' device.pk %}"
+                                                                hx-target="#device-modal-body-{{ device.pk }}"
+                                                                hx-swap="innerHTML">
+                                                            <i class="bi bi-pencil"></i> Edit
+                                                        </button>
+                                                    {% endif %}
                                                     {% if perms.devices.delete_device %}
                                                         <button type="button"
                                                                 class="btn btn-danger"
