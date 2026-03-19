@@ -1,0 +1,12 @@
+<div id="testcase-modal-header-info-{{ testcase.pk }}"
+     {% if oob %}hx-swap-oob="outerHTML"{% endif %}>
+    <div class="d-flex align-items-center gap-3 mb-1">
+        <h5 class="fw-bold mb-0 text-body">{{ testcase.label }}</h5>
+        <span class="badge bg-body-tertiary text-body border fw-normal font-monospace">
+            <i class="bi bi-code-square me-1"></i>{{ testcase.test_module }}
+        </span>
+    </div>
+    {% if testcase.description %}
+        <p class="text-secondary small mt-1 mb-0">{{ testcase.description|truncatewords:20 }}</p>
+    {% endif %}
+</div>

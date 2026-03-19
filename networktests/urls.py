@@ -33,6 +33,16 @@ urlpatterns = [
         name="testcase-modal-content",
     ),
     path(
+        "tests/<int:pk>/edit/",
+        views.testcase_edit_modal,
+        name="testcase-edit-modal",
+    ),
+    path(
+        "tests/<int:pk>/save/",
+        views.save_testcase,
+        name="testcase-save",
+    ),
+    path(
         "templates/manage/",
         views.manage_custom_templates,
         name="manage-custom-templates",

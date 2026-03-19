@@ -1,0 +1,5 @@
+<button id="testcase-label-{{ testcase.pk }}"
+        type="button"
+        class="btn btn-link p-0 text-start"
+        onclick="bootstrap.Modal.getOrCreateInstance(this.nextElementSibling).show()"
+        {% if oob %}hx-swap-oob="outerHTML"{% endif %}>{{ testcase.label }}</button>

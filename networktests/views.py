@@ -3,6 +3,8 @@ import logging
 from datetime import date
 from io import BytesIO
 
+from django.template.loader import render_to_string
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -15,7 +17,7 @@ from django.utils.text import slugify
 from django.views.decorators.http import require_http_methods
 
 from devices.models import Device
-from networktests.forms import TestGroupForm
+from networktests.forms import TestCaseEditForm, TestGroupForm
 from networktests.models import (
     CustomTestTemplate,
     TestCase,
@@ -396,6 +398,53 @@ def testcase_modal_content(request, pk):
             "from_device_pk": request.GET.get("from_device"),
             "from_testcase_pk": request.GET.get("from_testcase"),
         },
+    )
+
+
+@require_http_methods(["GET"])
+@permission_required("networktests.change_testcase", raise_exception=True)
+def testcase_edit_modal(request, pk):
+    testcase = get_object_or_404(TestCase, pk=pk)
+    form = TestCaseEditForm(instance=testcase)
+    return render(
+        request,
+        "networktests/partials/testcase_edit_form.html",
+        {"form": form, "testcase": testcase},
+    )
+
+
+@require_http_methods(["POST"])
+@permission_required("networktests.change_testcase", raise_exception=True)
+def save_testcase(request, pk):
+    testcase = get_object_or_404(TestCase, pk=pk)
+    form = TestCaseEditForm(request.POST, instance=testcase)
+    if form.is_valid():
+        form.save()
+        testcase, results_page, last_run = _get_testcase_with_page(pk, 1)
+        details_html = render_to_string(
+            "networktests/partials/testcase_details.html",
+            {"testcase": testcase, "results_page": results_page, "last_run": last_run},
+            request=request,
+        )
+        oob_html = render_to_string(
+            "networktests/partials/testcase_row_oob.html",
+            {"testcase": testcase},
+            request=request,
+        )
+        response = HttpResponse(details_html + oob_html)
+        response["HX-Trigger"] = json.dumps(
+            {
+                "showMessage": {
+                    "message": f"Test case '{testcase.label}' updated.",
+                    "level": "success",
+                },
+            }
+        )
+        return response
+    return render(
+        request,
+        "networktests/partials/testcase_edit_form.html",
+        {"form": form, "testcase": testcase},
     )
 
 
