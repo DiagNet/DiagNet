@@ -404,7 +404,7 @@ class Device(models.Model):
             self.name: {
                 field.name: getattr(self, field.name)
                 for field in self._meta.fields
-                if field.name != "name"
+                if field.name not in ("id", "name")
             }
         }
 

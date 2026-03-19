@@ -287,8 +287,6 @@ def export_devices_from_yaml(request):
     """
     Exports all devices that are stored in the database into a yaml file.
     """
-    import yaml
-
     devices = Device.objects.all()
     all_data = {}
 
