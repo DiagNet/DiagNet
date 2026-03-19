@@ -632,10 +632,7 @@ def delete_testgroup(request, pk):
     return response
 
 
-@permission_required(
-    ["networktests.view_testcase", "networktests.view_testgroup"],
-    raise_exception=True,
-)
+@permission_required("networktests.add_testresult", raise_exception=True)
 @require_http_methods(["POST"])
 def run_group_tests(request, pk):
     """

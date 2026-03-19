@@ -6,7 +6,7 @@
                 <th>Test Case</th>
                 <th>Last Run</th>
                 <th>Status</th>
-                <th>Actions</th>
+                {% if perms.networktests.add_testresult %}<th>Actions</th>{% endif %}
             </tr>
         </thead>
         <tbody>
@@ -14,7 +14,8 @@
                 {% include "networktests/partials/testcase_row.html" with testcase=testcase group=group %}
             {% empty %}
                 <tr>
-                    <td colspan="5" class="text-muted">No test cases.</td>
+                    <td colspan="{% if perms.networktests.add_testresult %}5{% else %}4{% endif %}"
+                        class="text-muted">No test cases.</td>
                 </tr>
             {% endfor %}
         </tbody>

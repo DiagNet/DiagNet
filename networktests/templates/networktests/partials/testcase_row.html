@@ -60,17 +60,19 @@
             {% include "networktests/partials/status_badge.html" with status="NEW" %}
         {% endif %}
     </td>
-    <td class="align-middle">
-        <button class="btn btn-sm btn-primary run-test-btn"
-                title="Run test case"
-                hx-post="{% url 'tests-run' testcase.id %}"
-                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                hx-target="closest tr"
-                hx-swap="outerHTML"
-                hx-disabled-elt="this">
-            <i class="bi bi-play-fill run-test-icon"></i>
-            <span class="spinner-border spinner-border-sm run-test-spinner d-none"
-                  role="status"></span>
-        </button>
-    </td>
+    {% if perms.networktests.add_testresult %}
+        <td class="align-middle">
+            <button class="btn btn-sm btn-primary run-test-btn"
+                    title="Run test case"
+                    hx-post="{% url 'tests-run' testcase.id %}"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    hx-target="closest tr"
+                    hx-swap="outerHTML"
+                    hx-disabled-elt="this">
+                <i class="bi bi-play-fill run-test-icon"></i>
+                <span class="spinner-border spinner-border-sm run-test-spinner d-none"
+                      role="status"></span>
+            </button>
+        </td>
+    {% endif %}
 </tr>

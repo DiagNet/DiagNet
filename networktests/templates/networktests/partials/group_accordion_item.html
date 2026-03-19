@@ -17,18 +17,20 @@
          data-bs-parent="#dashboardAccordion">
         <div class="accordion-body">
             <div class="d-flex gap-2 mb-3">
-                <button class="btn btn-sm btn-primary run-all-btn"
-                        hx-post="{% url 'testgroup-run-all' group.pk %}"
-                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                        hx-target="#group-table-{{ group.pk }}"
-                        hx-swap="innerHTML"
-                        hx-disabled-elt="this"
-                        hx-vals='js:{"page": document.querySelector("#group-table-{{ group.pk }} [data-page]")?.dataset.page || ""}'>
-                    <i class="bi bi-play-fill run-all-icon"></i>
-                    <span class="spinner-border spinner-border-sm run-all-spinner d-none"
-                          role="status"></span>
-                    Run all tests
-                </button>
+                {% if perms.networktests.add_testresult %}
+                    <button class="btn btn-sm btn-primary run-all-btn"
+                            hx-post="{% url 'testgroup-run-all' group.pk %}"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                            hx-target="#group-table-{{ group.pk }}"
+                            hx-swap="innerHTML"
+                            hx-disabled-elt="this"
+                            hx-vals='js:{"page": document.querySelector("#group-table-{{ group.pk }} [data-page]")?.dataset.page || ""}'>
+                        <i class="bi bi-play-fill run-all-icon"></i>
+                        <span class="spinner-border spinner-border-sm run-all-spinner d-none"
+                              role="status"></span>
+                        Run all tests
+                    </button>
+                {% endif %}
                 <button class="btn btn-sm btn-primary"
                         data-bs-toggle="modal"
                         data-bs-target="#comparisonModal-{{ group.pk }}">
