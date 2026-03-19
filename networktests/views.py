@@ -170,9 +170,9 @@ def create_test(request):
 
     test_class: str = data.get("test_class")
     params = data.get("parameters", {})
-    label = data.get("label", {})
-    description = data.get("description", {})
-    expected_result = data.get("expected_result", {})
+    label = data.get("label", "")
+    description = data.get("description", "")
+    expected_result = data.get("expected_result", False)
 
     class_reference = get_class_reference_for_test_class_string(test_class)
 
