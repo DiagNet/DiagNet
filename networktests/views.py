@@ -6,14 +6,12 @@ from io import BytesIO
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.paginator import Paginator
-from django.db.models import Count, F, Prefetch, QuerySet
+from django.db.models import F, Prefetch
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
-from django.views import generic
 from django.views.decorators.http import require_http_methods
 
 from devices.models import Device
@@ -263,55 +261,9 @@ def get_doc_of_testcase(request):
     return JsonResponse({"status": "success", "results": cls.__doc__ or ""})
 
 
-@permission_required("networktests.view_testcase", raise_exception=True)
-def test_list(request):
-    return render(request, "networktests/testcases_list.html")
-
-
-@permission_required("networktests.view_testcase", raise_exception=True)
-def testcases_list(request):
-    qs = (
-        TestCase.objects.prefetch_related(
-            Prefetch("parameters", queryset=TestParameter.objects.order_by("name")),
-            Prefetch(
-                "devices",
-                queryset=TestDevice.objects.select_related("device").order_by(
-                    "device__name"
-                ),
-            ),
-        )
-        .annotate(
-            num_params=Count("parameters", distinct=True),
-            num_devices=Count("devices", distinct=True),
-            num_results=Count("results", distinct=True),
-        )
-        .order_by("label")
-    )
-
-    paginator = Paginator(qs, 20)
-    page_obj = paginator.get_page(request.GET.get("page"))
-
-    return render(
-        request,
-        "networktests/testcases_list.html",
-        {"page_obj": page_obj, "paginator": paginator},
-    )
-
-
 @permission_required("networktests.add_testcase", raise_exception=True)
 def create_test_page(request):
     return render(request, "networktests/partials/create_popup/create_test_popup.html")
-
-
-class TestCaseListView(PermissionRequiredMixin, generic.ListView):
-    permission_required = "networktests.view_testcase"
-    model = TestCase
-    paginate_by = 25
-
-    def get_queryset(self) -> QuerySet:
-        if hasattr(self, "queryset") and self.queryset is not None:
-            return self.queryset
-        return super().get_queryset()
 
 
 def _check_custom_disabled(test_module):
