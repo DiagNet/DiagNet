@@ -24,11 +24,6 @@ urlpatterns = [
         views.get_doc_of_testcase,
         name="get_doc_of_testcase",
     ),
-    path(
-        "api/get/test/info",
-        views.get_doc_of_testcase,
-        name="get_doc_of_testcase",
-    ),
     path("export-report/", views.export_report_pdf, name="networktests-export-pdf"),
     path(
         "tests/<int:pk>/details/", views.testcase_detail_view, name="testcase-details"

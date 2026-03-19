@@ -84,6 +84,8 @@ class Command(BaseCommand):
 
                     processed_count += 1
 
+        except CommandError:
+            raise
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"\n\nERROR: {e}"))
             self.stdout.write(
